@@ -1,11 +1,10 @@
-name: Build ESP32 Bridge Firmware
+name: Build ESP32 Bridge Firmware 1.8
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'firmware/ESP32_BLINK_TL_REDLEO_REAL_BRIDGE_GPIO26_33.ino'
-      - '.github/workflows/build-esp32-firmware.yml'
   workflow_dispatch:
 
 permissions:
@@ -41,7 +40,7 @@ jobs:
             build-sketch/BLINK_FW
           test -s build-out/BLINK_FW.ino.bin
 
-      - name: Update OTA binary and manifest
+      - name: Update QH OTA binary and manifest
         run: |
           cp build-out/BLINK_FW.ino.bin ota/blink_esp32.bin
           python3 - <<'PY'
@@ -52,11 +51,11 @@ jobs:
           manifest_path = Path('ota/manifest.json')
           sha = hashlib.sha256(bin_path.read_bytes()).hexdigest()
           manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
-          manifest['version'] = '1.9'
-          manifest['url'] = 'https://raw.githubusercontent.com/letan99vl/Blink-Redleo/main/ota/blink_esp32.bin'
+          manifest['version'] = '1.8'
+          manifest['url'] = 'https://raw.githubusercontent.com/letan99vl/Blink-QH/main/ota/blink_esp32.bin'
           manifest['sha256'] = sha
           manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          print('FW 1.9 sha256', sha)
+          print('QH ESP32 FW 1.8 sha256', sha)
           PY
 
       - name: Commit OTA firmware
@@ -68,6 +67,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add ota/blink_esp32.bin ota/manifest.json
-          git commit -m "Build ESP32 bridge FW 1.9 OTA binary"
+          git commit -m "Build QH ESP32 bridge FW 1.8 OTA binary"
           git pull --rebase origin main
           git push
