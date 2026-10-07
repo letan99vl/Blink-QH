@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.5';
-  document.title = 'QH ECU · v1.0.5';
+  window.BLINK_PB_VERSION = 'QH-1.0.6';
+  document.title = 'QH ECU · v1.0.6';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3051,6 +3051,24 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
 /* QH sensor strip v1.0.5: MAP / AFR / ECT / IAT */
 .qhSensorStrip{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 </style>
+<style id="qhPbStyle">
+/* QH PB label v1.0.6 */
+.qhPbLabel{
+  display:inline-block;
+  margin-left:7px;
+  padding:3px 6px 2px;
+  border:1px solid #6b5a20;
+  border-radius:6px;
+  background:#15140d;
+  color:#d7bd62;
+  font-size:9px;
+  font-style:normal;
+  font-weight:900;
+  letter-spacing:.2px;
+  vertical-align:middle;
+  transform:translateY(-1px);
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3061,7 +3079,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   <section id="dashboardScreen" class="screen active scrollScreen qhDashboardScreen">
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
-        <div class="qhBrandMain"><span>QH</span> ECU</div>
+        <div class="qhBrandMain"><span>QH</span> ECU <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.6</em></div>
         <div class="qhBrandSub">RACING</div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -8035,8 +8053,11 @@ updateMapControls();
 <script>
   (function(){
     const v=String(window.BLINK_PB_VERSION||'0');
+    const pb=v.replace(/^QH-/i,'');
     const label=document.getElementById('appBuildLabel');
-    if(label)label.textContent='P.b v'+v;
+    if(label)label.textContent='P.b '+pb;
+    const qhPb=document.getElementById('qhPbLabel');
+    if(qhPb)qhPb.textContent='P.b '+pb;
     const src='redleo_real_protocol.js?v='+encodeURIComponent(v);
     document.write('<script src="'+src+'"><\/script>');
   })();
