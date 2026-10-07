@@ -80,3 +80,10 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - OTA manifest QH: version 1.8, URL tro ve `Blink-QH/main/ota/blink_esp32.bin`.
 - Regression run `37598502058`: PASS syntax, row orientation, map selection, AFR cross-family, injection cam calculator, ECU feature matrix, V8, 9.1X, V9 routing, 9.2 page6, V10.2 page6/A2, Ultra Pro1 page6/A2, Ultra Pro2.
 - Khong thay doi QH skin/home flow; day la khoi phuc core chuc nang.
+
+## Map editor layout v1.0.20
+- Header map bo nut back; chi con title/subtitle + BLE status.
+- Hang cong cu dau: QUAY VE | DOC HIEN TAI | LUU HIEN TAI.
+- Nut PHONG TO MAP doi xuong editorInfo, nam ngay ben phai AFR LIVE.
+- Mobile/editorInfo dung 3 cot: TPS/RPM | AFR LIVE | PHONG TO MAP; ECT chi hien tren man rong.
+- Commit layout: `1da6c6ab82aa60f1802048c72c15c53f0729140a`; fix shape back: `95ab2d52e5d16118c25042ede67d82e75611737d`.
