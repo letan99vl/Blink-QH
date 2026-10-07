@@ -87,3 +87,13 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Nut PHONG TO MAP doi xuong editorInfo, nam ngay ben phai AFR LIVE.
 - Mobile/editorInfo dung 3 cot: TPS/RPM | AFR LIVE | PHONG TO MAP; ECT chi hien tren man rong.
 - Commit layout: `1da6c6ab82aa60f1802048c72c15c53f0729140a`; fix shape back: `95ab2d52e5d16118c25042ede67d82e75611737d`.
+
+## QH iOS IPA v1.0.21
+- Source native iOS: `iOS/QHECU/Main.swift`, `iOS/QHECU/Info.plist`, `iOS/project.yml`.
+- Wrapper dung WKWebView mo truc tiep `https://letan99vl.github.io/Blink-QH/`.
+- BLE iOS dung CoreBluetooth native va inject Web Bluetooth bridge cho requestDevice/connect/getPrimaryService/getCharacteristic/startNotifications/writeValue.
+- Bundle ID hien tai: `vn.qhecu.app`; display name: `QH ECU`; iOS >= 15.
+- Workflow: `.github/workflows/build-ios-ipa.yml`.
+- Build run thanh cong: `37644174078`; artifact ID `11494290268`.
+- IPA: `QH-ECU-v1.0.21.ipa`; SHA256 `db1a9c58ba1cbb9fe23648a5a3367e4ba1df3264d43192bf5ae96fbe3a3e9d2a`.
+- IPA hien tai la unsigned, phu hop sideload/ky lai. TestFlight/App Store can provisioning/certificate cua Apple Developer.
