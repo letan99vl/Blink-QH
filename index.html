@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.20';
-  document.title = 'QH ECU · v1.0.20';
+  window.BLINK_PB_VERSION = 'QH-1.0.21';
+  document.title = 'QH ECU · v1.0.21';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4012,6 +4012,69 @@ html body .miniStatus{
   #mapEditorScreen .editorEctBox{display:none!important}
 }
 </style>
+<style id="qhTopBatteryStyle">
+/* ===== QH TOP BATTERY v1.0.21 ===== */
+.qhTopBattery{
+  width:max-content;
+  min-width:128px;
+  height:30px;
+  margin:4px 4px 2px auto;
+  padding:0 10px;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:6px;
+  border:1px solid #6d5720;
+  border-radius:999px;
+  background:linear-gradient(180deg,#18170f,#090a08);
+  color:#d9bf62;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,228,139,.10),
+    0 3px 9px rgba(0,0,0,.30);
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.2px;
+}
+.qhTopBatteryIcon{
+  color:#d6ad35;
+  font-size:11px;
+  line-height:1;
+}
+.qhTopBatteryLabel{
+  color:#9f977e;
+  font-size:8px;
+}
+.qhTopBattery b{
+  min-width:40px;
+  text-align:right;
+  color:#f0d56f;
+  font-size:12px;
+  font-variant-numeric:tabular-nums;
+}
+.qhTopBattery.low{
+  border-color:#8c302a;
+}
+.qhTopBattery.low .qhTopBatteryIcon,
+.qhTopBattery.low b{
+  color:#ff6b5f;
+}
+.qhTopBattery.charging{
+  border-color:#2e7d46;
+}
+.qhTopBattery.charging .qhTopBatteryIcon,
+.qhTopBattery.charging b{
+  color:#65e38b;
+}
+@media(max-width:390px){
+  .qhTopBattery{
+    min-width:118px;
+    height:28px;
+    padding:0 8px;
+    gap:5px;
+  }
+  .qhTopBattery b{font-size:11px}
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -4023,7 +4086,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.20</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.21</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -4032,6 +4095,12 @@ html body .miniStatus{
         <span class="qhBattMark">▰</span>
         <span id="battLive">-- V</span>
       </div>
+    </div>
+
+    <div class="qhTopBattery" id="qhTopBattery" aria-label="Điện áp ắc quy">
+      <span class="qhTopBatteryIcon">▰</span>
+      <span class="qhTopBatteryLabel">ẮC QUY</span>
+      <b data-mirror="batt">-- V</b>
     </div>
 
     <div class="qhConnectRow">
@@ -8599,6 +8668,12 @@ function syncMirrors(){
   document.querySelectorAll('[data-mirror]').forEach(e=>{
     if(m[e.dataset.mirror]!=null)e.textContent=m[e.dataset.mirror];
   });
+  const qhBat=document.getElementById('qhTopBattery');
+  if(qhBat){
+    const bv=Number(String(m.batt||'').replace(/[^0-9.]/g,''));
+    qhBat.classList.toggle('low',Number.isFinite(bv)&&bv>0&&bv<11.8);
+    qhBat.classList.toggle('charging',Number.isFinite(bv)&&bv>=13.2);
+  }
   const ze=document.getElementById('mapZoomEct');
   if(ze)ze.textContent=m.ect;
 
