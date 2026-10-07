@@ -7012,6 +7012,7 @@ window.addEventListener('beforeunload',save);
   let otaManifestCache=null;
   let otaBleTransferActive=false;
   let otaBleFatalError='';
+  let otaLastErrorText='';
   window.blinkOtaTransferActive=()=>otaBleTransferActive;
   const otaStatusWaiters=[];
   const otaWifiRx=new Map();
@@ -7176,6 +7177,7 @@ window.addEventListener('beforeunload',save);
       otaUpdateReady=false;if(btn)btn.disabled=true;if(next)next.value='Đã mới nhất';
       setOtaInfo('ESP32 đang dùng phiên bản mới nhất.');
     }else if(text==='OTA:BSTART'){
+      otaLastErrorText='';
       if(btn)btn.disabled=true;if(prog)prog.value=0;
       setOtaInfo('ESP32 đã mở phân vùng OTA · đang truyền firmware qua BLE...');
       setEcuTaskStatus('loading','ĐANG CẬP NHẬT ESP32...');
@@ -7194,7 +7196,7 @@ window.addEventListener('beforeunload',save);
     }else if(text==='OTA:ABORT'){
       otaBleTransferActive=false;
       setOtaControlsBusy(false);
-      setOtaInfo('Đã hủy cập nhật firmware.','error');
+      if(!otaLastErrorText)setOtaInfo('Đã hủy cập nhật firmware.','error');
     }else if(text==='OTA:BUSY'){
       // A stale REDLEO live packet may arrive just as OTA begins. During an
       // active firmware transfer this is expected and must not replace the
@@ -7233,6 +7235,7 @@ window.addEventListener('beforeunload',save);
         DATA:'Gói firmware BLE không hợp lệ.',
         SEQ:'Mất thứ tự gói firmware BLE. Đã hủy cập nhật.'
       }[code]||('Lỗi OTA: '+code);
+      otaLastErrorText=msg;
       setOtaInfo(msg,'error');setEcuTaskStatus('error','UPDATE ESP32 · LỖI');
     }
   }
@@ -7252,8 +7255,8 @@ window.addEventListener('beforeunload',save);
     const stamp=Date.now();
     const sources=[
       './ota/manifest.json?ts='+stamp,
-      'https://raw.githubusercontent.com/letan99vl/Blink-Redleo/main/ota/manifest.json?ts='+stamp,
-      'https://cdn.jsdelivr.net/gh/letan99vl/Blink-Redleo@main/ota/manifest.json?ts='+stamp
+      'https://raw.githubusercontent.com/letan99vl/Blink-QH/main/ota/manifest.json?ts='+stamp,
+      'https://cdn.jsdelivr.net/gh/letan99vl/Blink-QH@main/ota/manifest.json?ts='+stamp
     ];
     let lastErr=null;
     for(const src of sources){
@@ -7361,41 +7364,49 @@ window.addEventListener('beforeunload',save);
     const startStatus=await startWait;
     if(startStatus!=='OTA:BSTART')throw new Error('ESP32 từ chối bắt đầu OTA: '+startStatus);
 
-    let chunkSize=160;
+    // OTA must prioritize correctness over peak throughput. FW images are much
+    // larger than ECU map frames and ESP32 flash requires strictly sequential
+    // offsets. A single dropped Write Command makes the next offset invalid and
+    // causes OTA:ERR=SEQ. Therefore every firmware packet is an ATT
+    // write-with-response barrier. Start at 100B (safe across our native/web
+    // bridges) and step down only if the client rejects that payload size.
+    let chunkSize=100;
     let offset=0;
     let packetNo=0;
     otaBleFatalError='';
+    otaLastErrorText='';
 
     while(offset<bin.byteLength){
       if(otaBleFatalError)throw new Error(otaBleFatalError);
 
       const count=Math.min(chunkSize,bin.byteLength-offset);
-      const reliable=((packetNo+1)%8===0) || (offset+count>=bin.byteLength);
       try{
-        await writeBleFirmwareChunk(offset,bin.subarray(offset,offset+count),reliable);
+        await writeBleFirmwareChunk(offset,bin.subarray(offset,offset+count),true);
         offset+=count;
         packetNo++;
       }catch(e){
-        // If the negotiated ATT size is smaller than expected, step down.
-        // Restarting from the same offset is safe because the failed GATT write
-        // was not accepted by ESP32.
+        // The failed packet is retried from the same offset at a smaller ATT
+        // payload. ESP32 already accepts duplicate fully-written offsets.
         if(chunkSize>12 && !otaBleFatalError){
-          chunkSize=chunkSize>100?100:chunkSize>60?60:chunkSize>20?20:12;
+          chunkSize=chunkSize>60?60:chunkSize>20?20:12;
           packetNo=0;
-          await new Promise(r=>setTimeout(r,20));
+          await new Promise(r=>setTimeout(r,25));
           continue;
         }
         throw e;
       }
 
+      // Allow a status notification (especially OTA:ERR=SEQ/FLASH) to beat the
+      // next packet onto the JS event loop.
+      await new Promise(r=>setTimeout(r,1));
       if(otaBleFatalError)throw new Error(otaBleFatalError);
 
       const pct=Math.floor(offset*100/bin.byteLength);
       if($('otaProgress'))$('otaProgress').value=pct;
 
-      // A tiny yield between packets keeps Bluefy responsive. The actual hard
-      // flow-control point is every 8th with-response packet above.
-      if(!reliable)await new Promise(r=>setTimeout(r,2));
+      // Periodic UI yield; transport itself is already flow-controlled by the
+      // write-with-response on every packet.
+      if((packetNo%64)===0)await new Promise(r=>setTimeout(r,4));
     }
 
     const doneWait=waitOtaStatus(t=>t==='OTA:DONE'||t.startsWith('OTA:ERR='),12000);
@@ -7437,11 +7448,13 @@ window.addEventListener('beforeunload',save);
     }catch(e){
       otaBleTransferActive=false;
       const firstOtaError=otaBleFatalError;
+      const raw=String(firstOtaError||e&&e.message||e);
+      if(!otaLastErrorText)otaLastErrorText=raw;
       try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){}
       otaBleFatalError='';
       try{window.BlinkRealProtocol?.resumeAfterOta?.()}catch(_e){}
       setOtaControlsBusy(false);
-      setOtaInfo('Cập nhật thất bại: '+String(firstOtaError||e&&e.message||e),'error');
+      setOtaInfo('Cập nhật thất bại: '+otaLastErrorText,'error');
       setEcuTaskStatus('error','UPDATE ESP32 · LỖI');
     }
   }
