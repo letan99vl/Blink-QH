@@ -71,3 +71,12 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Man tuneScreen cu duoc giu an trong DOM de bao toan mode/3-run state, khong con route hien thi.
 - Chuyen recordBtn vao toolbar editor va chi hien khi tab measured; button doi GHI AFR / DUNG GHI AFR theo recording state.
 - Khong trung ID sau patch.
+
+## Full core restore v1.0.18
+- Root cause: sau khi clone, workflow `apply-real-protocol.yml` da tu giai nen snapshot cu trong `tools/*.gz.b64` va ghi de `redleo_real_protocol.js`, lam QH chi con protocol ~39 KB thay vi loi day du ~259 KB.
+- Da vo hieu hoa legacy installer nay trong Blink-QH; ESP32-S3 khong duoc dung cho du an QH.
+- `redleo_real_protocol.js` da khoi phuc 1:1 tu `Blink-Redleo/main`, blob SHA `51777e874a776f633e0b318665b57c736fabbf07`.
+- Phan cung QH dung ESP32 thuong, FW 1.8. Source FW1.8 lay tu REDLEO commit `f5ade0d61502ab1a8544aa7c413f6be71c449e97`.
+- OTA manifest QH: version 1.8, URL tro ve `Blink-QH/main/ota/blink_esp32.bin`.
+- Regression run `37598502058`: PASS syntax, row orientation, map selection, AFR cross-family, injection cam calculator, ECU feature matrix, V8, 9.1X, V9 routing, 9.2 page6, V10.2 page6/A2, Ultra Pro1 page6/A2, Ultra Pro2.
+- Khong thay doi QH skin/home flow; day la khoi phuc core chuc nang.
