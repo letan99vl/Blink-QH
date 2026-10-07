@@ -8,13 +8,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = '3.79.65';
-  document.title = 'BLINK TL · P.b v' + window.BLINK_PB_VERSION;
+  window.BLINK_PB_VERSION = 'QH-1.0.0';
+  document.title = 'QH ECU · v1.0.0';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="Blink TL" />
+<meta name="apple-mobile-web-app-title" content="QH ECU" />
 <style>
   :root{--bg:#0c1420;--panel:#121f2e;--panel2:#17283a;--line:#2b91d4;--head:#337eaf;--text:#edf6ff;--muted:#91a9bc;--ok:#21c55d;--warn:#f3b53f;--danger:#f45b69;--accent:#0b92de;--cell:#f8fbfe;--cellText:#111820}
   *{box-sizing:border-box}
@@ -1986,6 +1986,65 @@
     font-size:10px!important;
   }
 
+
+  /* ===== QH ECU CUSTOMER SKIN v1.0 ===== */
+  :root{
+    --bg:#050606;--panel:#0b0c0d;--panel2:#111315;--line:#d5a91e;--head:#17191a;
+    --text:#f3f3ef;--muted:#a7a99f;--accent:#d7a91c;--warn:#e2b62c;
+    --ios-bg:#050606;--ios-card:#0b0c0d;--ios-card2:#111315;--ios-line:#4b4120;--ios-blue:#d7a91c;
+  }
+  html,body{
+    background:
+      radial-gradient(circle at 15% 0%,rgba(219,177,37,.10),transparent 28%),
+      linear-gradient(135deg,#030404 0%,#090a0b 45%,#030404 100%)!important;
+    color:#f3f3ef;
+  }
+  body::before{
+    background:
+      repeating-linear-gradient(125deg,rgba(255,255,255,.012) 0 1px,transparent 1px 5px),
+      linear-gradient(160deg,transparent 0 55%,rgba(221,179,39,.035) 56%,transparent 62%)!important;
+  }
+  .bottomNav{display:none!important}
+  .app{padding-bottom:max(7px,env(safe-area-inset-bottom))!important}
+  .logoLockup{font-style:italic;letter-spacing:.7px;text-shadow:0 2px 10px #000}
+  .logoLockup b{color:#e4b72b;font-size:1.32em}
+  .qhRacing{display:inline-block;font-size:.52em;letter-spacing:2.2px;color:#e7e2d3;margin-left:5px;vertical-align:middle}
+  .logoSub{color:#a9a99f!important;letter-spacing:.7px}
+  .dashTop,.screenHeader,.miniCard,.heroCard,.wideCard,.menuCard,.optPanel,.settings,.tuneHero,.tuneNote,.sourceNote{
+    border-color:rgba(213,169,30,.30)!important;
+    background:linear-gradient(180deg,rgba(18,20,21,.97),rgba(7,8,9,.98))!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 8px 22px rgba(0,0,0,.35);
+  }
+  button.primary,.tab.active,.mapBankBtn.active{background:linear-gradient(180deg,#e0b52a,#a87805)!important;color:#080808!important}
+  .screenTitle,.groupHead h3{color:#eee9dc}
+  .screenSub,.groupHead span{color:#b8a86f}
+  .qhMainMenu{display:grid;gap:7px;margin:10px 0 12px}
+  .qhMenuRow{
+    position:relative;display:grid;grid-template-columns:42px minmax(0,1fr) auto 18px;align-items:center;gap:8px;
+    width:100%;min-height:58px;padding:8px 10px;border:1px solid #45484a;border-radius:10px;
+    background:linear-gradient(180deg,#121416,#070809);color:#f4f2ea;text-align:left;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.055),0 5px 14px rgba(0,0,0,.35);
+  }
+  .qhMenuRow:active{transform:translateY(1px);border-color:#d7a91c}
+  .qhMenuIcon{width:34px;height:34px;display:grid;place-items:center;font-size:23px;color:#e0b52a}
+  .qhMenuText{display:grid;gap:2px;min-width:0}
+  .qhMenuText b{font-size:17px;letter-spacing:.2px}
+  .qhMenuText small{font-size:10px;color:#8f928d;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qhChevron{font-size:31px;font-weight:300;color:#e8e8e2;line-height:1}
+  .qhMini3d{font-size:9px;color:#d8b64a;border:1px solid #75611c;border-radius:5px;padding:4px 5px;background:#12130d;white-space:nowrap}
+  .qhBackBtn{
+    width:38px;height:38px;min-width:38px;padding:0!important;border-radius:50%;display:grid;place-items:center;
+    background:linear-gradient(180deg,#252728,#101112)!important;border:1px solid #595b5c!important;
+    color:#f7f5eb!important;font-size:29px!important;font-weight:500!important;line-height:1!important;margin-right:8px;
+  }
+  .qhBackBtn:active{border-color:#d7a91c!important;color:#e7bd37!important}
+  .screenHeader{display:flex!important;align-items:center!important}
+  @media(max-width:520px){
+    .qhMenuRow{min-height:55px;grid-template-columns:38px minmax(0,1fr) auto 16px;padding:7px 8px}
+    .qhMenuText b{font-size:15px}.qhMini3d{font-size:8px;padding:3px 4px}
+    .qhMenuIcon{font-size:21px;width:30px}.qhChevron{font-size:27px}
+  }
+
 </style>
 </head>
 <body>
@@ -1996,10 +2055,10 @@
 
   <section id="dashboardScreen" class="screen active scrollScreen">
     <div class="dashTop">
-      <div><div class="logoLockup"><b>BLINK</b> TL</div><div class="logoSub">ECU PERFORMANCE · <span id="appBuildLabel">P.b v—</span></div></div>
+      <div><div class="logoLockup"><b>QH</b> ECU <span class="qhRacing">RACING</span></div><div class="logoSub">QH ECU PERFORMANCE · <span id="appBuildLabel">V1.0.0</span></div></div>
       <div class="mapChip"><span>MAP</span><select id="mapSelect"><option value="1">NO.1</option><option value="2">NO.2</option><option value="3">NO.3</option><option value="4">NO.4</option></select></div>
     </div>
-    <div class="dashConnect"><button id="connectEcuBtn" class="primary">KẾT NỐI ECU BLINK</button><button id="disconnectEcuBtn" class="ghost">NGẮT</button><button id="fullscreenBtn" class="ghost" type="button">⛶</button></div>
+    <div class="dashConnect"><button id="connectEcuBtn" class="primary">KẾT NỐI QH ECU</button><button id="disconnectEcuBtn" class="ghost">NGẮT</button><button id="fullscreenBtn" class="ghost" type="button">⛶</button></div>
     <div class="gaugeZone">
       <div id="rpmGauge" class="rpmGauge">
         <div class="gaugeTicks"><span class="t0">0</span><span class="t25">2.5</span><span class="t5">5</span><span class="t75">7.5</span><span class="t10">10</span><span class="t125">12.5</span><span class="t15">15</span></div>
@@ -2023,23 +2082,30 @@
     </div>
     <div class="wideGrid"><div class="wideCard"><div class="k">GÓC ĐÁNH LỬA</div><div class="v" id="ignLive">--°</div></div><div class="wideCard"><div class="k">THỜI GIAN PHUN</div><div class="v" id="dashPw">0.00 ms</div></div></div>
     <div class="miniCard" style="margin-bottom:9px;text-align:left"><div class="k">Ô HIỆN TẠI</div><div class="v" id="cellLive">--</div></div>
-    <div class="dashActions"><button class="raceBtn" type="button" data-nav="maps">▰ BẢN ĐỒ</button><button class="autoBtn" type="button" data-nav="tune">✦ CHỨC NĂNG AUTO TUNE</button></div>
+    <div class="qhMainMenu">
+      <button class="qhMenuRow" type="button" data-nav="settings"><span class="qhMenuIcon">🔧</span><span class="qhMenuText"><b>TÙY CHỌN</b><small>Thiết lập hệ thống</small></span><span class="qhChevron">›</span></button>
+      <button class="qhMenuRow" type="button" data-nav="ecu"><span class="qhMenuIcon">▦</span><span class="qhMenuText"><b>ECU</b><small>Đọc / ghi và tùy chọn ECU</small></span><span class="qhChevron">›</span></button>
+      <button class="qhMenuRow" type="button" data-nav="maps"><span class="qhMenuIcon">▱</span><span class="qhMenuText"><b>BẢN ĐỒ</b><small>Fuel · Ignition · Compensation</small></span><span class="qhChevron">›</span></button>
+      <button class="qhMenuRow" type="button" data-nav="tune"><span class="qhMenuIcon">◎</span><span class="qhMenuText"><b>AUTO TUNE</b><small>AFR · học phản ứng · bù map</small></span><span class="qhChevron">›</span></button>
+      <button class="qhMenuRow qhDataRow" type="button" data-nav="maps"><span class="qhMenuIcon">◉</span><span class="qhMenuText"><b>DỮ LIỆU</b><small>3D FUEL MAP</small></span><span class="qhMini3d">3D FUEL MAP</span><span class="qhChevron">›</span></button>
+      <button class="qhMenuRow" type="button" data-nav="dashboard"><span class="qhMenuIcon">↗</span><span class="qhMenuText"><b>DỮ LIỆU</b><small>Live engine data</small></span><span class="qhChevron">›</span></button>
+    </div>
   </section>
 
 
   <section id="mapsScreen" class="screen scrollScreen">
-    <div class="screenHeader"><div class="screenTitleWrap"><div class="screenTitle">Bản Đồ ECU</div><div class="screenSub" id="mapsProfileSub">AUTO ECU PROFILE · chờ nhận diện</div></div><div id="mapBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="dashboard" aria-label="Quay về">‹</button><div class="screenTitleWrap"><div class="screenTitle">Bản Đồ ECU</div><div class="screenSub" id="mapsProfileSub">AUTO ECU PROFILE · chờ nhận diện</div></div><div id="mapBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
     <div class="mapBankBar"><button class="mapBankBtn active" data-mapbank="1">NO.1</button><button class="mapBankBtn" data-mapbank="2">NO.2</button><button class="mapBankBtn" data-mapbank="3">NO.3</button><button class="mapBankBtn" data-mapbank="4">NO.4</button></div>
     <div class="groupHead"><h3>BẢN ĐỒ CHÍNH</h3><span>MAIN MAPS</span></div><div class="menuGrid"><button class="menuCard featureCard" data-feature="inj_ve"><div class="menuIcon">◉</div><span class="srcTag">INJ VE</span><h3>Thời gian phun</h3><p>INJ VE · TPS × RPM</p><span class="menuCode">MAP_01</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="inj_degree"><div class="menuIcon">◒</div><span class="srcTag">INJ degree</span><h3>Góc phun</h3><p>Thời điểm phun · TPS × RPM</p><span class="menuCode">MAP_02</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="ign_degree"><div class="menuIcon">ϟ</div><span class="srcTag">IGN degree</span><h3>Góc đánh lửa</h3><p>TPS × RPM</p><span class="menuCode">MAP_03</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="ign_time"><div class="menuIcon">⌁</div><span class="srcTag">IGN Time</span><h3>Dwell bobin</h3><p>Thời gian tích điện theo RPM</p><span class="menuCode">MAP_04</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="afr_map"><div class="menuIcon">λ</div><span class="srcTag">Air fuel ratio</span><h3>Air fuel ratio</h3><p>Auto tuner zin của ECU · TPS × RPM · ON/OFF từng ô</p><span class="menuCode">MAP_05</span><span class="menuArrow">›</span></button></div>
     <div class="groupHead"><h3>BÙ TRỪ</h3><span>COMPENSATIONS</span></div><div class="menuGrid"><button class="menuCard featureCard" data-feature="ect_inj"><div class="menuIcon">♨</div><span class="srcTag">ECT Comp INJ</span><h3>Bù phun theo ECT</h3><p>Nhiệt độ máy × RPM</p><span class="menuCode">COMP_01</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="ect_ign"><div class="menuIcon">ϟ</div><span class="srcTag">ECT Comp IGN</span><h3>Bù đánh lửa theo ECT</h3><p>Nhiệt độ máy × RPM</p><span class="menuCode">COMP_02</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="map_inj"><div class="menuIcon">◫</div><span class="srcTag">MAP Comp INJ</span><h3>Bù phun theo MAP</h3><p>Áp suất nạp × RPM</p><span class="menuCode">COMP_03</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="iat_inj"><div class="menuIcon">≈</div><span class="srcTag">IAT Compensating Injection</span><h3>Bù phun theo IAT</h3><p>Nhiệt độ khí nạp</p><span class="menuCode">COMP_04</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="ect_start"><div class="menuIcon">S</div><span class="srcTag">Start Add Injection</span><h3>Bù khởi động theo ECT</h3><p>Delay · INJ Add · Start Assist</p><span class="menuCode">COMP_05</span><span class="menuArrow">›</span></button></div>
     <div class="groupHead"><h3>GARANTI / KHÔNG TẢI</h3><span>IDLE</span></div><div class="menuGrid"><button class="menuCard featureCard" data-feature="idle_limit"><div class="menuIcon">◌</div><span class="srcTag">Idle and limit</span><h3>Không tải & giới hạn tua</h3><p>Bảng Idle and limit</p><span class="menuCode">IDLE_01</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="ect_idle_motor"><div class="menuIcon">◎</div><span class="srcTag">Temperature-idle motor relationship</span><h3>Motor garanti theo ECT</h3><p>Nhiệt độ máy → step/duty</p><span class="menuCode">IDLE_02</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="map_idle_motor"><div class="menuIcon">◍</div><span class="srcTag">Intake pressure compensation idle motor</span><h3>Bù garanti theo MAP</h3><p>Áp suất nạp → motor garanti</p><span class="menuCode">IDLE_03</span><span class="menuArrow">›</span></button></div>
     <div class="groupHead"><h3>PHỤ TRỢ</h3><span>AUXILIARY</span></div><div class="menuGrid"><button class="menuCard featureCard" data-feature="external_adjust"><div class="menuIcon">±</div><span class="srcTag">External adjustment</span><h3>Hiệu chỉnh ngoài</h3><p>Phun ±% · đánh lửa ±°</p><span class="menuCode">AUX_01</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="auto_shift"><div class="menuIcon">⇧</div><span class="srcTag">Automatic shift</span><h3>Sang số tự động</h3><p>Start RPM · INJ/IGN · 4000–12000</p><span class="menuCode">AUX_02</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="auto_clutch"><div class="menuIcon">◫</div><span class="srcTag">Automatic clutch</span><h3>Ly hợp tự động</h3><p>Thông số điều khiển ly hợp</p><span class="menuCode">AUX_03</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="chg_params"><div class="menuIcon">C</div><span class="srcTag">Charger Parameters</span><h3>Thông số bộ sạc</h3><p>RPM - Current - Voltage</p><span class="menuCode">AUX_04</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="ate_options"><div class="menuIcon">O</div><span class="srcTag">ECU options</span><h3>Tuỳ chọn ECU</h3><p>REDLEO V10 / ATE V11</p><span class="menuCode">AUX_05</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="alternate_table"><div class="menuIcon">A</div><span class="srcTag">Alternate Table</span><h3>Alternate Table</h3><p>Raw 0–255 · RPM 1000–5000</p><span class="menuCode">AUX_06</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="spare"><div class="menuIcon">◇</div><span class="srcTag">Spare</span><h3>Bảng dự phòng</h3><p>Giữ nguyên Spare</p><span class="menuCode">AUX_07</span><span class="menuArrow">›</span></button></div>
     <div class="groupHead"><h3>HIỆU CHUẨN CẢM BIẾN</h3><span>SENSOR VOLTAGE / AXIS</span></div><div class="menuGrid"><button class="menuCard featureCard" data-feature="v_ect"><div class="menuIcon">♨</div><span class="srcTag">ECT - Voltage Relation</span><h3>Điện áp ECT</h3><p>Hiệu chuẩn nhiệt độ máy</p><span class="menuCode">SNS_01</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="v_iat"><div class="menuIcon">≈</div><span class="srcTag">IAT - Voltage Relation</span><h3>Điện áp IAT</h3><p>Hiệu chuẩn nhiệt độ khí nạp</p><span class="menuCode">SNS_02</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="v_map"><div class="menuIcon">◉</div><span class="srcTag">MAP - Voltage Relation</span><h3>Điện áp MAP</h3><p>Hiệu chuẩn áp suất nạp</p><span class="menuCode">SNS_03</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="tps_axis"><div class="menuIcon">T</div><span class="srcTag">TPS Axis</span><h3>Trục TPS V10 / Ultra</h3><p>14 breakpoint TPS</p><span class="menuCode">SNS_04</span><span class="menuArrow">›</span></button><button class="menuCard featureCard" data-feature="rpm_axis"><div class="menuIcon">R</div><span class="srcTag">RPM Axis</span><h3>Trục RPM V10 / Ultra</h3><p>30 breakpoint RPM</p><span class="menuCode">SNS_05</span><span class="menuArrow">›</span></button></div>
-    <div class="sourceNote"><b>Air fuel ratio</b> là bảng của auto tuner zin trong ECU và có ON/OFF từng ô. <b>AFR mục tiêu của Blink</b> là bảng riêng trong Auto Tune; hai bảng độc lập, không tự ghi đè lẫn nhau.</div>
+    <div class="sourceNote"><b>Air fuel ratio</b> là bảng của auto tuner zin trong ECU và có ON/OFF từng ô. <b>AFR mục tiêu QH</b> là bảng riêng trong Auto Tune; hai bảng độc lập, không tự ghi đè lẫn nhau.</div>
   </section>
 
   <section id="mapEditorScreen" class="screen">
-    <div class="screenHeader"><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="maps" aria-label="Quay lại bản đồ">‹</button><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
     <div class="editToolbar"><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại">‹</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button id="mapZoomBtn" class="ghost" type="button">⛶ PHÓNG TO MAP</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
     <div class="editorInfo"><div class="livebox"><div class="k">TPS / RPM</div><div class="v" data-mirror="cell">--</div></div><div class="livebox"><div class="k">AFR LIVE</div><div class="v" data-mirror="afr">--</div></div><div class="livebox editorEctBox"><div class="k">NHIỆT ĐỘ MÁY ECT</div><div class="v" data-mirror="ect">-- °C</div></div></div>
     <div class="tabs editorTabs"><button class="tab active" data-tab="measured">AFR ĐO (BLINK)</button><button class="tab" data-tab="target">AFR MỤC TIÊU (BLINK)</button><button class="tab" data-tab="inject">THỜI GIAN PHUN</button><button class="tab" data-tab="corrected">MAP ĐÃ BÙ</button></div>
@@ -2145,18 +2211,18 @@
   </section>
 
   <section id="tuneScreen" class="screen scrollScreen">
-    <div class="screenHeader"><div class="screenTitleWrap"><div class="screenTitle">Auto Tune</div><div class="screenSub">Ghi AFR · học phản ứng · bù MAP</div></div><div id="tuneBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="dashboard" aria-label="Quay về">‹</button><div class="screenTitleWrap"><div class="screenTitle">Auto Tune</div><div class="screenSub">Ghi AFR · học phản ứng · bù MAP</div></div><div id="tuneBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
     <div class="tuneHero"><div class="tuneLive"><div class="k">AFR</div><div class="v" data-mirror="afr">--</div></div><div class="tuneLive"><div class="k">RPM</div><div class="v" data-mirror="rpm">0</div></div><div class="tuneLive"><div class="k">TPS</div><div class="v" data-mirror="tps">--%</div></div><div class="tuneLive"><div class="k">Ô HIỆN TẠI</div><div class="v" data-mirror="cell">--</div></div></div>
     <div class="tuneModeRow"><select id="tuneMode"><option value="normal">MODE THƯỜNG</option><option value="three">MODE CHẠY 3 LƯỢT</option></select><button id="recordBtn" class="good">GHI AFR</button></div>
     <div class="recordActions"><button id="clearMeasured" class="danger" style="grid-column:1/-1">XÓA AFR ĐO</button></div><div class="tuneMapLinks"><button class="ghost" data-auto-tab="measured">AFR ĐO CỦA BLINK</button><button class="ghost" data-auto-tab="target">AFR MỤC TIÊU CỦA BLINK</button><button class="ghost" data-auto-tab="corrected">MAP PHUN ĐÃ BÙ</button><button class="ghost" data-auto-tab="inject">THỜI GIAN PHUN</button><button id="tuneApplyCorrectedBtn" class="danger tuneApplyCorrected" type="button">✦ MAP PHUN ĐÃ BÙ → ECU</button></div>
     <div id="threeRunPanel" class="threePanel" hidden><button id="threeRunStartBtn" class="good">BẮT ĐẦU 3 LƯỢT</button><button id="threeRunStepBtn" class="primary" disabled>KẾT THÚC LƯỢT</button><button id="threeRunCancelBtn" class="danger" disabled>HỦY PHIÊN</button><div id="threeRunStatus" class="threeStatus"><b>Mode chạy 3 lượt:</b> chưa bắt đầu.</div></div>
-    <div class="tuneNote">Lượt 1 đo AFR và tạo MAP kế tiếp. Lượt 2 học phản ứng PW/AFR. Lượt 3 tạo FINAL MAP. Auto Tune Blink giữ nguyên thuật toán; giao tiếp ECU dùng protocol REDLEO REAL qua cầu BLE/UART.</div>
+    <div class="tuneNote">Lượt 1 đo AFR và tạo MAP kế tiếp. Lượt 2 học phản ứng PW/AFR. Lượt 3 tạo FINAL MAP. Auto Tune QH giữ nguyên thuật toán; giao tiếp ECU dùng protocol REDLEO REAL qua cầu BLE/UART.</div>
     <div id="recordBadge" class="badge" style="margin-top:9px;text-align:center">GHI AFR: OFF</div>
   </section>
 
 
   <section id="ecuScreen" class="screen scrollScreen">
-    <div class="screenHeader"><div class="screenTitleWrap"><div class="screenTitle">ECU</div><div class="screenSub">AUTO ECU PROFILE · chờ nhận diện</div></div><div id="ecuBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="dashboard" aria-label="Quay về">‹</button><div class="screenTitleWrap"><div class="screenTitle">ECU</div><div class="screenSub">AUTO ECU PROFILE · chờ nhận diện</div></div><div id="ecuBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
     <div class="groupHead"><h3>ĐỌC / GHI DỮ LIỆU</h3><span>DATA</span></div>
     <div class="ecuOpsGrid"><button data-ecucmd="READ_CURRENT" class="good">↓ ĐỌC HIỆN TẠI</button><button data-ecucmd="SEND_CURRENT" class="danger">▣ GỬI HIỆN TẠI</button><button data-ecucmd="READ_ALL" class="good">⇩ ĐỌC TOÀN BỘ</button><button data-ecucmd="SEND_ALL" class="danger">⇧ GỬI TOÀN BỘ</button><button id="restoreEcuBtn" data-ecucmd="RESTORE" class="danger wide">↺ KHÔI PHỤC DỮ LIỆU GỐC</button></div>
     <div class="groupHead"><h3>SAO CHÉP MAP / FILE</h3><span>TOOLS</span></div>
@@ -2183,18 +2249,18 @@
     <div class="optPanel"><h3>Công tắc / chức năng</h3><div class="toggleGrid"><label class="toggleItem"><input data-ecutoggle="idleMotor" type="checkbox"><span>Motor garanti<br><small style="color:#65565a">Idle Motor</small></span></label><label class="toggleItem"><input data-ecutoggle="solenoid" type="checkbox"><span>Van điện từ<br><small style="color:#65565a">Solenoidvalve</small></span></label><label class="toggleItem"><input data-ecutoggle="sideStand" type="checkbox"><span>Chân chống bên (Single Stand)<br><small style="color:#65565a">Single Stand</small></span></label><label class="toggleItem"><input data-ecutoggle="startRelay" type="checkbox"><span>Rơ-le đề<br><small style="color:#65565a">Starting Relay</small></span></label><label class="toggleItem"><input data-ecutoggle="tpsVoltDisp" type="checkbox"><span>Hiển thị điện áp TPS<br><small style="color:#65565a">TPS (Voltage Display)</small></span></label><label class="toggleItem"><input data-ecutoggle="tempVoltDisp" type="checkbox"><span>Hiển thị điện áp nhiệt độ<br><small style="color:#65565a">TEMP (Voltage Display)</small></span></label><label class="toggleItem"><input data-ecutoggle="injColor" type="checkbox"><span>Màu hiển thị phun<br><small style="color:#65565a">INJ(Display Color)</small></span></label><label class="toggleItem"><input data-ecutoggle="realData" type="checkbox"><span>Hiển thị dữ liệu thực<br><small style="color:#65565a">Display real data</small></span></label><label class="toggleItem"><input data-ecutoggle="singleTpsIgn" type="checkbox"><span>Góc đánh lửa không liên kết TPS<br><small style="color:#65565a">IGN isn't associated with TPS</small></span></label><label class="toggleItem"><input data-ecutoggle="mapVoltDisp" type="checkbox"><span>Hiển thị điện áp MAP<br><small style="color:#65565a">MAP (Voltage Display)</small></span></label><label class="toggleItem"><input data-ecutoggle="dontMap" type="checkbox"><span>Không dùng MAP<br><small style="color:#65565a">Don't MAP</small></span></label><label class="toggleItem"><input data-ecutoggle="password" type="checkbox"><span>Bật mật khẩu<br><small style="color:#65565a">Enable password</small></span></label><label class="toggleItem"><input data-ecutoggle="tps100Power" type="checkbox"><span>TPS 100% công suất tối đa<br><small style="color:#65565a">TPS 100% Max Power</small></span></label><label class="toggleItem"><input data-ecutoggle="autoClutchEnable" type="checkbox"><span>Bật ly hợp tự động<br><small style="color:#65565a">Automatic clutch</small></span></label></div><div class="ecuOpsGrid" style="margin-top:10px"><button data-ecucmd="OPTIONS_READ" class="good">ĐỌC TÙY CHỌN</button><button data-ecucmd="OPTIONS_WRITE" class="danger">GHI TÙY CHỌN</button></div></div>
     <div class="groupHead"><h3>BẢO MẬT ECU</h3><span>PASSWORD</span></div><div class="ecuOpsGrid"><button data-ecucmd="LOGIN">ĐĂNG NHẬP ECU</button><button data-ecucmd="LOGOUT">ĐĂNG XUẤT</button><button data-ecucmd="CHANGE_PASSWORD" class="wide">ĐỔI MẬT KHẨU</button></div>
     <div class="groupHead"><h3>THÔNG TIN ECU</h3><span>SET AND INFO</span></div><div class="infoGrid"><div class="infoCell"><div class="k">ECU Classify</div><div class="v" data-ecuinfo="0">—</div></div><div class="infoCell"><div class="k">ECU Name</div><div class="v" data-ecuinfo="1">—</div></div><div class="infoCell"><div class="k">ECU Model</div><div class="v" data-ecuinfo="2">—</div></div><div class="infoCell"><div class="k">Sum Signal</div><div class="v" data-ecuinfo="3">—</div></div><div class="infoCell"><div class="k">Zero Ignition</div><div class="v" data-ecuinfo="4">—</div></div><div class="infoCell"><div class="k">Zero Injection</div><div class="v" data-ecuinfo="5">—</div></div><div class="infoCell"><div class="k">Firmware</div><div class="v" data-ecuinfo="6">—</div></div><div class="infoCell"><div class="k">Date data</div><div class="v" data-ecuinfo="7">—</div></div><div class="infoCell" style="grid-column:1/-1"><div class="k">Protocol Profile</div><div class="v" data-ecuinfo="8" data-ecuprofile>ECU CHƯA XÁC ĐỊNH · SAFE MODE</div></div></div><button data-ecucmd="ECU_INFO" style="width:100%;height:42px;border-radius:12px;margin-top:8px">ĐỌC THÔNG TIN ECU</button>
-    <div class="dangerNote">AFR Control + nguồn O2 là cấu hình ECU. <b>Air fuel ratio</b> zin ECU nằm trong tab Bản đồ; <b>AFR đo / AFR mục tiêu của Blink</b> chỉ nằm trong Auto Tune và không dùng chung dữ liệu.</div>
+    <div class="dangerNote">AFR Control + nguồn O2 là cấu hình ECU. <b>Air fuel ratio</b> zin ECU nằm trong tab Bản đồ; <b>AFR đo / AFR mục tiêu QH</b> chỉ nằm trong Auto Tune và không dùng chung dữ liệu.</div>
   </section>
 
   <section id="settingsScreen" class="screen scrollScreen">
-    <div class="screenHeader"><div class="screenTitleWrap"><div class="screenTitle">Thiết Lập</div><div class="screenSub">BLE · Học TPS ECU · Auto Tune Blink</div></div><div id="settingsBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="dashboard" aria-label="Quay về">‹</button><div class="screenTitleWrap"><div class="screenTitle">Thiết Lập</div><div class="screenSub">BLE · Học TPS ECU · Auto Tune QH</div></div><div id="settingsBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
     <div class="settingsTiles">
       <div class="settingTile"><div class="menuIcon">⚙</div><h3>Tùy Chọn</h3><p>Thông số hệ thống</p><span class="tiny">SYS_01</span></div>
       <div class="settingTile"><div class="menuIcon">⌁</div><h3>Điện áp</h3><p>TPS / AFR của Blink</p><span class="tiny">SYS_02</span></div>
-      <div class="settingTile"><div class="menuIcon">◉</div><h3>ECU Blink</h3><p>Kết nối cầu ECU</p><span class="tiny">SYS_04</span></div>
+      <div class="settingTile"><div class="menuIcon">◉</div><h3>QH ECU</h3><p>Kết nối cầu ECU</p><span class="tiny">SYS_04</span></div>
       <div class="settingTile"><div class="menuIcon">↻</div><h3>Firmware</h3><p>ESP32 OTA qua Wi-Fi</p><span class="tiny">SYS_05</span></div>
     </div>
-    <details class="settings" open><summary>AUTO TUNE / HỌC TPS</summary><div class="settingsGrid"><div class="field"><label>Học TPS thủ công · Min (V)</label><input id="tpsMin" type="number" step="0.001"></div><div class="field"><label>Học TPS thủ công · Max (V)</label><input id="tpsMax" type="number" step="0.001"></div><div class="field"><label>Ổn định ô (ms)</label><input id="settleMs" type="number" min="0" step="1" value="0"></div><div class="field"><label>AFR IO4 · Điện áp Min (V)</label><input id="afrVoltMin" type="number" min="0" max="5" step="0.001" value="0"></div><div class="field"><label>AFR IO4 · Điện áp Max (V)</label><input id="afrVoltMax" type="number" min="0.01" max="5" step="0.001" value="2.66"></div><div class="field"><label>AFR IO4 · AFR Min</label><input id="afrValueMin" type="number" min="5" max="25" step="0.1" value="9.0"></div><div class="field"><label>AFR IO4 · AFR Max</label><input id="afrValueMax" type="number" min="5.1" max="30" step="0.1" value="18.0"></div><div class="field"><label>AFR delay (ms)</label><input id="afrDelayMs" type="number" min="0" step="50" value="0"></div><div class="field"><label>Giới hạn bù thường (%)</label><input id="limitPct" type="number" min="0" max="500" step="1" value="100"></div><div class="field"><label>Giới hạn bước thích nghi (%)</label><input id="threeRunLimitPct" type="number" min="1" max="100" step="1" value="30"></div></div><div class="toolrow" style="margin-top:9px"><button id="learnMin">HỌC TPS THỦ CÔNG · MIN</button><button id="learnMax">HỌC TPS THỦ CÔNG · MAX</button><button id="studyTpsBtn" class="primary">HỌC TPS ECU · TỰ NHẬN DIỆN</button></div><div class="hint">Học TPS thủ công chỉ lấy điện áp Min/Max hiện tại cho Auto Tune Blink, không gửi lệnh học TPS vào ECU.</div><div class="hint" id="studyTpsInfo">Học TPS ECU sẽ tự chọn quy trình theo mẫu ECU sau khi nhận diện.</div><div class="hint" id="ecuDiag">BLE: chờ kết nối ECU Blink · protocol REDLEO REAL.</div></details>
+    <details class="settings" open><summary>AUTO TUNE / HỌC TPS</summary><div class="settingsGrid"><div class="field"><label>Học TPS thủ công · Min (V)</label><input id="tpsMin" type="number" step="0.001"></div><div class="field"><label>Học TPS thủ công · Max (V)</label><input id="tpsMax" type="number" step="0.001"></div><div class="field"><label>Ổn định ô (ms)</label><input id="settleMs" type="number" min="0" step="1" value="0"></div><div class="field"><label>AFR IO4 · Điện áp Min (V)</label><input id="afrVoltMin" type="number" min="0" max="5" step="0.001" value="0"></div><div class="field"><label>AFR IO4 · Điện áp Max (V)</label><input id="afrVoltMax" type="number" min="0.01" max="5" step="0.001" value="2.66"></div><div class="field"><label>AFR IO4 · AFR Min</label><input id="afrValueMin" type="number" min="5" max="25" step="0.1" value="9.0"></div><div class="field"><label>AFR IO4 · AFR Max</label><input id="afrValueMax" type="number" min="5.1" max="30" step="0.1" value="18.0"></div><div class="field"><label>AFR delay (ms)</label><input id="afrDelayMs" type="number" min="0" step="50" value="0"></div><div class="field"><label>Giới hạn bù thường (%)</label><input id="limitPct" type="number" min="0" max="500" step="1" value="100"></div><div class="field"><label>Giới hạn bước thích nghi (%)</label><input id="threeRunLimitPct" type="number" min="1" max="100" step="1" value="30"></div></div><div class="toolrow" style="margin-top:9px"><button id="learnMin">HỌC TPS THỦ CÔNG · MIN</button><button id="learnMax">HỌC TPS THỦ CÔNG · MAX</button><button id="studyTpsBtn" class="primary">HỌC TPS ECU · TỰ NHẬN DIỆN</button></div><div class="hint">Học TPS thủ công chỉ lấy điện áp Min/Max hiện tại cho Auto Tune QH, không gửi lệnh học TPS vào ECU.</div><div class="hint" id="studyTpsInfo">Học TPS ECU sẽ tự chọn quy trình theo mẫu ECU sau khi nhận diện.</div><div class="hint" id="ecuDiag">BLE: chờ kết nối QH ECU · protocol REDLEO REAL.</div></details>
 
     <details class="settings" id="otaSettings"><summary>CẬP NHẬT FIRMWARE ESP32 · OTA</summary>
       <div class="settingsGrid">
@@ -2213,7 +2279,6 @@
     </details>
   </section>
 
-  <nav class="bottomNav"><button class="navBtn active" data-nav="dashboard"><span class="ico">◉</span>TRANG CHỦ</button><button class="navBtn" data-nav="maps"><span class="ico">▦</span>BẢN ĐỒ</button><button class="navBtn" data-nav="tune"><span class="ico">✦</span>AUTO TUNE</button><button class="navBtn" data-nav="ecu"><span class="ico">◆</span>ECU</button><button class="navBtn" data-nav="settings"><span class="ico">⚙</span>THIẾT LẬP</button></nav>
 
   <div class="compatHidden">
     <span id="ecuBadge" class="badge bad">BLE: OFF</span><span id="afrBadge" class="badge bad">AFR: OFF</span>
@@ -3688,7 +3753,7 @@ function afrStreamReady(maxAgeMs=2200){
 }
 async function startThreeRunSession(){
   if(state.mode!=='three')setTuneMode('three');if(state.threeRun.active)return;
-  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước khi bắt đầu 3 lượt.');if(!afrStreamReady())return alert('Chưa nhận được AFR BLE gần đây. Hãy kiểm tra AFR ECU Blink trước khi bắt đầu 3 lượt.');if(state.ecuPhase!=='live')return alert('ECU đang bận. Hãy chờ Live ổn định.');
+  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước khi bắt đầu 3 lượt.');if(!afrStreamReady())return alert('Chưa nhận được AFR BLE gần đây. Hãy kiểm tra AFR QH ECU trước khi bắt đầu 3 lượt.');if(state.ecuPhase!=='live')return alert('ECU đang bận. Hãy chờ Live ổn định.');
   if(fuelMapSyncUnknown(state.activeMap))return alert('MAP ECU chưa xác định sau một lần ghi lỗi. Hãy ĐỌC HIỆN TẠI thành công trước khi bắt đầu 3 lượt.');
   if(!await ensureActiveEcuAxes(true))return;
   if(!tpsTelemetryFresh())return alert('Chưa có dữ liệu TPS/RPM live mới từ ECU. Hãy chờ Live hoạt động rồi bắt đầu 3 lượt.');
@@ -5383,18 +5448,18 @@ window.addEventListener('beforeunload',save);
         setFuelMapSyncUnknown(mapRx.mapNo,false);
         if(state.activeMap===mapRx.mapNo&&(state.tab==='inject'||state.tab==='corrected'))render();
         saveSoon();
-        showEcuNotice('success','ĐỌC MAP BLE THÀNH CÔNG','Đã nhận đủ 420/420 ô từ ECU Blink.');
+        showEcuNotice('success','ĐỌC MAP BLE THÀNH CÔNG','Đã nhận đủ 420/420 ô từ QH ECU.');
       }
     }else if(text.startsWith('PONG')){
       acceptBridgePong(text);
       const fw=text.replace(/^PONG\s*/,'').trim()||'FW cũ';
-      showEcuNotice('success','ECU Blink BLE OK','Kết nối hai chiều hoạt động · Bridge '+fw+'.');
+      showEcuNotice('success','QH ECU BLE OK','Kết nối hai chiều hoạt động · Bridge '+fw+'.');
     }else if(text.startsWith('TPS_OK')){
       showEcuNotice('success','TPS STUDY TEST',text);
     }else if(text.startsWith('ERR')){
-      showEcuNotice('error','ECU Blink BLE ERROR',text,0);
+      showEcuNotice('error','QH ECU BLE ERROR',text,0);
     }else{
-      flashSave('ECU Blink: '+text);
+      flashSave('QH ECU: '+text);
     }
   }
 
@@ -5407,13 +5472,13 @@ window.addEventListener('beforeunload',save);
       connectBtn.textContent='✓ ĐÃ NHẬN · ĐANG QUÉT...';
       setTimeout(()=>{
         connectBtn.classList.remove('connectAck');
-        if(!state.ecuConnected)connectBtn.textContent='KẾT NỐI ECU BLINK';
+        if(!state.ecuConnected)connectBtn.textContent='KẾT NỐI QH ECU';
       },900);
     }
     try{
       setEcuTaskStatus('loading','ĐANG KẾT NỐI ECU...');
       if(!navigator.bluetooth)throw new Error('Trình duyệt này không có Web Bluetooth. Hãy mở URL HTTPS bằng Bluefy.');
-      $('ecuBadge').textContent='BLE: ĐANG CHỌN ECU BLINK...';$('ecuBadge').className='badge';
+      $('ecuBadge').textContent='BLE: ĐANG CHỌN QH ECU...';$('ecuBadge').className='badge';
       device=await navigator.bluetooth.requestDevice({
         filters:[{namePrefix:'BLINK-REDLEO'}],
         optionalServices:[BLE.SERVICE]
@@ -5429,9 +5494,9 @@ window.addEventListener('beforeunload',save);
       await statusChar.startNotifications();statusChar.addEventListener('characteristicvaluechanged',parseStatus);
       window.blinkLiveChar=liveChar;window.blinkMapChar=mapChar;window.blinkCommandChar=commandChar;window.blinkStatusChar=statusChar;window.blinkWriteCommand=writeCommand;
       window.blinkBridgeFirmwareStatus='';
-      setBleUi(true,device.name||'ECU Blink');
+      setBleUi(true,device.name||'QH ECU');
       setEcuTaskStatus('success','ECU ĐÃ KẾT NỐI · OK');
-      $('ecuDiag').textContent='BLE GATT OK · '+(device.name||'ECU Blink');
+      $('ecuDiag').textContent='BLE GATT OK · '+(device.name||'QH ECU');
       $('studyTpsInfo').textContent='BLE thật đã kết nối. Firmware test gửi LIVE và MAP demo; ECU thật sẽ nối ở bước sau.';
       try{if(navigator.bluetooth.setScreenDimEnabled)await navigator.bluetooth.setScreenDimEnabled(false);}catch(_e){}
       const bridgeFw=await ensureBridgeFirmwareStatus(3);
@@ -5453,7 +5518,7 @@ window.addEventListener('beforeunload',save);
     liveChar=commandChar=mapChar=statusChar=service=server=null;window.blinkLiveChar=window.blinkMapChar=window.blinkCommandChar=window.blinkStatusChar=null;window.blinkBridgeFirmwareStatus='';
     setBleUi(false);
     setEcuTaskStatus('offline','ECU ĐÃ NGẮT KẾT NỐI',5000);
-    showEcuNotice('error','ECU Blink ĐÃ NGẮT BLE','Bấm KẾT NỐI ECU BLINK để kết nối lại.');
+    showEcuNotice('error','QH ECU ĐÃ NGẮT BLE','Bấm KẾT NỐI QH ECU để kết nối lại.');
   }
 
   async function disconnectBle(){
@@ -5463,7 +5528,7 @@ window.addEventListener('beforeunload',save);
 
   async function readMapBle(){
     try{
-      if(!state.ecuConnected)return showEcuNotice('error','CHƯA KẾT NỐI BLE','Kết nối ECU Blink trước.');
+      if(!state.ecuConnected)return showEcuNotice('error','CHƯA KẾT NỐI BLE','Kết nối QH ECU trước.');
       mapRx={active:true,mapNo:state.activeMap,packets:0,cells:0,temp:blankMatrix(null),seen:new Set()};
       // Never erase the current map before all 420 cells have arrived.
       await writeCommand('READ_MAP:'+state.activeMap);
@@ -5519,8 +5584,8 @@ window.addEventListener('beforeunload',save);
   $('connectAfrBtn').onclick=()=>{};$('disconnectAfrBtn').onclick=()=>{};
 
   $('disconnectEcuBtn').disabled=true;
-  $('ecuDiag').textContent='BLE TEST: chờ ECU Blink BLINK-REDLEO.';
-  $('studyTpsInfo').textContent='Nạp firmware ECU Blink BLE TEST rồi mở trang này bằng Bluefy qua HTTPS.';
+  $('ecuDiag').textContent='BLE TEST: chờ QH QH ECU-REDLEO.';
+  $('studyTpsInfo').textContent='Nạp firmware QH ECU BLE TEST rồi mở trang này bằng Bluefy qua HTTPS.';
   $('recordBadge').textContent='GHI AFR: OFF';
   window.addEventListener('pagehide',()=>{try{if(device&&device.gatt&&device.gatt.connected)device.gatt.disconnect();}catch(_e){}});
 })();
@@ -5658,7 +5723,7 @@ window.autoReadVisibleEcuPage=autoReadVisibleEcuPage;
 
 let editorReturnScreen='maps';
 function openOurEditor(tab,fromTune=false,returnScreen=null){
-  const names={measured:'AFR đo của Blink',target:'AFR mục tiêu của Blink',inject:'Thời gian phun (INJ VE)',corrected:'MAP phun đã bù của Blink'};
+  const names={measured:'AFR đo QH',target:'AFR mục tiêu QH',inject:'Thời gian phun (INJ VE)',corrected:'MAP phun đã bù của Blink'};
   const screen=document.getElementById('mapEditorScreen');
   const standaloneFuel=tab==='inject'&&!fromTune;
   editorReturnScreen=returnScreen||(fromTune?'tune':'maps');
@@ -6372,9 +6437,9 @@ function renderFeature(){
 }
 function bump(delta){if(!currentFeature)return;if(!redSelectionActive){showEcuNotice('info','CHƯA CHỌN VÙNG','Chạm 2 góc hoặc dùng QUÉT trước khi tăng/giảm.',2500);return}const d=featureData(currentFeature,state.activeMap),b=redBounds();for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++)d[r][c]=Number((Number(d[r][c]||0)+delta).toFixed(4));saveFeatureStore();renderFeature()}
 function smoothCurrent(){if(!currentFeature)return;const d=featureData(currentFeature,state.activeMap),copy=d.map(r=>r.slice());for(let r=0;r<currentFeature.rows;r++)for(let c=0;c<currentFeature.cols;c++){let s=0,n=0;for(let rr=Math.max(0,r-1);rr<=Math.min(currentFeature.rows-1,r+1);rr++)for(let cc=Math.max(0,c-1);cc<=Math.min(currentFeature.cols-1,c+1);cc++){s+=Number(copy[rr][cc]||0);n++}d[r][c]=Number((s/n).toFixed(3))}saveFeatureStore();renderFeature();showEcuNotice('info','ĐÃ LÀM MƯỢT','Đã làm mượt bảng cục bộ. Chỉ ghi ECU khi bạn bấm GHI ECU.') }
-async function cmd(s){if(typeof window.blinkWriteCommand!=='function')throw new Error('Chưa kết nối ECU Blink');return window.blinkWriteCommand(s)}
-async function readFeature(){if(!currentFeature)return;document.getElementById('redIoStatus').textContent='Đang yêu cầu ECU Blink...';try{await cmd('RDF:'+currentFeature.n+':'+(currentFeature.banked?state.activeMap:0))}catch(e){showEcuNotice('error','ĐỌC MAP',e.message,0)}}
-async function writeFeature(){if(!currentFeature)return;const ch=window.blinkMapChar;if(!ch){showEcuNotice('error','GHI MAP','Chưa kết nối ECU Blink',0);return}const d=featureData(currentFeature,state.activeMap);try{await cmd('WRF_BEGIN:'+currentFeature.n+':'+(currentFeature.banked?state.activeMap:0));for(let r=0;r<currentFeature.rows;r++)for(let c=0;c<currentFeature.cols;c+=3){const count=Math.min(3,currentFeature.cols-c),buf=new ArrayBuffer(6+count*4),v=new DataView(buf);v.setUint8(0,0xC2);v.setUint8(1,currentFeature.n);v.setUint8(2,currentFeature.banked?state.activeMap:0);v.setUint8(3,r);v.setUint8(4,c);v.setUint8(5,count);for(let i=0;i<count;i++)v.setFloat32(6+i*4,Number(d[r][c+i]||0),true);const bytes=new Uint8Array(buf);if(ch.writeValueWithoutResponse)await ch.writeValueWithoutResponse(bytes);else await ch.writeValue(bytes)}await cmd('WRF_END:'+currentFeature.n+':'+(currentFeature.banked?state.activeMap:0));document.getElementById('redIoStatus').textContent='Đã gửi bảng qua BLE';}catch(e){showEcuNotice('error','GHI MAP BLE',e.message,0)}}
+async function cmd(s){if(typeof window.blinkWriteCommand!=='function')throw new Error('Chưa kết nối QH ECU');return window.blinkWriteCommand(s)}
+async function readFeature(){if(!currentFeature)return;document.getElementById('redIoStatus').textContent='Đang yêu cầu QH ECU...';try{await cmd('RDF:'+currentFeature.n+':'+(currentFeature.banked?state.activeMap:0))}catch(e){showEcuNotice('error','ĐỌC MAP',e.message,0)}}
+async function writeFeature(){if(!currentFeature)return;const ch=window.blinkMapChar;if(!ch){showEcuNotice('error','GHI MAP','Chưa kết nối QH ECU',0);return}const d=featureData(currentFeature,state.activeMap);try{await cmd('WRF_BEGIN:'+currentFeature.n+':'+(currentFeature.banked?state.activeMap:0));for(let r=0;r<currentFeature.rows;r++)for(let c=0;c<currentFeature.cols;c+=3){const count=Math.min(3,currentFeature.cols-c),buf=new ArrayBuffer(6+count*4),v=new DataView(buf);v.setUint8(0,0xC2);v.setUint8(1,currentFeature.n);v.setUint8(2,currentFeature.banked?state.activeMap:0);v.setUint8(3,r);v.setUint8(4,c);v.setUint8(5,count);for(let i=0;i<count;i++)v.setFloat32(6+i*4,Number(d[r][c+i]||0),true);const bytes=new Uint8Array(buf);if(ch.writeValueWithoutResponse)await ch.writeValueWithoutResponse(bytes);else await ch.writeValue(bytes)}await cmd('WRF_END:'+currentFeature.n+':'+(currentFeature.banked?state.activeMap:0));document.getElementById('redIoStatus').textContent='Đã gửi bảng qua BLE';}catch(e){showEcuNotice('error','GHI MAP BLE',e.message,0)}}
 window.onBlinkFeaturePacket=function(v){if(v.byteLength<10)return;const n=v.getUint8(1),bank=v.getUint8(2),r=v.getUint8(3),c0=v.getUint8(4),count=v.getUint8(5),base=REDLEO_FEATURES.find(x=>x.n===n),f=base?featureForProfile(base.id):null;if(!f||r>=f.rows||c0>=f.cols)return;const d=featureData(f,bank||state.activeMap);for(let i=0;i<count&&c0+i<f.cols&&10+i*4<=v.byteLength;i++)d[r][c0+i]=v.getFloat32(6+i*4,true);saveFeatureStore();if(currentFeature?.id===f.id){currentFeature=f;renderFeature()}document.getElementById('redIoStatus').textContent='RX '+f.title+' · hàng '+(r+1)};
 window.onBlinkStatus=function(text){if(text.startsWith('FEATURE_DONE')){document.getElementById('redIoStatus').textContent='Đọc bảng hoàn tất';showEcuNotice('success','ĐỌC BẢNG THÀNH CÔNG',text)}if(text.startsWith('FEATURE_WRITE_OK'))showEcuNotice('success','GHI BẢNG TEST OK',text);if(text.startsWith('ECU_INFO:')){const vals=text.substring(9).split('|');document.querySelectorAll('[data-ecuinfo]').forEach(el=>el.textContent=vals[+el.dataset.ecuinfo]||'—')}};
 function saveOptions(){document.querySelectorAll('[data-ecuopt]').forEach(e=>optionStore[e.dataset.ecuopt]=e.value);document.querySelectorAll('[data-ecutoggle]').forEach(e=>optionStore[e.dataset.ecutoggle]=e.checked);localStorage.setItem('blinkRedleoOptionsV6',JSON.stringify(optionStore))}
