@@ -19,6 +19,7 @@
 
   ECU protocol: 38400 baud, 8 data bits, even parity, 2 stop bits (8E2).
   BLE advertised name intentionally stays BLINK-REDLEO for compatibility with
+  QH FW2.2 recovery: exact Blink FW2.0 ECU bridge behavior, QH OTA endpoint.
   the existing iOS/Android device filter.
 
   IMPORTANT: set ECU_RX_PIN and ECU_TX_PIN to the two GPIOs actually wired to
