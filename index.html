@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.10';
-  document.title = 'QH ECU · v1.0.10';
+  window.BLINK_PB_VERSION = 'QH-1.0.11';
+  document.title = 'QH ECU · v1.0.11';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2606,6 +2606,10 @@ html body .qhSmallBtn{
   transform-origin:50% 100%;transform:rotate(calc(-135deg + var(--rpm-angle)));
   pointer-events:none;z-index:4;
 }
+.qhRpmGauge.rpm-active .qhRpmMarker{
+  opacity:.92!important;
+}
+
 .qhRpmMarker::before{
   content:"";position:absolute;top:-4px;left:-4px;width:10px;height:10px;border-radius:50%;
   background:#fff4b6;box-shadow:0 0 5px #fff,0 0 14px rgba(255,189,53,.9);
@@ -2828,7 +2832,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
     rgba(214,43,34,.54) 270deg,
     transparent 270deg 360deg
   );
-  filter:drop-shadow(0 0 2px rgba(224,182,44,.06));
+  filter:none;
 }
 
 /* Live RPM adds a soft highlight over the already-colored scale.
@@ -2842,6 +2846,10 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
     transparent 270deg 360deg
   );
   filter:drop-shadow(0 0 3px rgba(255,220,116,.10));
+  opacity:0!important;
+}
+.qhRpmGauge.rpm-active .qhRpmArc::after{
+  opacity:1!important;
 }
 
 .qhRpmTicksArc{
@@ -2882,8 +2890,8 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   transform:rotate(calc(-135deg + var(--rpm-angle)))!important;
   pointer-events:none!important;
   z-index:4!important;
-  opacity:.92!important;
-  transition:transform .14s linear;
+  opacity:0!important;
+  transition:transform .14s linear,opacity .10s linear;
 }
 
 .qhRpmMarker::before{
@@ -2903,12 +2911,18 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
 
 .qhRpmTickLabels{
   position:absolute!important;
-  inset:0!important;
+  inset:auto!important;
+  left:50%!important;
+  top:50%!important;
+  width:76%!important;
+  aspect-ratio:1!important;
+  transform:translate(-50%,-50%)!important;
   z-index:3!important;
   color:#ededE8!important;
   font-size:11px!important;
   font-weight:850!important;
   letter-spacing:-.2px!important;
+  pointer-events:none!important;
 }
 
 .qhRpmTickLabels span{
@@ -2917,15 +2931,16 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   text-shadow:0 1px 3px rgba(0,0,0,.82)!important;
 }
 
-.qhRpmTickLabels .r0{left:13.5%!important;top:72%!important}
-.qhRpmTickLabels .r2{left:11%!important;top:58%!important}
-.qhRpmTickLabels .r4{left:15%!important;top:44%!important}
-.qhRpmTickLabels .r6{left:24%!important;top:31%!important}
-.qhRpmTickLabels .r8{left:36.5%!important;top:22%!important}
-.qhRpmTickLabels .r10{left:50%!important;top:18.5%!important}
-.qhRpmTickLabels .r12{left:63.5%!important;top:22%!important}
-.qhRpmTickLabels .r14{left:75.5%!important;top:31%!important}
-.qhRpmTickLabels .r16{left:84.5%!important;top:44%!important}
+/* 0..16 share the exact same 270deg circular coordinate system as the arc. */
+.qhRpmTickLabels .r0{left:18.9%!important;top:81.1%!important}
+.qhRpmTickLabels .r2{left:6.8%!important;top:58.6%!important}
+.qhRpmTickLabels .r4{left:9.3%!important;top:33.2%!important}
+.qhRpmTickLabels .r6{left:25.6%!important;top:13.4%!important}
+.qhRpmTickLabels .r8{left:50%!important;top:6%!important}
+.qhRpmTickLabels .r10{left:74.4%!important;top:13.4%!important}
+.qhRpmTickLabels .r12{left:90.7%!important;top:33.2%!important}
+.qhRpmTickLabels .r14{left:93.2%!important;top:58.6%!important}
+.qhRpmTickLabels .r16{left:81.1%!important;top:81.1%!important}
 .qhRpmTickLabels .r18{display:none!important}
 
 .qhRpmCenter{
@@ -3504,7 +3519,8 @@ html body .miniStatus{
 <style id="qhRpmVisualFix">
 /* ===== QH RPM VISUAL FIX v1.0.10 ===== */
 .qhRpmArc::before{opacity:1!important}
-.qhRpmArc::after{opacity:1!important}
+.qhRpmArc::after{opacity:0!important}
+.qhRpmGauge.rpm-active .qhRpmArc::after{opacity:1!important}
 
 /* Marker tip follows the middle of the colored ring instead of sitting inside the dial. */
 .qhRpmMarker{
@@ -8009,7 +8025,9 @@ function syncMirrors(){
 
   const rpmMax=16000;
   const rpm=Math.max(0,Math.min(rpmMax,Number((m.rpm||'0').replace(/[^0-9.]/g,''))||0));
-  document.getElementById('rpmGauge')?.style.setProperty('--rpm-angle',(rpm/rpmMax*270)+'deg');
+  const rpmGauge=document.getElementById('rpmGauge');
+  rpmGauge?.style.setProperty('--rpm-angle',(rpm/rpmMax*270)+'deg');
+  rpmGauge?.classList.toggle('rpm-active',rpm>0);
 
   const on=!!state.ecuConnected;
   ['mapBleStatus','editorBleStatus','idleLimitBleStatus','redEditorBleStatus','tuneBleStatus','ecuBleStatus','settingsBleStatus'].forEach(id=>{
