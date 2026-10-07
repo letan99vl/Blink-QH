@@ -1,0 +1,63 @@
+name: Check REDLEO Protocol JS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'redleo_real_protocol.js'
+      - 'index.html'
+      - 'tools/check-row-orientation.js'
+      - 'tools/check-map-selection.js'
+      - 'tools/check-air-fuel-ratio.js'
+      - 'tools/check-injection-cam-calculator.js'
+      - 'tools/check-ecu-feature-surfaces.js'
+      - 'tools/check-v8-main.js'
+      - 'tools/check-v91.js'
+      - 'tools/check-v9-version-routing.js'
+      - 'tools/check-v92-page6.js'
+      - 'tools/check-v10-page6.js'
+      - 'tools/check-v10-a2.js'
+      - 'tools/check-ultra-page6.js'
+      - 'tools/check-ultra-a2.js'
+      - 'tools/check-ultra-pro2.js'
+      - '.github/workflows/check-redleo-protocol.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: node --check redleo_real_protocol.js
+      - name: Compensation row orientation regression
+        run: node tools/check-row-orientation.js
+      - name: Map selection direction regression
+        run: node tools/check-map-selection.js
+      - name: Air fuel ratio cross-family regression
+        run: node tools/check-air-fuel-ratio.js
+      - name: Injection cam calculator regression
+        run: node tools/check-injection-cam-calculator.js
+      - name: ECU feature surface matrix
+        run: node tools/check-ecu-feature-surfaces.js
+      - name: REDLEO V8 main tune regression
+        run: node tools/check-v8-main.js
+      - name: REDLEO 9.1X regression
+        run: node tools/check-v91.js
+      - name: REDLEO V9 firmware routing regression
+        run: node tools/check-v9-version-routing.js
+      - name: REDLEO 9.2 page6 regression
+        run: node tools/check-v92-page6.js
+      - name: REDLEO V10.2 page6 regression
+        run: node tools/check-v10-page6.js
+      - name: REDLEO V10.2 A2 regression
+        run: node tools/check-v10-a2.js
+      - name: REDLEO Ultra Pro1 page6 regression
+        run: node tools/check-ultra-page6.js
+      - name: REDLEO Ultra Pro1 A2 regression
+        run: node tools/check-ultra-a2.js
+      - name: REDLEO Ultra Pro2 regression
+        run: node tools/check-ultra-pro2.js
