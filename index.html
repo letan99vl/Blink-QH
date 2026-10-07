@@ -6992,6 +6992,19 @@ window.addEventListener('beforeunload',save);
   }
   window.configureBlinkFastBridgeRx=configureFastBridgeRx;
 
+  async function setBridgeRxPayload(payload){
+    payload=Math.round(Number(payload)||12);
+    const target=payload>=64?Math.min(160,Math.max(64,payload)):12;
+    await writeBridgeControl(target>=64?('RXJUMBO:'+target):'RXJUMBO:0');
+    // STATUS notification normally updates blinkBridgeRxPayload. Give it a short
+    // chance to arrive; then keep the requested value as the session's expected mode.
+    await new Promise(r=>setTimeout(r,80));
+    window.blinkBridgeRxPayload=target;
+    console.log('[BLINK] runtime RX payload='+target+'B');
+    return target;
+  }
+  window.setBlinkBridgeRxPayload=setBridgeRxPayload;
+
   const OTA_MARKER=0xE3,OTA_WIFI_CHECK=0x01,OTA_INSTALL=0x02,OTA_WIFI_SCAN=0x03,OTA_BLE_BEGIN=0x04,OTA_BLE_END=0x05,OTA_BLE_ABORT=0x06,OTA_SCAN_MARKER=0xE4,OTA_BLE_DATA_MARKER=0xE5,OTA_CHUNK=12;
   let otaUpdateReady=false;
   let otaWifiNetworks=[];
