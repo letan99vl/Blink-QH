@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.3';
-  document.title = 'QH ECU · v1.0.3';
+  window.BLINK_PB_VERSION = 'QH-1.0.4';
+  document.title = 'QH ECU · v1.0.4';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3042,6 +3042,11 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   .qhSideValue{font-size:27px!important}
 }
 </style>
+<style id="qhHeaderCleanup">
+/* QH header cleanup v1.0.4 */
+.qhDashHeader{justify-content:flex-start!important}
+.qhDashHeaderRight{display:none!important}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3055,7 +3060,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
         <div class="qhBrandMain"><span>QH</span> ECU</div>
         <div class="qhBrandSub">RACING</div>
       </div>
-      <div class="qhDashHeaderRight">
+      <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
         <span id="qhClock">--:--</span>
         <span class="qhBtMark">⌁</span>
         <span class="qhBattMark">▰</span>
