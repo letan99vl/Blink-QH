@@ -246,3 +246,22 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
   - branch: `backup/ota-on-dinh-1.0.30`
   - snapshot: `bb4e57e94e0ca6f9652c3d04316c4020654eb048`
 - Main implementation commit: `89e3b6eaee9a5731c0c5b98be65ccd4cd77598dc`.
+
+
+## OTA synced back to current Blink - QH P.b 1.0.34
+
+- User requested to stop QH-specific OTA experiments and return to the OTA method currently used by Blink-Redleo.
+- QH OTA block in index.html was replaced with the current Blink-Redleo OTA implementation.
+- Only QH-specific changes kept:
+  - OTA manifest fallback URLs point to letan99vl/Blink-QH;
+  - user-facing BLE connection wording says QH instead of Blink.
+- Current Blink OTA behavior now used by QH:
+  - firmware BLE chunk starts at 160 bytes;
+  - every 8th packet uses write-with-response as a flow-control barrier;
+  - non-barrier packets use write-without-response with 2 ms yield;
+  - ATT payload automatically steps down 160 -> 100 -> 60 -> 20 -> 12 if needed;
+  - Live ECU traffic is paused during OTA;
+  - first OTA error is preserved for the final failure message.
+- Main sync commit: `bd1e8d8b453b691a70e2ec9ba0c33446d5287baa`.
+- Visible build: QH P.b 1.0.34.
+- The separate fallback branch `backup/ota-on-dinh-1.0.30` remains untouched and continues to be the project checkpoint named **Cach update OTA on dinh**.
