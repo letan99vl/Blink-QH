@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.13';
-  document.title = 'QH ECU · v1.0.13';
+  window.BLINK_PB_VERSION = 'QH-1.0.14';
+  document.title = 'QH ECU · v1.0.14';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3755,6 +3755,70 @@ html body .miniStatus{
   .qhPbLabel{font-size:7px!important;padding:2px 4px!important}
 }
 </style>
+<style id="qhTanleRpmStyle">
+/* ===== TANLE RPM GAUGE TRANSPLANT · QH v1.0.14 ===== */
+.qhTanleRpmWrap{
+  position:relative;
+  min-width:0;
+  height:clamp(220px,40vw,310px);
+  overflow:hidden;
+  border-radius:14px;
+  background:#030304;
+}
+.qhTanleRpmWrap .live-arc-card{
+  position:relative;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+}
+.qhTanleRpmWrap .led-gauge{height:100%;width:100%}
+.qhTanleRpmWrap .led-gauge-svg{
+  display:block;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+}
+.qhTanleRpmWrap .led-scale{
+  font:500 20px Arial,sans-serif;
+  fill:#f3f4f7;
+  text-anchor:middle;
+  dominant-baseline:middle;
+}
+.qhTanleRpmWrap .led-title{
+  font:700 26px Arial,sans-serif;
+  fill:#838b96;
+  text-anchor:middle;
+  dominant-baseline:middle;
+}
+.qhTanleRpmWrap .led-unit{
+  font:600 23px Arial,sans-serif;
+  fill:#727b87;
+  text-anchor:middle;
+  dominant-baseline:middle;
+}
+.qhTanleRpmWrap .led-digital{fill:#fcfcff}
+.qhTanleRpmWrap .led-accessible-value{
+  fill:transparent;
+  font:700 64px Arial;
+  text-anchor:middle;
+  pointer-events:none;
+}
+.qhTanleRpmWrap .led-overrange{
+  fill:#ff7979;
+  font:600 11px Arial;
+  text-anchor:middle;
+  letter-spacing:2px;
+}
+.qhRpmProtocolValue{display:none!important}
+@media(max-width:520px){
+  .qhTanleRpmWrap{height:clamp(205px,61vw,265px)}
+}
+@media(max-width:390px){
+  .qhTanleRpmWrap{height:205px}
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3766,7 +3830,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.13</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.14</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -3784,23 +3848,9 @@ html body .miniStatus{
     </div>
 
     <div class="qhCluster">
-      <div id="rpmGauge" class="qhRpmGauge">
-        <div class="qhRpmBezel" aria-hidden="true"></div>
-        <div class="qhRpmInnerRing" aria-hidden="true"></div>
-        <div class="qhRpmRedlineGlow" aria-hidden="true"></div>
-        <div class="qhRpmArc"></div>
-        <div class="qhRpmTicksArc"></div>
-        <div class="qhRpmMarker"></div>
-        <div class="qhRpmTickLabels" aria-hidden="true">
-          <span class="r0">0</span><span class="r2">2</span><span class="r4">4</span>
-          <span class="r6">6</span><span class="r8">8</span><span class="r10">10</span>
-          <span class="r12">12</span><span class="r14">14</span><span class="r16">16</span>
-        </div>
-        <div class="qhRpmCenter">
-          <div class="qhRpmTitle">RPM</div>
-          <div id="rpmLive" class="qhRpmValue">0</div>
-          <div class="qhRpmX">x1000</div>
-        </div>
+      <div class="qhTanleRpmWrap">
+        <div class="live-arc-card live-rpm-card"><div class="led-gauge" data-max="16000" data-title="RPM" id="liveRpmArc"><svg aria-label="RPM: 0 rpm" class="led-gauge-svg" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 520 440"><defs><lineargradient id="ledRpmFace" x1="0" x2="0.9" y1="0" y2="1"><stop stop-color="#101011"></stop><stop offset=".48" stop-color="#070708"></stop><stop offset="1" stop-color="#030304"></stop></lineargradient><radialgradient cx="260" cy="267" gradientunits="userSpaceOnUse" id="ledRpmDark" r="205"><stop offset=".78" stop-color="#111315"></stop><stop offset="1" stop-color="#25272a"></stop></radialgradient><radialgradient cx="260" cy="267" gradientunits="userSpaceOnUse" id="ledRpmHot" r="208"><stop offset=".70" stop-color="#e85c00"></stop><stop offset=".80" stop-color="#ff6a00"></stop><stop offset=".93" stop-color="#ff8c28"></stop><stop offset="1" stop-color="#ffae5b"></stop></radialgradient><lineargradient id="ledRpmTop" x1="0" x2="0" y1="1" y2="0"><stop stop-color="#2b1405" stop-opacity="0"></stop><stop offset=".48" stop-color="#8a3900" stop-opacity=".38"></stop><stop offset="1" stop-color="#e65f00" stop-opacity=".82"></stop></lineargradient><lineargradient id="ledRpmBevel" x1="0" x2=".3" y1="0" y2="1"><stop stop-color="#49494a" stop-opacity=".48"></stop><stop offset=".23" stop-color="#151719" stop-opacity=".25"></stop><stop offset=".80" stop-color="#080809" stop-opacity=".24"></stop><stop offset="1" stop-color="#3d3d3e" stop-opacity=".35"></stop></lineargradient><lineargradient id="ledRpmTL" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ff7200" stop-opacity=".95"></stop><stop offset=".65" stop-color="#d95600" stop-opacity=".30"></stop><stop offset="1" stop-color="#7a3000" stop-opacity="0"></stop></lineargradient><lineargradient id="ledRpmBR" x1="1" x2="0" y1="1" y2="0"><stop stop-color="#ff7a00" stop-opacity=".95"></stop><stop offset=".58" stop-color="#c84e00" stop-opacity=".35"></stop><stop offset="1" stop-color="#7a3000" stop-opacity="0"></stop></lineargradient><lineargradient id="ledRpmAccent" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#ff7000" stop-opacity=".80"></stop><stop offset=".5" stop-color="#7b3200" stop-opacity="0"></stop><stop offset="1" stop-color="#ff6800" stop-opacity=".85"></stop></lineargradient><filter color-interpolation-filters="sRGB" height="160%" id="ledRpmGlow" width="150%" x="-25%" y="-30%"><fegaussianblur stddeviation="8"></fegaussianblur></filter><filter color-interpolation-filters="sRGB" height="180%" id="ledRpmDigitGlow" width="150%" x="-25%" y="-40%"><fegaussianblur in="SourceAlpha" result="blur" stddeviation="4"></fegaussianblur><feflood flood-color="#ff6a00" flood-opacity=".48"></feflood><fecomposite in2="blur" operator="in"></fecomposite><femerge><femergenode></femergenode><femergenode in="SourceGraphic"></femergenode></femerge></filter></defs><path d="M27 1H493L519 27V413L493 439H27L1 413V27Z" fill="url(#ledRpmFace)" stroke="#262627" stroke-width="1"></path><path d="M2 57V27L27 2H53 M2 385V413L27 438H53" fill="none" stroke="url(#ledRpmTL)" stroke-width="1.4"></path><path d="M467 2H493L518 27V56 M467 438H493L518 413V383" fill="none" stroke="url(#ledRpmBR)" stroke-width="1.4"></path><path d="M32 138L122 45H198L218 22H302L322 45H396L488 138" fill="none" stroke="url(#ledRpmTop)" stroke-linejoin="miter" stroke-width="4"></path><path d="M70 342L122 400H398L450 342" fill="none" opacity=".17" stroke="#5d2900" stroke-width="1"></path><path d="M56.213 325.435 A212 212 0 1 1 463.787 325.435" fill="none" stroke="#b84b00" stroke-opacity=".30" stroke-width="1.4"></path><path d="M131 216L182 163L211 153H309L339 163L391 216V328L341 382H182L131 329Z" fill="#050506" stroke="url(#ledRpmBevel)" stroke-width="2"></path><path d="M138 217L183 172H339L384 217V327L340 376H184L138 327Z" fill="none" stroke="#222326" stroke-opacity=".60" stroke-width="1"></path><path d="M131 218L182 166H212 M310 166H339L391 218 M131 329L182 381 M341 381L391 329" fill="none" stroke="url(#ledRpmAccent)" stroke-width="2"></path><g class="led-track"><path d="M63.372 321.345 A204 204 0 0 1 58.500 298.837 L100.973 292.126 A161 161 0 0 0 104.818 309.890 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M57.926 294.963 A204 204 0 0 1 56.062 272.010 L99.049 270.954 A161 161 0 0 0 100.520 289.069 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M56.003 268.094 A204 204 0 0 1 57.180 245.095 L99.931 249.712 A161 161 0 0 0 99.002 267.863 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M57.637 241.205 A204 204 0 0 1 61.834 218.561 L103.604 228.772 A161 161 0 0 0 100.292 246.642 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M62.801 214.766 A204 204 0 0 1 69.944 192.873 L110.005 208.498 A161 161 0 0 0 104.367 225.776 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M71.402 189.238 A204 204 0 0 1 81.368 168.477 L119.021 189.244 A161 161 0 0 0 111.156 205.629 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M83.293 165.066 A204 204 0 0 1 95.907 145.799 L130.496 171.347 A161 161 0 0 0 120.540 186.552 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M98.264 142.671 A204 204 0 0 1 113.308 125.235 L144.228 155.117 A161 161 0 0 0 132.356 168.878 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M116.056 122.445 A204 204 0 0 1 133.266 107.142 L159.979 140.838 A161 161 0 0 0 146.397 152.915 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M136.358 104.739 A204 204 0 0 1 155.434 91.837 L177.475 128.759 A161 161 0 0 0 162.420 138.941 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M158.816 89.862 A204 204 0 0 1 179.426 79.587 L196.409 119.090 A161 161 0 0 0 180.144 127.200 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M183.038 78.074 A204 204 0 0 1 204.822 70.604 L216.453 112.001 A161 161 0 0 0 199.261 117.897 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M208.602 69.581 A204 204 0 0 1 231.181 65.046 L237.255 107.615 A161 161 0 0 0 219.436 111.194 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M235.063 64.530 A204 204 0 0 1 258.042 63.009 L258.455 106.007 A161 161 0 0 0 240.319 107.207 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M261.958 63.009 A204 204 0 0 1 284.937 64.530 L279.681 107.207 A161 161 0 0 0 261.545 106.007 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M288.819 65.046 A204 204 0 0 1 311.398 69.581 L300.564 111.194 A161 161 0 0 0 282.745 107.615 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M315.178 70.604 A204 204 0 0 1 336.962 78.074 L320.739 117.897 A161 161 0 0 0 303.547 112.001 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M340.574 79.587 A204 204 0 0 1 361.184 89.862 L339.856 127.200 A161 161 0 0 0 323.591 119.090 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M364.566 91.837 A204 204 0 0 1 383.642 104.739 L357.580 138.941 A161 161 0 0 0 342.525 128.759 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M386.734 107.142 A204 204 0 0 1 403.944 122.445 L373.603 152.915 A161 161 0 0 0 360.021 140.838 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M406.692 125.235 A204 204 0 0 1 421.736 142.671 L387.644 168.878 A161 161 0 0 0 375.772 155.117 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M424.093 145.799 A204 204 0 0 1 436.707 165.066 L399.460 186.552 A161 161 0 0 0 389.504 171.347 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M438.632 168.477 A204 204 0 0 1 448.598 189.238 L408.844 205.629 A161 161 0 0 0 400.979 189.244 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M450.056 192.873 A204 204 0 0 1 457.199 214.766 L415.633 225.776 A161 161 0 0 0 409.995 208.498 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M458.166 218.561 A204 204 0 0 1 462.363 241.205 L419.708 246.642 A161 161 0 0 0 416.396 228.772 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M462.820 245.095 A204 204 0 0 1 463.997 268.094 L420.998 267.863 A161 161 0 0 0 420.069 249.712 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M463.938 272.010 A204 204 0 0 1 462.074 294.963 L419.480 289.069 A161 161 0 0 0 420.951 270.954 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path><path d="M461.500 298.837 A204 204 0 0 1 456.628 321.345 L415.182 309.890 A161 161 0 0 0 419.027 292.126 Z" fill="url(#ledRpmDark)" stroke="#050506" stroke-width=".7"></path></g><use aria-hidden="true" filter="url(#ledRpmGlow)" href="#ledRpmActive" opacity=".60"></use><g fill="url(#ledRpmHot)" id="ledRpmActive"><path class="led-segment" d="M63.372 321.345 A204 204 0 0 1 58.500 298.837 L100.973 292.126 A161 161 0 0 0 104.818 309.890 Z" data-a0="164.550000" data-a1="171.021429" opacity="0"></path><path class="led-segment" d="M57.926 294.963 A204 204 0 0 1 56.062 272.010 L99.049 270.954 A161 161 0 0 0 100.520 289.069 Z" data-a0="172.121429" data-a1="178.592857" opacity="0"></path><path class="led-segment" d="M56.003 268.094 A204 204 0 0 1 57.180 245.095 L99.931 249.712 A161 161 0 0 0 99.002 267.863 Z" data-a0="179.692857" data-a1="186.164286" opacity="0"></path><path class="led-segment" d="M57.637 241.205 A204 204 0 0 1 61.834 218.561 L103.604 228.772 A161 161 0 0 0 100.292 246.642 Z" data-a0="187.264286" data-a1="193.735714" opacity="0"></path><path class="led-segment" d="M62.801 214.766 A204 204 0 0 1 69.944 192.873 L110.005 208.498 A161 161 0 0 0 104.367 225.776 Z" data-a0="194.835714" data-a1="201.307143" opacity="0"></path><path class="led-segment" d="M71.402 189.238 A204 204 0 0 1 81.368 168.477 L119.021 189.244 A161 161 0 0 0 111.156 205.629 Z" data-a0="202.407143" data-a1="208.878571" opacity="0"></path><path class="led-segment" d="M83.293 165.066 A204 204 0 0 1 95.907 145.799 L130.496 171.347 A161 161 0 0 0 120.540 186.552 Z" data-a0="209.978571" data-a1="216.450000" opacity="0"></path><path class="led-segment" d="M98.264 142.671 A204 204 0 0 1 113.308 125.235 L144.228 155.117 A161 161 0 0 0 132.356 168.878 Z" data-a0="217.550000" data-a1="224.021429" opacity="0"></path><path class="led-segment" d="M116.056 122.445 A204 204 0 0 1 133.266 107.142 L159.979 140.838 A161 161 0 0 0 146.397 152.915 Z" data-a0="225.121429" data-a1="231.592857" opacity="0"></path><path class="led-segment" d="M136.358 104.739 A204 204 0 0 1 155.434 91.837 L177.475 128.759 A161 161 0 0 0 162.420 138.941 Z" data-a0="232.692857" data-a1="239.164286" opacity="0"></path><path class="led-segment" d="M158.816 89.862 A204 204 0 0 1 179.426 79.587 L196.409 119.090 A161 161 0 0 0 180.144 127.200 Z" data-a0="240.264286" data-a1="246.735714" opacity="0"></path><path class="led-segment" d="M183.038 78.074 A204 204 0 0 1 204.822 70.604 L216.453 112.001 A161 161 0 0 0 199.261 117.897 Z" data-a0="247.835714" data-a1="254.307143" opacity="0"></path><path class="led-segment" d="M208.602 69.581 A204 204 0 0 1 231.181 65.046 L237.255 107.615 A161 161 0 0 0 219.436 111.194 Z" data-a0="255.407143" data-a1="261.878571" opacity="0"></path><path class="led-segment" d="M235.063 64.530 A204 204 0 0 1 258.042 63.009 L258.455 106.007 A161 161 0 0 0 240.319 107.207 Z" data-a0="262.978571" data-a1="269.450000" opacity="0"></path><path class="led-segment" d="M261.958 63.009 A204 204 0 0 1 284.937 64.530 L279.681 107.207 A161 161 0 0 0 261.545 106.007 Z" data-a0="270.550000" data-a1="277.021429" opacity="0"></path><path class="led-segment" d="M288.819 65.046 A204 204 0 0 1 311.398 69.581 L300.564 111.194 A161 161 0 0 0 282.745 107.615 Z" data-a0="278.121429" data-a1="284.592857" opacity="0"></path><path class="led-segment" d="M315.178 70.604 A204 204 0 0 1 336.962 78.074 L320.739 117.897 A161 161 0 0 0 303.547 112.001 Z" data-a0="285.692857" data-a1="292.164286" opacity="0"></path><path class="led-segment" d="M340.574 79.587 A204 204 0 0 1 361.184 89.862 L339.856 127.200 A161 161 0 0 0 323.591 119.090 Z" data-a0="293.264286" data-a1="299.735714" opacity="0"></path><path class="led-segment" d="M364.566 91.837 A204 204 0 0 1 383.642 104.739 L357.580 138.941 A161 161 0 0 0 342.525 128.759 Z" data-a0="300.835714" data-a1="307.307143" opacity="0"></path><path class="led-segment" d="M386.734 107.142 A204 204 0 0 1 403.944 122.445 L373.603 152.915 A161 161 0 0 0 360.021 140.838 Z" data-a0="308.407143" data-a1="314.878571" opacity="0"></path><path class="led-segment" d="M406.692 125.235 A204 204 0 0 1 421.736 142.671 L387.644 168.878 A161 161 0 0 0 375.772 155.117 Z" data-a0="315.978571" data-a1="322.450000" opacity="0"></path><path class="led-segment" d="M424.093 145.799 A204 204 0 0 1 436.707 165.066 L399.460 186.552 A161 161 0 0 0 389.504 171.347 Z" data-a0="323.550000" data-a1="330.021429" opacity="0"></path><path class="led-segment" d="M438.632 168.477 A204 204 0 0 1 448.598 189.238 L408.844 205.629 A161 161 0 0 0 400.979 189.244 Z" data-a0="331.121429" data-a1="337.592857" opacity="0"></path><path class="led-segment" d="M450.056 192.873 A204 204 0 0 1 457.199 214.766 L415.633 225.776 A161 161 0 0 0 409.995 208.498 Z" data-a0="338.692857" data-a1="345.164286" opacity="0"></path><path class="led-segment" d="M458.166 218.561 A204 204 0 0 1 462.363 241.205 L419.708 246.642 A161 161 0 0 0 416.396 228.772 Z" data-a0="346.264286" data-a1="352.735714" opacity="0"></path><path class="led-segment" d="M462.820 245.095 A204 204 0 0 1 463.997 268.094 L420.998 267.863 A161 161 0 0 0 420.069 249.712 Z" data-a0="353.835714" data-a1="360.307143" opacity="0"></path><path class="led-segment" d="M463.938 272.010 A204 204 0 0 1 462.074 294.963 L419.480 289.069 A161 161 0 0 0 420.951 270.954 Z" data-a0="361.407143" data-a1="367.878571" opacity="0"></path><path class="led-segment" d="M461.500 298.837 A204 204 0 0 1 456.628 321.345 L415.182 309.890 A161 161 0 0 0 419.027 292.126 Z" data-a0="368.978571" data-a1="375.450000" opacity="0"></path></g><g><path d="M55.251 325.711L46.600 328.191" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="2.4"></path><text class="led-scale" x="32.181" y="332.326">0</text><path d="M50.567 228.184L41.717 226.544" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="1.8"></path><text class="led-scale" x="26.969" y="223.810">2</text><path d="M89.891 138.813L82.703 133.397" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="2.4"></path><text class="led-scale" x="70.723" y="124.370">4</text><path d="M164.960 76.379L160.944 68.325" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="1.8"></path><text class="led-scale" x="154.251" y="54.901">6</text><path d="M260.000 54.000L260.000 45.000" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="2.4"></path><text class="led-scale" x="260.000" y="30.000">8</text><path d="M355.040 76.379L359.056 68.325" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="1.8"></path><text class="led-scale" x="365.749" y="54.901">10</text><path d="M430.109 138.813L437.297 133.397" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="2.4"></path><text class="led-scale" x="449.277" y="124.370">12</text><path d="M469.433 228.184L478.283 226.544" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="1.8"></path><text class="led-scale" x="493.031" y="223.810">14</text><path d="M464.749 325.711L473.400 328.191" fill="none" stroke="#ee2328" stroke-opacity=".76" stroke-width="2.4"></path><text class="led-scale" x="487.819" y="332.326">16</text></g><text class="led-title" x="260" y="211">RPM</text><text class="led-accessible-value" id="liveRpmValue" x="260" y="290">0</text><g class="led-digital" filter="url(#ledRpmDigitGlow)"></g><text class="led-unit" x="260" y="340">[rpm]</text><text class="led-overrange" visibility="hidden" x="260" y="409">OVER RANGE</text></svg></div></div>
+        <span id="rpmLive" class="qhRpmProtocolValue" aria-hidden="true">0</span>
       </div>
 
       <div class="qhSideTelemetry">
@@ -8223,6 +8273,115 @@ function updateQhClock(){
   const d=new Date();
   e.textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
 }
+/* ===== TANLE RPM GAUGE LOGIC · QH v1.0.14 ===== */
+(function(){
+  var rpmGauge=document.getElementById('liveRpmArc');
+  if(!rpmGauge){window.qhTanleSetRpm=function(){};return;}
+
+  function rebuildActive(el){
+    var track=Array.from(el.querySelectorAll('.led-track > path'));
+    var active=el.querySelector('[id$="Active"]');
+    if(!active)return;
+    while(active.firstChild)active.removeChild(active.firstChild);
+    track.forEach(function(src,i){
+      var n=src.cloneNode(false);
+      n.removeAttribute('fill');
+      n.removeAttribute('stroke');
+      n.removeAttribute('stroke-width');
+      n.setAttribute('class','led-segment');
+      n.setAttribute('opacity','0');
+      var a0=164.55+i*7.571429,a1=a0+6.471429;
+      n.dataset.a0=a0.toFixed(6);
+      n.dataset.a1=a1.toFixed(6);
+      active.appendChild(n);
+    });
+  }
+
+  function ledPoint(r,a){
+    var q=a*Math.PI/180;
+    return [260+r*Math.cos(q),267+r*Math.sin(q)];
+  }
+  function ledSector(a,b){
+    function p(r,t){
+      var x=ledPoint(r,t);
+      return x[0].toFixed(3)+' '+x[1].toFixed(3);
+    }
+    return 'M'+p(204,a)+' A204 204 0 0 1 '+p(204,b)+' L'+p(161,b)+' A161 161 0 0 0 '+p(161,a)+' Z';
+  }
+  function renderDigits(el,str){
+    var st=el&&el._led;
+    if(!st||!st.digits||str===st.lastText)return;
+    st.lastText=str;
+    var outlines={
+      '0':'M7 0H32L39 7V59L32 66H7L0 59V7Z M10 10V56H29V10Z',
+      '1':'M16 0H27V66H16V14L7 22V10Z',
+      '2':'M3 0H32L39 7V28L32 36H10V56H39V66H0V35L7 27H29V10H0V3Z',
+      '3':'M3 0H32L39 7V28L34 33L39 38V59L32 66H0V56H29V38H10V28H29V10H0V3Z',
+      '4':'M23 0H33V41H39V50H33V66H24V50H0V40Z M24 14L8 41H24Z',
+      '5':'M0 0H39V10H10V27H32L39 34V59L32 66H0V56H29V38H0Z',
+      '6':'M7 0H35V10H10V27H32L39 34V59L32 66H7L0 59V7Z M10 38V56H29V38Z',
+      '7':'M0 0H39V10L20 66H9L28 10H0Z',
+      '8':'M7 0H32L39 7V28L34 33L39 38V59L32 66H7L0 59V38L5 33L0 28V7Z M10 10V27H29V10Z M10 39V56H29V39Z',
+      '9':'M7 0H32L39 7V59L32 66H4V56H29V39H7L0 32V7Z M10 10V28H29V10Z',
+      '-':'M3 28H36V38H3Z'
+    };
+    var ns='http://www.w3.org/2000/svg';
+    while(st.digits.firstChild)st.digits.removeChild(st.digits.firstChild);
+    var glyphWidth=45,space=7,width=str.length*glyphWidth+(str.length-1)*space,scale=Math.min(1,242/width);
+    st.digits.setAttribute('transform','translate('+(260-width*scale/2).toFixed(3)+' '+(246+(1-scale)*33).toFixed(3)+') scale('+scale.toFixed(4)+')');
+    Array.from(str).forEach(function(ch,i){
+      var g=document.createElementNS(ns,'g');
+      g.setAttribute('transform','translate('+(i*(glyphWidth+space))+',0) scale(1.15,1)');
+      var path=document.createElementNS(ns,'path');
+      path.setAttribute('d',outlines[ch]||outlines['-']);
+      path.setAttribute('fill-rule','evenodd');
+      g.appendChild(path);
+      st.digits.appendChild(g);
+    });
+  }
+  function buildGauge(el){
+    rebuildActive(el);
+    el._led={
+      paths:Array.from(el.querySelectorAll('.led-segment')).map(function(node){
+        return {node:node,a0:+node.dataset.a0,a1:+node.dataset.a1,lastEnd:null};
+      }),
+      svg:el.querySelector('svg'),
+      digits:el.querySelector('.led-digital'),
+      over:el.querySelector('.led-overrange'),
+      lastText:null
+    };
+    renderDigits(el,'0');
+  }
+  function setArc(el,value,maxValue){
+    if(!el||!el._led)return;
+    var n=Number(value);
+    if(!Number.isFinite(n)||n<0)n=0;
+    var max=Number(maxValue)||1;
+    var fraction=Math.max(0,Math.min(1,n/max)),end=164+212*fraction;
+    el._led.paths.forEach(function(seg){
+      var on=end>seg.a0&&fraction>0;
+      if(!on){
+        seg.node.setAttribute('opacity','0');
+        seg.lastEnd=null;
+        return;
+      }
+      var b=Math.min(end,seg.a1);
+      if(seg.lastEnd!==b){
+        seg.node.setAttribute('d',ledSector(seg.a0,b));
+        seg.lastEnd=b;
+      }
+      seg.node.setAttribute('opacity','1');
+    });
+    renderDigits(el,String(Math.round(n)));
+    if(el._led.svg)el._led.svg.setAttribute('aria-label','RPM: '+Math.round(n)+' rpm');
+    if(el._led.over)el._led.over.setAttribute('visibility',n>max?'visible':'hidden');
+  }
+
+  buildGauge(rpmGauge);
+  window.qhTanleSetRpm=function(value){setArc(rpmGauge,value,16000);};
+  window.qhTanleSetRpm(0);
+})();
+
 function syncMirrors(){
   const text=id=>document.getElementById(id)?.textContent||'';
   const m={
@@ -8245,9 +8404,7 @@ function syncMirrors(){
 
   const rpmMax=16000;
   const rpm=Math.max(0,Math.min(rpmMax,Number((m.rpm||'0').replace(/[^0-9.]/g,''))||0));
-  const rpmGauge=document.getElementById('rpmGauge');
-  rpmGauge?.style.setProperty('--rpm-angle',(rpm/rpmMax*270)+'deg');
-  rpmGauge?.classList.toggle('rpm-active',rpm>0);
+  window.qhTanleSetRpm?.(rpm);
 
   const on=!!state.ecuConnected;
   ['mapBleStatus','editorBleStatus','idleLimitBleStatus','redEditorBleStatus','tuneBleStatus','ecuBleStatus','settingsBleStatus'].forEach(id=>{
