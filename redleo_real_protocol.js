@@ -1351,6 +1351,13 @@ function installRawListener(){
     // Count each offset only once; reconnect/retransmit must not make got exceed total.
     if(!p.seen)p.seen=new Set();
     if(!p.seen.has(off)){p.seen.add(off);p.got+=bytes.length;}
+    if(p.cmd===0xAB&&p.total>0){
+      const pct=Math.min(100,Math.floor((p.got*100)/p.total));
+      if(pct===100||p.lastProgressPct<0||pct>=p.lastProgressPct+5){
+        p.lastProgressPct=pct;
+        taskUi('loading','ĐANG ĐỌC TẤT CẢ ECU · '+pct+'% · '+p.got+'/'+p.total+'B');
+      }
+    }
     // Do not trust the END flag alone. Large INJ VE streams can lose one BLE
     // notification on iOS; only resolve after every unique payload offset arrived.
     if(p.got>=p.total){
@@ -1525,7 +1532,7 @@ async function rawExchange(bytes,timeout=12000){
     let pendingState=null;
     const exchangeStarted=performance.now();
     const response=new Promise((resolve,reject)=>{
-      pendingState={resolve,reject,to:null,total:0,buf:null,got:0,seen:new Set(),epoch:myEpoch,txDoneAt:0,bridgeReadyAt:0};
+      pendingState={resolve,reject,to:null,total:0,buf:null,got:0,seen:new Set(),epoch:myEpoch,txDoneAt:0,bridgeReadyAt:0,cmd:data[0],lastProgressPct:-1};
       pending.set(id,pendingState);
     });
     try{
@@ -1646,7 +1653,11 @@ async function rawExchange(bytes,timeout=12000){
           if(q!==p)return;
           pending.delete(id);
           const cmdHex=data[0].toString(16).toUpperCase();
-          const hint=(data[0]===0xCD&&data.length>RAW_CHUNK)?' · bridge không trả RAW_RX sau frame '+data.length+'B':'';
+          let hint=(data[0]===0xCD&&data.length>RAW_CHUNK)?' · bridge không trả RAW_RX sau frame '+data.length+'B':'';
+          if(data[0]===0xAB){
+            hint+=' · RAW_RX '+(p.got||0)+'/'+(p.total||0)+'B';
+            if((p.total||0)>0&&p.got<p.total)hint+=' · thiếu '+(p.total-p.got)+'B';
+          }
           rejectPending(p,new Error('ECU timeout cmd 0x'+cmdHex+' sau khi TX xong'+hint));
         },timeout);
       }
@@ -3083,20 +3094,23 @@ async function readAll(cmd=0xAB,timeoutMs=35000){
   if(cmd===0x8B)requireProfile('restore','Khôi phục ECU');
   else requireProfile('readAll','Đọc toàn bộ ECU');
 
-  // READ ALL is a foreground/manual transaction. It must outrank live 0x69 and
-  // the optional A2 sensor-calibration warmup; otherwise a failed background A2
-  // retry can make the user-facing READ ALL appear to load for tens of seconds.
-  const resumeLive=liveRunning;
+  // READ ALL is a large 8-10 KB transaction. Give it priority over live 0x69
+  // and the background A2 warmup so a user tap cannot be starved by polling.
+  const resumeLive=!!(liveRunning||liveResumeTimer);
+  const warmupWasPending=!!sensorWarmupTimer;
   if(sensorWarmupTimer){clearTimeout(sensorWarmupTimer);sensorWarmupTimer=null;}
   stopLiveLoop();
 
   try{
-    taskUi('loading',cmd===0x8B?'ĐANG KHÔI PHỤC ECU...':'ĐANG ĐỌC TẤT CẢ ECU...');
-    // Let only the transaction already on the wire finish. Background A2 now
-    // has a 3.5 s / one-attempt ceiling, so a manual READ ALL cannot be starved.
-    await waitForEcuIdle(8000);
-    await new Promise(r=>setTimeout(r,60));
+    if(busy)taskUi('loading','ĐỌC TẤT CẢ · CHỜ LIVE/A2 NHẢ ECU...');
+    await waitForEcuIdle(9000);
 
+    // Keep the RX payload that was negotiated and probe-validated at BLE connect.
+    // For FW1.8+ browser clients, 160B is enabled only after RXPROBE succeeds.
+    // Forcing a proven jumbo link back to 12B turns a ~10 KB Read All into 800+
+    // notifications and can choke the browser BLE queue around mid-transfer.
+    const readAllRxPayload=Math.max(12,Number(window.blinkBridgeRxPayload||12));
+    taskUi('loading',cmd===0x8B?'ĐANG KHÔI PHỤC ECU...':'ĐANG ĐỌC TẤT CẢ ECU · 0% · RX '+readAllRxPayload+'B');
     const rx=await rawExchange(req5(cmd,cmd),Math.max(5000,Number(timeoutMs)||35000));
     let C=parseReadAll(rx,cmd);
     // Never decode a legacy/V8 Read All using the modern 9.x memory layout,
@@ -3123,10 +3137,11 @@ async function readAll(cmd=0xAB,timeoutMs=35000){
     return C;
   }finally{
     if(resumeLive&&cmdChar()&&mapChar()&&handshakeInfo&&profileCap('live')&&!otaPaused){
-      scheduleLiveResume(380);
-      // If this ECU still has no saved sensor curves, retry A2 only after the
-      // foreground READ ALL is completely finished. The warmup is one-shot/short.
-      if(!sensorCalCache)scheduleSensorCalWarmup(transportEpoch,sensorIdentity(),0);
+      scheduleLiveResume(420);
+    }
+    if((warmupWasPending||!sensorCalCache)&&handshakeInfo&&profileCap('optionsRead')&&!(ecuProfile&&ecuProfile.family==='v8')){
+      const id=sensorIdentity();
+      if(id)scheduleSensorCalWarmup(transportEpoch,id,0);
     }
   }
 }
