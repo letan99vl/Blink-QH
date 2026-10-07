@@ -229,3 +229,20 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
   - neu Turbo ngan bi SEQ thi tu fallback Safe ACK moi packet.
 - Khong duoc phuc hoi logic ACK 1/8 cua 1.0.31 neu chua co mot co che retry/ack theo offset chac chan hon.
 - Rollback commit: `da6e2431a7ae35f9435d211943fcd7dfa7e79fd4`.
+
+
+## OTA FAST FW1.9 ACK 1/4 EXPERIMENT - QH P.b 1.0.33
+
+- Muc tieu: nhanh hon "Cach update OTA on dinh" ma khong lap lai loi cua thu nghiem ACK 1/8.
+- Pham vi: Windows Chromium + ESP32 FW1.9 da TXPROBE thanh cong.
+- Logic thu nghiem:
+  - payload dung gia tri TXPROBE da xac nhan, thuong 160B;
+  - ACK/barrier moi 4 packet;
+  - yield 2 ms giua cac packet no-response;
+  - neu gap OTA:ERR=SEQ -> tu reset phien OTA va quay ve **Cach update OTA on dinh** ACK 1/2;
+  - neu fallback on dinh van SEQ -> tu chuyen SAFE ACK moi packet.
+- Thu nghiem ACK 1/8 cua P.b 1.0.31 da bi danh dau FAIL va khong duoc dung lai.
+- Moc fallback bat bien:
+  - branch: `backup/ota-on-dinh-1.0.30`
+  - snapshot: `bb4e57e94e0ca6f9652c3d04316c4020654eb048`
+- Main implementation commit: `89e3b6eaee9a5731c0c5b98be65ccd4cd77598dc`.
