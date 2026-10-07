@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.4';
-  document.title = 'QH ECU · v1.0.4';
+  window.BLINK_PB_VERSION = 'QH-1.0.5';
+  document.title = 'QH ECU · v1.0.5';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3047,6 +3047,10 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
 .qhDashHeader{justify-content:flex-start!important}
 .qhDashHeaderRight{display:none!important}
 </style>
+<style id="qhSensorStripFour">
+/* QH sensor strip v1.0.5: MAP / AFR / ECT / IAT */
+.qhSensorStrip{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3112,7 +3116,6 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
     </div>
 
     <div class="qhSensorStrip">
-      <div class="qhSensorCell"><span class="qhSensorIcon">◉</span><div><small>TPS</small><b id="tpsLive">--%</b></div></div>
       <div class="qhSensorCell"><div><small>MAP</small><b id="mapKpaLive">-- kPa</b></div></div>
       <div class="qhSensorCell"><div><small>AFR</small><b id="afrLive">--</b></div></div>
       <div class="qhSensorCell"><div><small>ECT</small><b id="ectLive">-- °C</b></div></div>
@@ -3132,6 +3135,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
     </div>
 
     <div class="qhHiddenLive" aria-hidden="true">
+      <span id="tpsLive">--%</span>
       <span id="tpsVLive">-- V</span>
       <span id="afrVLive">-- V</span>
       <span id="ignLive">--°</span>
