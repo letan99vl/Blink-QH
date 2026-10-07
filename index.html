@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.9';
-  document.title = 'QH ECU · v1.0.9';
+  window.BLINK_PB_VERSION = 'QH-1.0.10';
+  document.title = 'QH ECU · v1.0.10';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2816,29 +2816,32 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   );
 }
 
-/* Full color scale. */
+/* Full yellow -> orange -> red scale stays visible at all times. */
 .qhRpmArc::before{
   background:conic-gradient(
     from 225deg,
-    #deb32a 0deg,
-    #e6bd31 105deg,
-    #e9ac28 160deg,
-    #eb9123 200deg,
-    #e45d20 232deg,
-    #d62b22 270deg,
+    rgba(222,179,42,.42) 0deg,
+    rgba(230,189,49,.46) 105deg,
+    rgba(233,172,40,.48) 160deg,
+    rgba(235,145,35,.50) 200deg,
+    rgba(228,93,32,.52) 232deg,
+    rgba(214,43,34,.54) 270deg,
     transparent 270deg 360deg
   );
-  filter:drop-shadow(0 0 4px rgba(224,182,44,.08));
+  filter:drop-shadow(0 0 2px rgba(224,182,44,.06));
 }
 
-/* Gray cover hides the part not yet reached by live RPM. */
+/* Live RPM adds a soft highlight over the already-colored scale.
+   This preserves the yellow/orange/red gradient instead of replacing it with gray. */
 .qhRpmArc::after{
   background:conic-gradient(
     from 225deg,
-    transparent 0deg var(--rpm-angle),
-    #2b2d30 var(--rpm-angle) 270deg,
+    rgba(255,247,207,.30) 0deg,
+    rgba(255,238,171,.22) var(--rpm-angle),
+    transparent var(--rpm-angle) 270deg,
     transparent 270deg 360deg
   );
+  filter:drop-shadow(0 0 3px rgba(255,220,116,.10));
 }
 
 .qhRpmTicksArc{
@@ -2874,7 +2877,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   left:calc(50% - 1px)!important;
   bottom:50%!important;
   width:2px!important;
-  height:35%!important;
+  height:39%!important;
   transform-origin:50% 100%!important;
   transform:rotate(calc(-135deg + var(--rpm-angle)))!important;
   pointer-events:none!important;
@@ -2893,9 +2896,9 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   border-radius:50%!important;
   background:radial-gradient(circle,#fff8d0 0%,#ffe288 46%,#eeb322 100%)!important;
   box-shadow:
-    0 0 3px rgba(255,250,210,.86),
-    0 0 8px rgba(255,226,122,.38),
-    0 0 13px rgba(232,170,31,.11)!important;
+    0 0 2px rgba(255,250,210,.72),
+    0 0 6px rgba(255,226,122,.30),
+    0 0 10px rgba(232,170,31,.08)!important;
 }
 
 .qhRpmTickLabels{
@@ -3496,6 +3499,28 @@ html body .miniStatus{
   #mapEditorScreen .editToolbar{
     grid-template-columns:repeat(4,minmax(0,1fr))!important;
   }
+}
+</style>
+<style id="qhRpmVisualFix">
+/* ===== QH RPM VISUAL FIX v1.0.10 ===== */
+.qhRpmArc::before{opacity:1!important}
+.qhRpmArc::after{opacity:1!important}
+
+/* Marker tip follows the middle of the colored ring instead of sitting inside the dial. */
+.qhRpmMarker{
+  height:39%!important;
+}
+.qhRpmMarker::before{
+  width:7px!important;
+  height:7px!important;
+  top:-2.5px!important;
+  left:-2.5px!important;
+}
+
+/* Keep numbers clean and slightly calmer. */
+.qhRpmTickLabels{
+  font-size:10.5px!important;
+  opacity:.94!important;
 }
 </style>
 </head>
