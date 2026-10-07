@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.33';
-  document.title = 'QH ECU · v1.0.33';
+  window.BLINK_PB_VERSION = 'QH-1.0.34';
+  document.title = 'QH ECU · v1.0.34';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4086,7 +4086,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.33</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.34</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -7012,8 +7012,6 @@ window.addEventListener('beforeunload',save);
   let otaManifestCache=null;
   let otaBleTransferActive=false;
   let otaBleFatalError='';
-  let otaLastErrorText='';
-  let otaAbortCleanup=false;
   window.blinkOtaTransferActive=()=>otaBleTransferActive;
   const otaStatusWaiters=[];
   const otaWifiRx=new Map();
@@ -7124,7 +7122,7 @@ window.addEventListener('beforeunload',save);
 
   async function otaScanWifi(){
     try{
-      if(!state.ecuConnected)throw new Error('Hãy kết nối BLE với Blink trước.');
+      if(!state.ecuConnected)throw new Error('Hãy kết nối BLE với QH trước.');
       otaWifiNetworks=[];otaWifiRx.clear();
       const sel=$('otaSsid');if(sel)sel.innerHTML='<option value="">Đang quét Wi-Fi...</option>';
       setOtaControlsBusy(true);
@@ -7178,7 +7176,6 @@ window.addEventListener('beforeunload',save);
       otaUpdateReady=false;if(btn)btn.disabled=true;if(next)next.value='Đã mới nhất';
       setOtaInfo('ESP32 đang dùng phiên bản mới nhất.');
     }else if(text==='OTA:BSTART'){
-      otaLastErrorText='';
       if(btn)btn.disabled=true;if(prog)prog.value=0;
       setOtaInfo('ESP32 đã mở phân vùng OTA · đang truyền firmware qua BLE...');
       setEcuTaskStatus('loading','ĐANG CẬP NHẬT ESP32...');
@@ -7197,11 +7194,7 @@ window.addEventListener('beforeunload',save);
     }else if(text==='OTA:ABORT'){
       otaBleTransferActive=false;
       setOtaControlsBusy(false);
-      if(otaAbortCleanup){
-        otaAbortCleanup=false;
-      }else if(!otaLastErrorText){
-        setOtaInfo('Phiên OTA đã dừng. Hãy kiểm tra lỗi ngay trước đó.','error');
-      }
+      setOtaInfo('Đã hủy cập nhật firmware.','error');
     }else if(text==='OTA:BUSY'){
       // A stale REDLEO live packet may arrive just as OTA begins. During an
       // active firmware transfer this is expected and must not replace the
@@ -7240,7 +7233,6 @@ window.addEventListener('beforeunload',save);
         DATA:'Gói firmware BLE không hợp lệ.',
         SEQ:'Mất thứ tự gói firmware BLE. Đã hủy cập nhật.'
       }[code]||('Lỗi OTA: '+code);
-      otaLastErrorText=msg;
       setOtaInfo(msg,'error');setEcuTaskStatus('error','UPDATE ESP32 · LỖI');
     }
   }
@@ -7281,7 +7273,7 @@ window.addEventListener('beforeunload',save);
 
   async function otaCheck(){
     try{
-      if(!state.ecuConnected)throw new Error('Hãy kết nối BLE với Blink trước.');
+      if(!state.ecuConnected)throw new Error('Hãy kết nối BLE với QH trước.');
       otaUpdateReady=false;otaManifestCache=null;
       $('otaInstallBtn').disabled=true;
       $('otaNewVersion').value='--';
@@ -7355,7 +7347,7 @@ window.addEventListener('beforeunload',save);
     await commandChar.writeValue(pkt);
   }
 
-  async function transferFirmwareBle(bin,shaHex,mode='fast19'){
+  async function transferFirmwareBle(bin,shaHex){
     const begin=new Uint8Array(36);
     const size=bin.byteLength>>>0;
     begin[0]=size&255;begin[1]=(size>>>8)&255;begin[2]=(size>>>16)&255;begin[3]=(size>>>24)&255;
@@ -7369,56 +7361,41 @@ window.addEventListener('beforeunload',save);
     const startStatus=await startWait;
     if(startStatus!=='OTA:BSTART')throw new Error('ESP32 từ chối bắt đầu OTA: '+startStatus);
 
-    const desktop=desktopChromiumBleClient()&&!!window.blinkBridgeTxAdaptive;
-    const probed=Math.max(12,Math.min(160,Math.round(Number(window.blinkBridgeTxPayload)||160)));
-
-    // FW1.9 FAST = historical Blink Turbo OTA: proven TX payload, ACK every
-    // 4th packet, 2 ms yield between no-response packets.
-    // STABLE = rollback baseline preserved as "Cách update OTA ổn định":
-    // Stable snapshot is locked in branch backup/ota-on-dinh-1.0.30.
-    // ACK every 2 packets using the same proven TX payload.
-    // SAFE = ACK every packet at 100B (with ATT-size fallback).
-    if(!desktop)mode='safe';
-    let chunkSize=(mode==='safe')?100:probed;
-    const barrierEvery=mode==='fast19'?4:mode==='stable'?2:1;
-    const noAckDelay=mode==='fast19'?2:mode==='stable'?1:0;
+    let chunkSize=160;
     let offset=0;
     let packetNo=0;
     otaBleFatalError='';
-    otaLastErrorText='';
-
-    const modeLabel=mode==='fast19'
-      ?('OTA NHANH FW1.9 · '+chunkSize+'B · ACK 1/4')
-      :mode==='stable'
-        ?('OTA ỔN ĐỊNH · '+chunkSize+'B · ACK 1/2')
-        :('OTA SAFE · '+chunkSize+'B · ACK MỖI GÓI');
-    setOtaInfo('Đang cập nhật firmware · '+modeLabel);
 
     while(offset<bin.byteLength){
       if(otaBleFatalError)throw new Error(otaBleFatalError);
 
       const count=Math.min(chunkSize,bin.byteLength-offset);
-      const reliable=(barrierEvery===1)||(((packetNo+1)%barrierEvery)===0)||(offset+count>=bin.byteLength);
+      const reliable=((packetNo+1)%8===0) || (offset+count>=bin.byteLength);
       try{
         await writeBleFirmwareChunk(offset,bin.subarray(offset,offset+count),reliable);
         offset+=count;
         packetNo++;
-      }catch(err){
-        if(chunkSize>12&&!otaBleFatalError){
+      }catch(e){
+        // If the negotiated ATT size is smaller than expected, step down.
+        // Restarting from the same offset is safe because the failed GATT write
+        // was not accepted by ESP32.
+        if(chunkSize>12 && !otaBleFatalError){
           chunkSize=chunkSize>100?100:chunkSize>60?60:chunkSize>20?20:12;
           packetNo=0;
           await new Promise(r=>setTimeout(r,20));
-          setOtaInfo('Đang cập nhật firmware · giảm gói còn '+chunkSize+'B');
           continue;
         }
-        throw err;
+        throw e;
       }
 
-      if(!reliable&&noAckDelay>0)await new Promise(r=>setTimeout(r,noAckDelay));
       if(otaBleFatalError)throw new Error(otaBleFatalError);
 
       const pct=Math.floor(offset*100/bin.byteLength);
       if($('otaProgress'))$('otaProgress').value=pct;
+
+      // A tiny yield between packets keeps Bluefy responsive. The actual hard
+      // flow-control point is every 8th with-response packet above.
+      if(!reliable)await new Promise(r=>setTimeout(r,2));
     }
 
     const doneWait=waitOtaStatus(t=>t==='OTA:DONE'||t.startsWith('OTA:ERR='),12000);
@@ -7426,6 +7403,7 @@ window.addEventListener('beforeunload',save);
     const doneStatus=await doneWait;
     if(doneStatus!=='OTA:DONE')throw new Error('ESP32 không hoàn tất OTA: '+doneStatus);
   }
+
   async function otaInstall(){
     try{
       if(!otaUpdateReady||!otaManifestCache)throw new Error('Chưa có firmware mới sẵn sàng.');
@@ -7453,53 +7431,17 @@ window.addEventListener('beforeunload',save);
       if(window.BlinkRealProtocol&&typeof window.BlinkRealProtocol.pauseForOta==='function'){
         await window.BlinkRealProtocol.pauseForOta();
       }
-      setOtaInfo('Đang truyền '+Math.round(buf.byteLength/1024)+' KB qua BLE...');
-      const fwBytes=new Uint8Array(buf);
-      const currentFw=String(otaCurrentVersionCache||$('otaCurrentVersion')?.value||'').trim();
-      const useFast19=desktopChromiumBleClient()&&/^1\.9(?:\D|$)/.test(currentFw);
-
-      const resetPartialOta=async()=>{
-        otaAbortCleanup=true;
-        try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){otaAbortCleanup=false;}
-        await new Promise(r=>setTimeout(r,220));
-        otaBleFatalError='';
-        otaLastErrorText='';
-        if($('otaProgress'))$('otaProgress').value=0;
-      };
-
-      try{
-        await transferFirmwareBle(fwBytes,actualSha,useFast19?'fast19':'stable');
-      }catch(firstErr){
-        const firstMsg=String(otaBleFatalError||firstErr&&firstErr.message||firstErr);
-        const seq1=/OTA:ERR=SEQ|\bSEQ\b/i.test(firstMsg);
-        if(!seq1||!desktopChromiumBleClient())throw firstErr;
-
-        await resetPartialOta();
-        setOtaInfo('OTA NHANH bị mất thứ tự gói · tự quay về CÁCH UPDATE OTA ỔN ĐỊNH...');
-        try{
-          await transferFirmwareBle(fwBytes,actualSha,'stable');
-        }catch(stableErr){
-          const stableMsg=String(otaBleFatalError||stableErr&&stableErr.message||stableErr);
-          const seq2=/OTA:ERR=SEQ|\bSEQ\b/i.test(stableMsg);
-          if(!seq2)throw stableErr;
-
-          await resetPartialOta();
-          setOtaInfo('OTA ỔN ĐỊNH vẫn lỗi · tự chuyển SAFE...');
-          await transferFirmwareBle(fwBytes,actualSha,'safe');
-        }
-      }
+      setOtaInfo('Đang truyền '+Math.round(buf.byteLength/1024)+' KB qua BLE tốc độ cao...');
+      await transferFirmwareBle(new Uint8Array(buf),actualSha);
       setTimeout(()=>{try{window.BlinkRealProtocol?.resumeAfterOta?.()}catch(_e){}},1800);
     }catch(e){
       otaBleTransferActive=false;
       const firstOtaError=otaBleFatalError;
-      const raw=String(firstOtaError||e&&e.message||e);
-      if(!otaLastErrorText)otaLastErrorText=raw;
-      otaAbortCleanup=true;
-      try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){otaAbortCleanup=false;}
+      try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){}
       otaBleFatalError='';
       try{window.BlinkRealProtocol?.resumeAfterOta?.()}catch(_e){}
       setOtaControlsBusy(false);
-      setOtaInfo('Cập nhật thất bại: '+otaLastErrorText,'error');
+      setOtaInfo('Cập nhật thất bại: '+String(firstOtaError||e&&e.message||e),'error');
       setEcuTaskStatus('error','UPDATE ESP32 · LỖI');
     }
   }
