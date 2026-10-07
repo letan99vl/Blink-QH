@@ -4583,16 +4583,23 @@ async function restoreReal(){
       // Restore 0x8B is its own transaction. Do NOT force its response through
       // the 9958-byte 0xAB Read-All decoder; real V11 ECUs can return a different
       // checksum-valid restore response layout.
-      const rx=await rawExchange(req5(0x8B,0x8B),35000);
-      const restored=parseRestoreResponse(rx);
-      taskUi('loading','ATE V11 · 0x8B ACK '+restored.sourceLength+'B · ĐANG XÁC MINH 0xAB...');
+      let restored=null,restoreAckError=null;
+      try{
+        const rx=await rawExchange(req5(0x8B,0x8B),7000);
+        restored=parseRestoreResponse(rx);
+        taskUi('loading','ATE V11 · 0x8B ACK '+restored.sourceLength+'B · ĐANG XÁC MINH 0xAB...');
+      }catch(e){
+        restoreAckError=e;
+        log('ATE V11 restore 0x8B ACK missing; continue with readback verify:',String(e&&e.message||e));
+        taskUi('loading','ATE V11 · 0x8B ĐÃ GỬI · KHÔNG THẤY ACK · ĐANG XÁC MINH...');
+      }
 
       let verify=null,lastVerify=null,lastVerifyError=null;
-      const delays=[850,1800];
+      const delays=restored?[850,1800]:[1100,2200];
       for(let attempt=0;attempt<delays.length&&!verify;attempt++){
         await new Promise(r=>setTimeout(r,delays[attempt]));
         try{
-          taskUi('loading','ATE V11 · 0x8B OK '+restored.sourceLength+'B · VERIFY 0xAB '+(attempt+1)+'/'+delays.length);
+          taskUi('loading','ATE V11 · '+(restored?('0x8B OK '+restored.sourceLength+'B'):'0x8B ACK MẤT')+' · VERIFY 0xAB '+(attempt+1)+'/'+delays.length);
           const C=await readAll(0xAB,20000);
           lastVerify=C;
           if(C&&C.v11Decoded&&C.sourceLength===9958)verify=C;
@@ -4613,32 +4620,55 @@ async function restoreReal(){
       }
 
       if(verify){
-        notice('success','RESTORE ATE V11 OK','0x8B ACK '+restored.sourceLength+'B checksum OK · 0xAB Read All 9958B verify OK'+(handshakeOk?' · handshake OK':'')+'.');
+        notice('success','RESTORE ATE V11 OK',(restored?('0x8B ACK '+restored.sourceLength+'B checksum OK'):'0x8B đã gửi · ACK bị mất')+' · 0xAB Read All 9958B verify OK'+(handshakeOk?' · handshake OK':'')+'.');
         return verify;
       }
 
       const readbackDetail=lastVerify
         ?'0xAB trả frame checksum hợp lệ '+lastVerify.sourceLength+'B nhưng chưa phải layout 9958B'
         :(lastVerifyError?'0xAB chưa xác minh: '+String(lastVerifyError&&lastVerifyError.message||lastVerifyError):'0xAB chưa xác minh');
-      taskUi('success','ATE V11 · RESTORE 0x8B ĐÃ PHẢN HỒI',4200);
-      if(typeof window.showEcuNotice==='function'){
-        showEcuNotice('info','RESTORE ATE V11 ĐÃ THỰC HIỆN','0x8B trả '+restored.sourceLength+'B checksum hợp lệ. '+readbackDetail+'.'+(handshakeOk?' ECU đã handshake lại thành công.':'')+' Không báo lỗi giả; hãy ĐỌC TOÀN BỘ lại nếu cần xác minh full image.',0);
+      if(restored||handshakeOk){
+        taskUi('success','ATE V11 · RESTORE ĐÃ THỰC HIỆN',4200);
+        if(typeof window.showEcuNotice==='function'){
+          showEcuNotice('info','RESTORE ATE V11 ĐÃ THỰC HIỆN',
+            (restored?('0x8B trả '+restored.sourceLength+'B checksum hợp lệ. '):'0x8B đã gửi nhưng ACK không về. ')+
+            readbackDetail+'.'+(handshakeOk?' ECU đã handshake lại thành công.':'')+
+            ' Không báo timeout giả; hãy ĐỌC TOÀN BỘ lại nếu cần xác minh full image.',0);
+        }
+        return restored||{restoreSent:true,ackMissing:true,handshakeOk:true};
       }
-      return restored;
+      throw restoreAckError||lastVerifyError||new Error('ATE V11 Restore: ECU chưa phản hồi sau lệnh 0x8B.');
     }
 
-    const restored=await readAll(0x8B);
+    let restored=null,restoreAckError=null;
+    try{
+      restored=await readAll(0x8B,7000);
+    }catch(e){
+      restoreAckError=e;
+      log('Restore 0x8B ACK/full-image missing; continue with post-restore verification:',String(e&&e.message||e));
+      taskUi('loading','RESTORE 0x8B ĐÃ GỬI · KHÔNG THẤY ACK · ĐANG XÁC MINH ECU...');
+    }
     if(ecuProfile&&ecuProfile.key==='MODERN_V9'){
-      if(!restored||!restored.raw||restored.raw.length<100)throw new Error('REDLEO V9 Restore 0x8B không trả full image hợp lệ.');
-      await new Promise(r=>setTimeout(r,350));
+      await new Promise(r=>setTimeout(r,900));
       taskUi('loading','REDLEO V9 · RESTORE 0x8B · READ ALL VERIFY...');
-      const verify=await readAll(0xAB);
-      if(!verify||!verify.raw||verify.raw.length!==restored.raw.length)throw new Error('RESTORE VERIFY: độ dài dữ liệu sau 0x8B không khớp lần READ ALL xác nhận.');
-      const a=restored.raw.slice(1,-2),b=verify.raw.slice(1,-2);
-      if(!bytesEqual(a,b))throw new Error('RESTORE VERIFY: dữ liệu sau 0x8B khác lần READ ALL xác nhận.');
-      notice('success','RESTORE REDLEO V9 OK','0x8B + Read All verify byte-level · '+verify.raw.length+'B.');
+      let verify=null;
+      try{
+        verify=await readAll(0xAB,20000);
+      }catch(e){
+        throw restoreAckError||e;
+      }
+      if(!verify||!verify.raw||verify.raw.length<100)throw new Error('RESTORE VERIFY: REDLEO V9 không trả Read All hợp lệ sau 0x8B.');
+      if(restored&&restored.raw){
+        if(verify.raw.length!==restored.raw.length)throw new Error('RESTORE VERIFY: độ dài dữ liệu sau 0x8B không khớp lần READ ALL xác nhận.');
+        const a=restored.raw.slice(1,-2),b=verify.raw.slice(1,-2);
+        if(!bytesEqual(a,b))throw new Error('RESTORE VERIFY: dữ liệu sau 0x8B khác lần READ ALL xác nhận.');
+      }
+      notice('success','RESTORE REDLEO V9 OK',
+        restored?('0x8B + Read All verify byte-level · '+verify.raw.length+'B.')
+                :('0x8B đã gửi · ACK/full image bị mất nhưng Read All sau restore OK · '+verify.raw.length+'B.'));
       return verify;
     }
+    if(!restored)throw restoreAckError||new Error('Restore 0x8B chưa có phản hồi xác nhận.');
     notice('success','RESTORE ECU OK','0x8B hoàn tất · ECU trả '+restored.raw.length+'B.');
     return restored;
   }finally{
