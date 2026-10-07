@@ -116,3 +116,28 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - FW2.0 hardens 8-10 KB Read All streaming: jumbo RX delay for >=8000B is 14 ms, yield interval is every 4 packets, and long-jumbo yield pause is 24 ms.
 - QH firmware keeps its own OTA manifest under Blink-QH.
 - Build workflow now publishes QH OTA manifest as version 2.0.
+
+
+## Read All residual stall hardening - QH P.b 1.0.27 / ESP32 FW2.1
+
+- Real-hardware observation after FW2.0: Read All improved substantially but still stalled intermittently, about 2 failures in 10 repeated reads.
+- Blink-Redleo had no commit newer than FW2.0 for this residual case at the time of this checkpoint.
+- Root cause class remains BLE notification loss inside the 8-10 KB RAW_RX stream:
+  - app reassembly is offset-addressed and requires every unique offset;
+  - FW2.0 repeated only START/END chunks, while each middle chunk was still sent only once;
+  - one lost middle notification can therefore leave Read All incomplete.
+- QH FW2.1 adds a reliability-only two-pass stream for jumbo responses >= 8000 bytes:
+  - pass 1 sends all chunks except the final END chunk;
+  - pass 2 sends the whole frame again and includes END;
+  - duplicate START/offset chunks are safe because the web reassembler de-duplicates by offset;
+  - END is intentionally withheld from pass 1 so the app cannot resolve 100% before the redundant second pass has run;
+  - 70 ms gap separates the two passes to reduce correlated host-side BLE queue loss.
+- Smaller responses and non-jumbo paths keep the existing behavior.
+- Existing FW2.0 pacing remains in place for huge jumbo frames (14 ms packet pacing, yield every 4 packets, 24 ms long-frame yield pause).
+- Existing app watchdog + one automatic full Read All retry remains as the final fallback if the same offset is somehow lost in both passes.
+- Firmware source version: 2.1.
+- OTA manifest version: 2.1.
+- OTA SHA256: 904022b052689a0e736a8909954a90d1a6266065f88787b9406a4f3e4d2bbb5d.
+- FW2.1 OTA build workflow completed successfully and pushed binary in commit 393f803210901705f0ca456c22102d1abc3a57f1.
+- Protocol/UI PB bumped to QH 1.0.27 in commit 3a44d4f6d50b6e9ba6835893b754420ce9a08978.
+- Workflow concurrency protection remains enabled so stale firmware jobs cannot overwrite a newer OTA manifest.
