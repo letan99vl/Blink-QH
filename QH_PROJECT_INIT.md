@@ -107,3 +107,12 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - If the negotiated RX stream was above 96B (normally 160B), the retry degrades runtime RX to 96B through FW1.8 RXJUMBO control to reduce BLE queue pressure.
 - No ESP32 firmware update is required; QH FW1.8 already accepts RXJUMBO payloads 64..160B.
 - Read All progress remains visible as percent and received/total bytes.
+
+
+## Blink Read All sync + FW2.0 v1.0.26
+- QH was originally cloned while Blink used classic ESP32 bridge FW1.9; the later QH rollback to FW1.8 was not part of the original clone state.
+- QH protocol core is resynced exactly to current Blink-Redleo Read All release core.
+- QH classic ESP32 firmware is resynced to Blink FW2.0 transport behavior.
+- FW2.0 hardens 8-10 KB Read All streaming: jumbo RX delay for >=8000B is 14 ms, yield interval is every 4 packets, and long-jumbo yield pause is 24 ms.
+- QH firmware keeps its own OTA manifest under Blink-QH.
+- Build workflow now publishes QH OTA manifest as version 2.0.
