@@ -3109,7 +3109,26 @@ async function readAll(cmd=0xAB,timeoutMs=35000){
     // For FW1.8+ browser clients, 160B is enabled only after RXPROBE succeeds.
     // Forcing a proven jumbo link back to 12B turns a ~10 KB Read All into 800+
     // notifications and can choke the browser BLE queue around mid-transfer.
-    const readAllRxPayload=Math.max(12,Number(window.blinkBridgeRxPayload||12));
+    let readAllRxPayload=Math.max(12,Number(window.blinkBridgeRxPayload||12));
+
+    // A probe immediately after connect can occasionally be missed by iOS/WKWebView.
+    // If we are still on the 12B fallback, retry the bridge-only jumbo probe now,
+    // while live polling is stopped and the ECU transport is idle.
+    if(readAllRxPayload<=12&&typeof window.configureBlinkFastBridgeRx==='function'){
+      try{
+        let bridgeStatus=String(window.blinkBridgeFirmwareStatus||'');
+        if(!bridgeStatus&&typeof window.ensureBlinkBridgeFirmwareStatus==='function'){
+          bridgeStatus=String(await window.ensureBlinkBridgeFirmwareStatus(2)||'');
+        }
+        taskUi('loading','ĐỌC TẤT CẢ · ĐANG TỐI ƯU BLE RX...');
+        await window.configureBlinkFastBridgeRx(bridgeStatus);
+        readAllRxPayload=Math.max(12,Number(window.blinkBridgeRxPayload||12));
+        log('READ ALL · bridge RX reprobe',bridgeStatus||'unknown','payload',readAllRxPayload);
+      }catch(e){
+        log('READ ALL · bridge RX reprobe failed; keep fallback',String(e&&e.message||e));
+      }
+    }
+
     taskUi('loading',cmd===0x8B?'ĐANG KHÔI PHỤC ECU...':'ĐANG ĐỌC TẤT CẢ ECU · 0% · RX '+readAllRxPayload+'B');
     const rx=await rawExchange(req5(cmd,cmd),Math.max(5000,Number(timeoutMs)||35000));
     let C=parseReadAll(rx,cmd);
