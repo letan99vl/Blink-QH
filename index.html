@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.19';
-  document.title = 'QH ECU · v1.0.19';
+  window.BLINK_PB_VERSION = 'QH-1.0.20';
+  document.title = 'QH ECU · v1.0.20';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3880,6 +3880,133 @@ html body .miniStatus{
   }
 }
 </style>
+<style id="qhEditorLayout20">
+/* ===== QH MAP EDITOR LAYOUT v1.0.20 ===== */
+#mapEditorScreen .screenHeader{
+  padding-left:12px!important;
+  padding-right:12px!important;
+}
+#mapEditorScreen .screenHeader .screenTitleWrap{
+  margin-left:0!important;
+  min-width:0!important;
+}
+
+/* First row: BACK | READ | SAVE */
+#mapEditorScreen .editToolbar,
+#mapEditorScreen.standaloneFuel .editToolbar,
+#mapEditorScreen.autoTuneMap .editToolbar{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+#mapEditorScreen #editorHeaderBackBtn,
+#mapEditorScreen #readMapBtn,
+#mapEditorScreen #writeMapBtn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#mapEditorScreen #editorHeaderBackBtn{
+  border:2px solid #8b6b22!important;
+  background:linear-gradient(180deg,#28251a,#0c0d0b)!important;
+  color:#f0d687!important;
+  font-weight:950!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,229,139,.16),
+    0 0 0 1px #1c1608,
+    0 3px 8px rgba(0,0,0,.35)!important;
+}
+
+/* Zoom is now part of the live row, directly beside AFR LIVE. */
+#mapEditorScreen .editorInfo,
+#mapEditorScreen.standaloneFuel .editorInfo,
+#mapEditorScreen.autoTuneMap .editorInfo{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+#mapEditorScreen .qhZoomInfoBtn{
+  min-width:0!important;
+  min-height:52px!important;
+  padding:5px 7px!important;
+  border:2px solid #80651f!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#26241b,#0c0d0b)!important;
+  color:#eee5ca!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,227,137,.13),
+    0 3px 9px rgba(0,0,0,.32)!important;
+}
+#mapEditorScreen .qhZoomInfoBtn span{
+  color:#d9ad35!important;
+  font-size:16px!important;
+  line-height:1!important;
+}
+#mapEditorScreen .qhZoomInfoBtn b{
+  font-size:9px!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+}
+
+/* ECT remains a fourth card only on wide screens. */
+#mapEditorScreen .editorEctBox{display:none!important}
+@media(min-width:900px){
+  #mapEditorScreen .editorInfo,
+  #mapEditorScreen.standaloneFuel .editorInfo,
+  #mapEditorScreen.autoTuneMap .editorInfo{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  #mapEditorScreen .editorEctBox{display:block!important}
+}
+
+@media(max-width:520px){
+  #mapEditorScreen .editToolbar,
+  #mapEditorScreen.standaloneFuel .editToolbar,
+  #mapEditorScreen.autoTuneMap .editToolbar{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+  }
+  #mapEditorScreen #editorHeaderBackBtn,
+  #mapEditorScreen #readMapBtn,
+  #mapEditorScreen #writeMapBtn{
+    height:42px!important;
+    min-height:42px!important;
+    padding:3px 4px!important;
+    font-size:8px!important;
+    white-space:nowrap!important;
+  }
+  #mapEditorScreen .editorInfo,
+  #mapEditorScreen.standaloneFuel .editorInfo,
+  #mapEditorScreen.autoTuneMap .editorInfo{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+  }
+  #mapEditorScreen .editorInfo .livebox,
+  #mapEditorScreen .qhZoomInfoBtn{
+    min-height:48px!important;
+  }
+  #mapEditorScreen .qhZoomInfoBtn b{font-size:7px!important}
+}
+
+@media(orientation:landscape){
+  #mapEditorScreen .editToolbar,
+  #mapEditorScreen.standaloneFuel .editToolbar,
+  #mapEditorScreen.autoTuneMap .editToolbar{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  #mapEditorScreen .editorInfo,
+  #mapEditorScreen.standaloneFuel .editorInfo,
+  #mapEditorScreen.autoTuneMap .editorInfo{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  #mapEditorScreen .editorEctBox{display:none!important}
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3891,7 +4018,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.19</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.20</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -3985,9 +4112,9 @@ html body .miniStatus{
   </section>
 
   <section id="mapEditorScreen" class="screen">
-    <div class="screenHeader"><button class="qhBackBtn" id="editorHeaderBackBtn" type="button" data-nav="maps" aria-label="Quay lại bản đồ">‹</button><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
-    <div class="editToolbar"><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại" hidden tabindex="-1">‹</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button id="mapZoomBtn" class="ghost" type="button">⛶ PHÓNG TO MAP</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="recordBtn" class="good autoTuneEditorOnly" type="button">● GHI AFR</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
-    <div class="editorInfo"><div class="livebox"><div class="k">TPS / RPM</div><div class="v" data-mirror="cell">--</div></div><div class="livebox"><div class="k">AFR LIVE</div><div class="v" data-mirror="afr">--</div></div><div class="livebox editorEctBox"><div class="k">NHIỆT ĐỘ MÁY ECT</div><div class="v" data-mirror="ect">-- °C</div></div></div>
+    <div class="screenHeader"><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="editToolbar"><button id="editorHeaderBackBtn" class="qhEditorToolbarBack" type="button" aria-label="Quay về">‹ QUAY VỀ</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại" hidden tabindex="-1">‹</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="recordBtn" class="good autoTuneEditorOnly" type="button">● GHI AFR</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
+    <div class="editorInfo"><div class="livebox"><div class="k">TPS / RPM</div><div class="v" data-mirror="cell">--</div></div><div class="livebox"><div class="k">AFR LIVE</div><div class="v" data-mirror="afr">--</div></div><button id="mapZoomBtn" class="qhZoomInfoBtn" type="button"><span>⛶</span><b>PHÓNG TO MAP</b></button><div class="livebox editorEctBox"><div class="k">NHIỆT ĐỘ MÁY ECT</div><div class="v" data-mirror="ect">-- °C</div></div></div>
     <div class="tabs editorTabs"><button class="tab active" data-tab="measured">AFR ĐO (QH)</button><button class="tab" data-tab="target">AFR MỤC TIÊU (QH)</button><button class="tab" data-tab="inject">THỜI GIAN PHUN</button><button class="tab" data-tab="corrected">MAP ĐÃ BÙ</button></div>
     <div class="editorStepBar"><div class="mapToolGroup mapStepGroup"><span>Bước:</span><button class="stepChip" data-mapstep="1" type="button">1</button><button class="stepChip on" data-mapstep="0.1" type="button">0.1</button><button class="stepChip" data-mapstep="0.01" type="button">0.01</button></div><button class="stepChip scanChip" id="mapScanToggle" type="button">▦ QUÉT CHỌN</button><div class="mapToolGroup mapModeGroup"><span>Chế độ:</span><button class="stepChip on" data-mapmode="unit" type="button">Unit</button><button class="stepChip" data-mapmode="percent" type="button">%</button></div><button class="stepChip" id="mapLiveCursorToggle" type="button">◎ TỰ CUỘN LIVE</button></div>
     <main class="mapwrap" id="mapWrap"><table id="mapTable"></table></main>
