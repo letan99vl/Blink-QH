@@ -1,0 +1,71 @@
+name: Build QH ECU IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'iOS/**'
+      - '.github/workflows/build-ios-ipa.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: |
+          cd iOS
+          xcodegen generate --spec project.yml
+          xcodebuild -list -project QHECU.xcodeproj
+
+      - name: Build unsigned iPhone app
+        run: |
+          rm -rf build
+          xcodebuild \
+            -project iOS/QHECU.xcodeproj \
+            -scheme QHECU \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package IPA
+        run: |
+          APP="build/Build/Products/Release-iphoneos/QH ECU.app"
+          test -d "$APP"
+          rm -rf ipa-payload
+          mkdir -p ipa-payload/Payload
+          ditto "$APP" "ipa-payload/Payload/QH ECU.app"
+          cd ipa-payload
+          /usr/bin/zip -qry ../QH-ECU-v1.0.21.ipa Payload
+          cd ..
+          shasum -a 256 QH-ECU-v1.0.21.ipa | tee QH-ECU-v1.0.21.ipa.sha256
+          ls -lh QH-ECU-v1.0.21.ipa
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: QH-ECU-IPA-v1.0.21
+          path: |
+            QH-ECU-v1.0.21.ipa
+            QH-ECU-v1.0.21.ipa.sha256
+          if-no-files-found: error
+          retention-days: 30
