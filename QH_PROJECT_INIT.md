@@ -216,3 +216,16 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
   3. Neu van SEQ -> tu restart lan cuoi bang SAFE: ACK moi packet.
 - iOS/mobile/non-probed client khong dung Turbo FW1.9; giu duong an toan.
 - Main implementation/PB commit: `5e74af1dbc6541e49aeb80de75d45eafa4a428b3`.
+
+
+## OTA FAST FW1.9 ROLLBACK - QH P.b 1.0.32
+
+- P.b 1.0.31 thu nghiem OTA NHANH FW1.9 (ACK 1/8) bi loi tren thiet bi test thuc te.
+- Quyet dinh: BO DUONG TURBO 1/8 khoi main.
+- Main da rollback index.html ve dung snapshot **Cach update OTA on dinh** tu branch `backup/ota-on-dinh-1.0.30`.
+- P.b duoc tang thanh 1.0.32 chi de nhan biet rollback da deploy; logic OTA la logic on dinh cua 1.0.30:
+  - Windows Chromium dung TX payload da probe;
+  - ACK/barrier moi 2 packet;
+  - neu Turbo ngan bi SEQ thi tu fallback Safe ACK moi packet.
+- Khong duoc phuc hoi logic ACK 1/8 cua 1.0.31 neu chua co mot co che retry/ack theo offset chac chan hon.
+- Rollback commit: `da6e2431a7ae35f9435d211943fcd7dfa7e79fd4`.
