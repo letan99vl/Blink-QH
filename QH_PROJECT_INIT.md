@@ -28,3 +28,10 @@ Ban rieng cho khach hang QH ECU. Giu nguyen logic doc/ghi ECU, protocol va cac c
 
 ## Luu y OTA
 File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc bytes de clone truc tiep. Khong dua file rong vao repo QH. Source firmware va workflow build da duoc clone; build lai OTA binary trong repo QH truoc khi phat hanh firmware QH.
+
+## QH color cleanup v1.0.1
+- Commit: `f62e16aa4d32f78f666832fd914c57f7d368bbd0`
+- Phu lai cac lop RED/BLACK cu bang den-xam kim loai-vang QH.
+- Trang thai OFF, menu, icon, map selection, Auto Tune, Settings va editor khong con dung mau do lam mau giao dien.
+- Mau do chi giu cho du lieu co y nghia nhu AFR qua giau/heatmap cao va thong bao loi nghiem trong.
+- Bo khoang trong bottom navigation cu, cac screen dung full chieu cao.
