@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.28';
-  document.title = 'QH ECU · v1.0.28';
+  window.BLINK_PB_VERSION = 'QH-1.0.29';
+  document.title = 'QH ECU · v1.0.29';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4086,7 +4086,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.28</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.29</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -7013,6 +7013,7 @@ window.addEventListener('beforeunload',save);
   let otaBleTransferActive=false;
   let otaBleFatalError='';
   let otaLastErrorText='';
+  let otaAbortCleanup=false;
   window.blinkOtaTransferActive=()=>otaBleTransferActive;
   const otaStatusWaiters=[];
   const otaWifiRx=new Map();
@@ -7196,7 +7197,11 @@ window.addEventListener('beforeunload',save);
     }else if(text==='OTA:ABORT'){
       otaBleTransferActive=false;
       setOtaControlsBusy(false);
-      if(!otaLastErrorText)setOtaInfo('Đã hủy cập nhật firmware.','error');
+      if(otaAbortCleanup){
+        otaAbortCleanup=false;
+      }else if(!otaLastErrorText){
+        setOtaInfo('Phiên OTA đã dừng. Hãy kiểm tra lỗi ngay trước đó.','error');
+      }
     }else if(text==='OTA:BUSY'){
       // A stale REDLEO live packet may arrive just as OTA begins. During an
       // active firmware transfer this is expected and must not replace the
@@ -7450,7 +7455,8 @@ window.addEventListener('beforeunload',save);
       const firstOtaError=otaBleFatalError;
       const raw=String(firstOtaError||e&&e.message||e);
       if(!otaLastErrorText)otaLastErrorText=raw;
-      try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){}
+      otaAbortCleanup=true;
+      try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){otaAbortCleanup=false;}
       otaBleFatalError='';
       try{window.BlinkRealProtocol?.resumeAfterOta?.()}catch(_e){}
       setOtaControlsBusy(false);
