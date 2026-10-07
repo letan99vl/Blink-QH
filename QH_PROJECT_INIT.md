@@ -35,3 +35,12 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Trang thai OFF, menu, icon, map selection, Auto Tune, Settings va editor khong con dung mau do lam mau giao dien.
 - Mau do chi giu cho du lieu co y nghia nhu AFR qua giau/heatmap cao va thong bao loi nghiem trong.
 - Bo khoang trong bottom navigation cu, cac screen dung full chieu cao.
+
+## QH dashboard v1.0.2
+- Commit: `b6fbd6d7d268801306e4c6715c6c18bab0bd479e`
+- Thay dashboard Home bang cum dong ho RPM theo anh mau QH ECU: vong cung vang -> cam -> do redline, so RPM lon, x1000, marker live.
+- Them cum SPEED ben phai (hien -- km/h cho den khi co nguon speed that), TPS/ECT, va strip TPS/MAP/AFR/ECT/IAT.
+- Giu nguyen cac ID live cu de protocol va logic ECU khong doi.
+- Them QH FINAL THEME o cuoi HEAD de khoa mau den/xam kim loai/vang sau tat ca CSS legacy.
+- Doi cac nhan BLINK con hien thi tren Auto Tune/Settings sang QH.
+- Kiem tra static: khong trung ID, khong thieu cac ID live/mapSelect bat buoc.
