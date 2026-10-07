@@ -44,12 +44,12 @@ must(proto,/if\(b\.afr&&b\.afrEnabled\)\{setEcuAfrMeta\(b\.bank,[\s\S]{0,180}emi
 // UI separation: Blink Auto Tune target is not the ECU Air fuel ratio table.
 must(ui,/data-feature="afr_map"[\s\S]{0,260}<h3>Air fuel ratio<\/h3>[\s\S]{0,180}Auto tuner zin của ECU/,
   'ECU map card must be named Air fuel ratio / auto tuner zin');
-must(ui,/data-tab="target">AFR MỤC TIÊU \(BLINK\)<\/button>/,
-  'Blink target tab label missing');
-must(ui,/data-auto-tab="measured">AFR ĐO CỦA BLINK<\/button>/,
-  'Blink measured AFR label missing');
-must(ui,/data-auto-tab="target">AFR MỤC TIÊU CỦA BLINK<\/button>/,
-  'Blink target shortcut label missing');
+must(ui,/data-tab="target">AFR MỤC TIÊU (?:\\(BLINK\\)|\\(QH\\))<\\/button>/,
+  'Auto Tune target tab label missing');
+must(ui,/data-auto-tab="measured">AFR ĐO (?:CỦA BLINK|QH)<\\/button>/,
+  'Auto Tune measured AFR shortcut label missing');
+must(ui,/data-auto-tab="target">AFR MỤC TIÊU (?:CỦA BLINK|QH)<\\/button>/,
+  'Auto Tune target shortcut label missing');
 
 // Original-style OFF cells: dark/dash in UI while hidden numeric target survives in data-value.
 must(ui,/const afr=f\.id==='afr_map';/,'AFR ON/OFF controls must be visible for all ECU profiles');
@@ -84,4 +84,4 @@ for(const c of cases){
 }
 
 if(process.exitCode)process.exit(process.exitCode);
-console.log('OK: Blink AFR target stays separate; original ECU Air fuel ratio 0x5x/420B ON-OFF codec is locked across families.');
+console.log('OK: Auto Tune AFR target stays separate; original ECU Air fuel ratio 0x5x/420B ON-OFF codec is locked across families.');
