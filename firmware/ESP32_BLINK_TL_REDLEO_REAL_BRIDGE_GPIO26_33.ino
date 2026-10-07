@@ -14,6 +14,7 @@
 
 /*
   BLINK TL - REDLEO ECU REAL BLE/UART BRIDGE
+  QH build: mirrors Blink FW2.0 transport; OTA manifest stays in Blink-QH.
   ------------------------------------------
   Phone/Bluefy/Android <-> BLE <-> ESP32 <-> REDLEO ECU UART
 
