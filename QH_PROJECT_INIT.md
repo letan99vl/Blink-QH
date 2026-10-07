@@ -57,3 +57,10 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Dong bo cac trang con theo skin mau: nen carbon, vien vang 2 lop, bevel kim loai, glow vang nhe.
 - Settings tiles, input, button, ECU panels, Map cards, Auto Tune cards, editor toolbar/meta deu dung chung skin QH.
 - Khong doi logic ECU/protocol; chi thay CSS/UI.
+
+## TANLE RPM transplant v1.0.14
+- Commit: `6b7c0305f245666ad9582d1334a5d54a9a3e17f9`
+- Be nguyen SVG RPM gauge tu `letan99vl/tanle/live/rpm.html` sang dashboard QH.
+- Be logic LED segment/digital digit tu TANLE va noi vao RPM live cua QH qua `rpmLive` an + `qhTanleSetRpm()`.
+- Scale 0-16000 rpm, khong doi protocol ECU.
+- Kiem tra: khong trung ID, gauge cu da duoc go khoi DOM.
