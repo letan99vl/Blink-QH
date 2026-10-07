@@ -51,3 +51,9 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Bo moc 18; gauge hien 0-16 va scale 0-16000 rpm.
 - Vong cung mau vang -> cam -> do chi hien den vi tri RPM live; phan chua dat duoc duoc che bang mau xam.
 - Marker va vong cung dung chung bien `--rpm-angle`, co transition ngan de chuyen dong muot hon.
+
+## QH inner skin v1.0.7
+- Commit: `48b46862fbf5833ae34a0f4b99d1e60271a1faff`
+- Dong bo cac trang con theo skin mau: nen carbon, vien vang 2 lop, bevel kim loai, glow vang nhe.
+- Settings tiles, input, button, ECU panels, Map cards, Auto Tune cards, editor toolbar/meta deu dung chung skin QH.
+- Khong doi logic ECU/protocol; chi thay CSS/UI.
