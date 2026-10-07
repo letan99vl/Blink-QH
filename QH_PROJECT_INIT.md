@@ -159,3 +159,14 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Tradeoff: OTA is intentionally slower than the previous burst path, but sequential flash transport is much safer.
 - Main implementation commit: a2c59ad355126ed0160f00c3c9b39724063e62d5.
 - PB bump commit: 1e339cadbf7740eb6eb9a929ca1061187588a50b.
+
+
+## OTA abort-mask follow-up - QH P.b 1.0.29
+
+- Screenshot evidence showed the UI still displaying the generic "Đã hủy cập nhật firmware" banner after an OTA failure.
+- Repo inspection confirmed current 1.0.28 had only one OTA handler and the new reliable per-packet write path, so the screenshot was consistent with a stale pre-1.0.28 page/tab or an ABORT cleanup notification racing the final error UI.
+- 1.0.29 adds an explicit otaAbortCleanup flag.
+- When otaInstall() sends OTA_BLE_ABORT only to clean up after an already-detected failure, the later OTA:ABORT notification is now silent and cannot create/overwrite the error banner.
+- Generic abort text "Đã hủy cập nhật firmware." was removed from the current source. If OTA fails on 1.0.29, the UI must show the real error (SEQ/FLASH/HASH/DATA/GATT/etc.) or a diagnostic "Phiên OTA đã dừng..." message only for a non-cleanup abort.
+- Reliable OTA transport from 1.0.28 remains: every firmware packet uses write-with-response, starting at 100B with 60 -> 20 -> 12B fallback.
+- Implementation/PB commit: 75b9074720120091e0f9543aad9d86afc47bd667.
