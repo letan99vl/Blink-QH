@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.32';
-  document.title = 'QH ECU · v1.0.32';
+  window.BLINK_PB_VERSION = 'QH-1.0.33';
+  document.title = 'QH ECU · v1.0.33';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4086,7 +4086,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.32</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.33</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -7355,7 +7355,7 @@ window.addEventListener('beforeunload',save);
     await commandChar.writeValue(pkt);
   }
 
-  async function transferFirmwareBle(bin,shaHex,forceSafe=false){
+  async function transferFirmwareBle(bin,shaHex,mode='fast19'){
     const begin=new Uint8Array(36);
     const size=bin.byteLength>>>0;
     begin[0]=size&255;begin[1]=(size>>>8)&255;begin[2]=(size>>>16)&255;begin[3]=(size>>>24)&255;
@@ -7369,22 +7369,30 @@ window.addEventListener('beforeunload',save);
     const startStatus=await startWait;
     if(startStatus!=='OTA:BSTART')throw new Error('ESP32 từ chối bắt đầu OTA: '+startStatus);
 
-    // Windows Chromium + FW1.9+ already probes the largest stable TX payload.
-    // Use a short two-packet burst there: one no-response packet followed by a
-    // write-with-response barrier. Mobile/iOS and fallback mode keep ACK on
-    // every packet. This is far faster than 1.0.29 without returning to the
-    // old eight-packet burst that could overflow the BLE queue.
-    const desktopTurbo=!forceSafe&&desktopChromiumBleClient()&&!!window.blinkBridgeTxAdaptive;
+    const desktop=desktopChromiumBleClient()&&!!window.blinkBridgeTxAdaptive;
     const probed=Math.max(12,Math.min(160,Math.round(Number(window.blinkBridgeTxPayload)||160)));
-    let chunkSize=desktopTurbo?probed:100;
-    const barrierEvery=desktopTurbo?2:1;
+
+    // FW1.9 FAST = historical Blink Turbo OTA: proven TX payload, ACK every
+    // 4th packet, 2 ms yield between no-response packets.
+    // STABLE = rollback baseline preserved as "Cách update OTA ổn định":
+    // Stable snapshot is locked in branch backup/ota-on-dinh-1.0.30.
+    // ACK every 2 packets using the same proven TX payload.
+    // SAFE = ACK every packet at 100B (with ATT-size fallback).
+    if(!desktop)mode='safe';
+    let chunkSize=(mode==='safe')?100:probed;
+    const barrierEvery=mode==='fast19'?4:mode==='stable'?2:1;
+    const noAckDelay=mode==='fast19'?2:mode==='stable'?1:0;
     let offset=0;
     let packetNo=0;
     otaBleFatalError='';
     otaLastErrorText='';
 
-    const mode=desktopTurbo?('TURBO '+chunkSize+'B · ACK 1/2'):('SAFE '+chunkSize+'B · ACK MỖI GÓI');
-    setOtaInfo('Đang cập nhật firmware · '+mode);
+    const modeLabel=mode==='fast19'
+      ?('OTA NHANH FW1.9 · '+chunkSize+'B · ACK 1/4')
+      :mode==='stable'
+        ?('OTA ỔN ĐỊNH · '+chunkSize+'B · ACK 1/2')
+        :('OTA SAFE · '+chunkSize+'B · ACK MỖI GÓI');
+    setOtaInfo('Đang cập nhật firmware · '+modeLabel);
 
     while(offset<bin.byteLength){
       if(otaBleFatalError)throw new Error(otaBleFatalError);
@@ -7395,26 +7403,22 @@ window.addEventListener('beforeunload',save);
         await writeBleFirmwareChunk(offset,bin.subarray(offset,offset+count),reliable);
         offset+=count;
         packetNo++;
-      }catch(e){
-        // ATT-size fallback. Retry the same offset because a rejected GATT write
-        // was not committed by the ESP32 receiver.
+      }catch(err){
         if(chunkSize>12&&!otaBleFatalError){
           chunkSize=chunkSize>100?100:chunkSize>60?60:chunkSize>20?20:12;
           packetNo=0;
-          await new Promise(r=>setTimeout(r,25));
+          await new Promise(r=>setTimeout(r,20));
           setOtaInfo('Đang cập nhật firmware · giảm gói còn '+chunkSize+'B');
           continue;
         }
-        throw e;
+        throw err;
       }
 
-      if(!reliable)await new Promise(r=>setTimeout(r,1));
-      else await new Promise(r=>setTimeout(r,0));
+      if(!reliable&&noAckDelay>0)await new Promise(r=>setTimeout(r,noAckDelay));
       if(otaBleFatalError)throw new Error(otaBleFatalError);
 
       const pct=Math.floor(offset*100/bin.byteLength);
       if($('otaProgress'))$('otaProgress').value=pct;
-      if((packetNo%96)===0)await new Promise(r=>setTimeout(r,2));
     }
 
     const doneWait=waitOtaStatus(t=>t==='OTA:DONE'||t.startsWith('OTA:ERR='),12000);
@@ -7451,23 +7455,38 @@ window.addEventListener('beforeunload',save);
       }
       setOtaInfo('Đang truyền '+Math.round(buf.byteLength/1024)+' KB qua BLE...');
       const fwBytes=new Uint8Array(buf);
-      try{
-        await transferFirmwareBle(fwBytes,actualSha,false);
-      }catch(firstErr){
-        const firstMsg=String(otaBleFatalError||firstErr&&firstErr.message||firstErr);
-        const canSafeRetry=desktopChromiumBleClient()&&/OTA:ERR=SEQ|\bSEQ\b/i.test(firstMsg);
-        if(!canSafeRetry)throw firstErr;
+      const currentFw=String(otaCurrentVersionCache||$('otaCurrentVersion')?.value||'').trim();
+      const useFast19=desktopChromiumBleClient()&&/^1\.9(?:\D|$)/.test(currentFw);
 
-        // A Turbo sequence miss aborts the partial flash on FW1.9. Clean the
-        // session and restart once from byte zero with ACK on every packet.
+      const resetPartialOta=async()=>{
         otaAbortCleanup=true;
         try{if(state.ecuConnected)await writeOtaCommand(OTA_BLE_ABORT,new Uint8Array(0));}catch(_e){otaAbortCleanup=false;}
         await new Promise(r=>setTimeout(r,220));
         otaBleFatalError='';
         otaLastErrorText='';
         if($('otaProgress'))$('otaProgress').value=0;
-        setOtaInfo('Turbo bị mất thứ tự gói · tự chuyển SAFE và cập nhật lại...');
-        await transferFirmwareBle(fwBytes,actualSha,true);
+      };
+
+      try{
+        await transferFirmwareBle(fwBytes,actualSha,useFast19?'fast19':'stable');
+      }catch(firstErr){
+        const firstMsg=String(otaBleFatalError||firstErr&&firstErr.message||firstErr);
+        const seq1=/OTA:ERR=SEQ|\bSEQ\b/i.test(firstMsg);
+        if(!seq1||!desktopChromiumBleClient())throw firstErr;
+
+        await resetPartialOta();
+        setOtaInfo('OTA NHANH bị mất thứ tự gói · tự quay về CÁCH UPDATE OTA ỔN ĐỊNH...');
+        try{
+          await transferFirmwareBle(fwBytes,actualSha,'stable');
+        }catch(stableErr){
+          const stableMsg=String(otaBleFatalError||stableErr&&stableErr.message||stableErr);
+          const seq2=/OTA:ERR=SEQ|\bSEQ\b/i.test(stableMsg);
+          if(!seq2)throw stableErr;
+
+          await resetPartialOta();
+          setOtaInfo('OTA ỔN ĐỊNH vẫn lỗi · tự chuyển SAFE...');
+          await transferFirmwareBle(fwBytes,actualSha,'safe');
+        }
       }
       setTimeout(()=>{try{window.BlinkRealProtocol?.resumeAfterOta?.()}catch(_e){}},1800);
     }catch(e){
