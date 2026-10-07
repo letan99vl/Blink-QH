@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.12';
-  document.title = 'QH ECU · v1.0.12';
+  window.BLINK_PB_VERSION = 'QH-1.0.13';
+  document.title = 'QH ECU · v1.0.13';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3540,7 +3540,7 @@ html body .miniStatus{
 }
 </style>
 <style id="qhPremiumCluster">
-/* ===== QH PREMIUM CLUSTER v1.0.12 ===== */
+/* ===== QH PREMIUM CLUSTER v1.0.13 ===== */
 
 /* Header / logo plate */
 .qhDashHeader{
@@ -3635,126 +3635,112 @@ html body .miniStatus{
   box-shadow:inset 0 1px 0 rgba(255,228,139,.08)!important;
 }
 
-/* Gauge housing */
+/* Gauge housing — simplified to match the reference more closely. */
 .qhRpmGauge{
   isolation:isolate!important;
-  border:0!important;
-  border-radius:20px!important;
+  border:1px solid #2d3133!important;
+  border-radius:18px!important;
   background:
-    radial-gradient(circle at 50% 48%,rgba(255,255,255,.024),transparent 29%),
-    radial-gradient(circle at 50% 50%,#16191a 0 32%,#0a0c0d 58%,#030404 79%)!important;
+    radial-gradient(circle at 50% 46%,rgba(255,255,255,.018),transparent 31%),
+    radial-gradient(circle at 50% 50%,#121516 0 36%,#090b0c 61%,#030404 82%)!important;
   box-shadow:
-    inset 0 0 34px rgba(0,0,0,.94),
-    0 7px 18px rgba(0,0,0,.36)!important;
-}
-.qhRpmGauge::before{
-  content:"";
-  position:absolute;inset:5px;z-index:0;pointer-events:none;
-  border-radius:18px;
-  background:
-    linear-gradient(125deg,rgba(255,255,255,.055),transparent 21%),
-    linear-gradient(305deg,rgba(209,43,28,.035),transparent 24%);
-  border:1px solid #202426;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.018);
+    inset 0 0 26px rgba(0,0,0,.90),
+    0 5px 14px rgba(0,0,0,.28)!important;
 }
 
-/* Metallic outer bezel, following the same 270 degree sweep. */
+/* One clean outer bezel: dark metal with a very thin silver edge. */
 .qhRpmBezel{
-  position:absolute;left:50%;top:50%;width:94%;aspect-ratio:1;
+  position:absolute;left:50%;top:50%;width:91%;aspect-ratio:1;
   transform:translate(-50%,-50%);border-radius:50%;z-index:1;pointer-events:none;
   background:conic-gradient(
     from 225deg,
-    #1b1e20 0deg,
-    #7d8285 18deg,
-    #24282a 42deg,
-    #8c9092 70deg,
-    #272a2c 105deg,
-    #9da0a1 135deg,
-    #222527 172deg,
-    #767b7d 205deg,
-    #222426 236deg,
-    #565a5c 270deg,
+    #1a1d1f 0deg,
+    #505457 52deg,
+    #1b1f21 104deg,
+    #626669 154deg,
+    #1b1f21 206deg,
+    #3d4143 270deg,
     transparent 270deg 360deg
   );
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 calc(100% - 12px) calc(100% - 3px),transparent calc(100% - 2px));
-  mask:radial-gradient(farthest-side,transparent calc(100% - 13px),#000 calc(100% - 12px) calc(100% - 3px),transparent calc(100% - 2px));
-  opacity:.84;
-  filter:drop-shadow(0 2px 4px rgba(0,0,0,.9));
-}
-.qhRpmBezel::after{
-  content:"";position:absolute;inset:9px;border-radius:50%;
-  background:conic-gradient(from 225deg,rgba(246,205,64,.42) 0 12deg,transparent 12deg 270deg,transparent 270deg);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px),transparent 100%);
-  mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px),transparent 100%);
+  -webkit-mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 8px),
+    #000 calc(100% - 7px) calc(100% - 3px),
+    transparent calc(100% - 2px)
+  );
+  mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 8px),
+    #000 calc(100% - 7px) calc(100% - 3px),
+    transparent calc(100% - 2px)
+  );
+  opacity:.66;
+  filter:none;
 }
 
-/* Dark inner edge / recessed lens */
+/* Thin recessed inner edge only. */
 .qhRpmInnerRing{
-  position:absolute;left:50%;top:50%;width:80.5%;aspect-ratio:1;
+  position:absolute;left:50%;top:50%;width:81.5%;aspect-ratio:1;
   transform:translate(-50%,-50%);border-radius:50%;z-index:1;pointer-events:none;
-  border:1px solid rgba(120,125,127,.28);
+  border:1px solid rgba(126,132,135,.20);
   box-shadow:
-    inset 0 0 0 3px rgba(0,0,0,.50),
-    inset 0 0 13px rgba(0,0,0,.96),
-    0 0 0 1px rgba(255,255,255,.018);
+    inset 0 0 9px rgba(0,0,0,.86),
+    0 0 0 1px rgba(255,255,255,.012);
 }
 
-/* Static redline atmosphere at the high-rpm end, dim until live RPM arrives. */
+/* Redline atmosphere is almost invisible at idle; only strengthens when live RPM is present. */
 .qhRpmRedlineGlow{
-  position:absolute;left:50%;top:50%;width:88%;aspect-ratio:1;
+  position:absolute;left:50%;top:50%;width:87%;aspect-ratio:1;
   transform:translate(-50%,-50%);border-radius:50%;z-index:1;pointer-events:none;
-  background:conic-gradient(from 225deg,transparent 0 224deg,rgba(217,43,27,.10) 236deg,rgba(231,42,24,.23) 260deg,transparent 270deg);
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 22px),#000 calc(100% - 21px) calc(100% - 2px),transparent calc(100% - 1px));
-  mask:radial-gradient(farthest-side,transparent calc(100% - 22px),#000 calc(100% - 21px) calc(100% - 2px),transparent calc(100% - 1px));
-  filter:blur(.2px);
+  background:conic-gradient(
+    from 225deg,
+    transparent 0 226deg,
+    rgba(213,49,29,.035) 240deg,
+    rgba(222,45,26,.09) 260deg,
+    transparent 270deg
+  );
+  -webkit-mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 15px),
+    #000 calc(100% - 14px) calc(100% - 3px),
+    transparent calc(100% - 2px)
+  );
+  mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 15px),
+    #000 calc(100% - 14px) calc(100% - 3px),
+    transparent calc(100% - 2px)
+  );
+  filter:none;
 }
 .qhRpmGauge.rpm-active .qhRpmRedlineGlow{
-  filter:drop-shadow(0 0 4px rgba(228,44,28,.13));
+  filter:drop-shadow(0 0 2px rgba(226,52,31,.06));
 }
 
-/* Put data layers above housing. */
+/* Data layers stay above the housing. */
 .qhRpmArc{z-index:2!important}
 .qhRpmTicksArc{z-index:3!important}
 .qhRpmTickLabels{z-index:4!important}
 .qhRpmMarker{z-index:5!important}
 .qhRpmCenter{z-index:6!important}
 
-/* Metallic major/minor tick effect. */
+/* Keep ticks crisp, not metallic/glowy. */
 .qhRpmTicksArc{
   background:repeating-conic-gradient(
     from 225deg,
-    rgba(241,240,229,.72) 0deg .48deg,
-    transparent .48deg 7.5deg
+    rgba(238,239,235,.56) 0deg .42deg,
+    transparent .42deg 7.5deg
   )!important;
-  opacity:.58!important;
-  filter:drop-shadow(0 1px 0 #000);
+  opacity:.50!important;
+  filter:none!important;
 }
 
-/* A thin gold inner scale accent like the reference. */
-.qhRpmGauge::after{
-  content:"";
-  position:absolute;left:50%;top:50%;width:70%;aspect-ratio:1;
-  transform:translate(-50%,-50%);border-radius:50%;z-index:2;pointer-events:none;
-  background:conic-gradient(
-    from 225deg,
-    rgba(220,174,42,.38) 0deg 8deg,
-    transparent 8deg 18deg,
-    rgba(220,174,42,.27) 18deg 20deg,
-    transparent 20deg 270deg
-  );
-  -webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px),transparent 100%);
-  mask:radial-gradient(farthest-side,transparent calc(100% - 2px),#000 calc(100% - 1px),transparent 100%);
-}
-
-/* Slight glass highlight over the upper-left face. */
+/* Remove decorative extra inner arc and face-glass overlays. */
+.qhRpmGauge::before,
+.qhRpmGauge::after,
 .qhRpmCenter::before{
-  content:"";
-  position:absolute;z-index:-1;
-  left:-30%;top:-45%;width:160%;height:95%;
-  background:radial-gradient(ellipse at 35% 35%,rgba(255,255,255,.035),transparent 55%);
-  pointer-events:none;
+  content:none!important;
 }
-
 @media(max-width:520px){
   .qhDashHeader{min-height:54px!important}
   .qhBrandBlock{min-width:255px!important;height:41px!important;padding-right:94px!important}
@@ -3780,7 +3766,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.12</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.13</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
