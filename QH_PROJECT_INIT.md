@@ -64,3 +64,10 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Be logic LED segment/digital digit tu TANLE va noi vao RPM live cua QH qua `rpmLive` an + `qhTanleSetRpm()`.
 - Scale 0-16000 rpm, khong doi protocol ECU.
 - Kiem tra: khong trung ID, gauge cu da duoc go khoi DOM.
+
+## Auto Tune direct v1.0.17
+- Commit: `9e292894db820486d73991c50124a3d26d223507`
+- Nut AUTO TUNE trang chu mo thang editor tab AFR do QH, return ve dashboard.
+- Man tuneScreen cu duoc giu an trong DOM de bao toan mode/3-run state, khong con route hien thi.
+- Chuyen recordBtn vao toolbar editor va chi hien khi tab measured; button doi GHI AFR / DUNG GHI AFR theo recording state.
+- Khong trung ID sau patch.
