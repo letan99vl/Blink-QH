@@ -265,3 +265,22 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Main sync commit: `bd1e8d8b453b691a70e2ec9ba0c33446d5287baa`.
 - Visible build: QH P.b 1.0.34.
 - The separate fallback branch `backup/ota-on-dinh-1.0.30` remains untouched and continues to be the project checkpoint named **Cach update OTA on dinh**.
+
+
+## CRITICAL: FW2.1 breaks ECU confirmation
+
+- Real-hardware report: after updating QH ESP32 to FW2.1, BLE still comes up but the app fails at "DANG XAC NHAN ECU"; the ECU cannot be identified/used.
+- Treat QH FW2.1 as BAD / DO NOT DISTRIBUTE.
+- Source comparison showed:
+  - transactUart() in QH FW2.1 is identical to current Blink FW2.0;
+  - processTransaction() is also identical;
+  - QH FW2.1's custom difference is the two-pass >=8 KB Read All BLE response streamer.
+- Even though the two-pass path should only affect huge responses, the hardware regression means the entire QH 2.1 release is withdrawn rather than trying to patch it in place.
+- Recovery plan:
+  - FW2.2 source is rebuilt from the current Blink FW2.0 source;
+  - only FW_VERSION is advanced to 2.2 and OTA manifest endpoint is changed to Blink-QH;
+  - the custom FW2.1 two-pass Read All streamer is removed completely.
+- This forward version bump lets devices already on broken FW2.1 OTA forward to FW2.2 without a cable downgrade.
+- Source recovery commit: `114554d43bb4622b578e480e71628c9234349186`.
+- Clean recovery build trigger commit: `882879a1101953347b48087f8806506d27036b6b`.
+- Until FW2.2 binary/manifest build is confirmed successful, do not tell users FW2.1 is safe.
