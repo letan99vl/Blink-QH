@@ -46,22 +46,6 @@ static const char *STATUS_UUID  = "afaf0005-7c35-4a6d-9f0e-2ea3117f1000";
 static const uint8_t RAW_TX_MARKER = 0xE1;
 static const uint8_t RAW_RX_MARKER = 0xE2;
 static const size_t RAW_PAYLOAD_PER_PACKET = 12;
-static const uint16_t RAW_NOTIFY_DELAY_MS = 6;
-static const uint16_t RAW_NOTIFY_YIELD_EVERY = 24;
-
-// BLE pacing by response size. INJ VE current-map replies are ~843B and need
-// a slower stream than the smaller one-byte REDLEO pages on iOS/Bluefy.
-static uint16_t rawNotifyDelayFor(uint16_t total) {
-  if (total >= 800) return 14;
-  if (total >= 400) return 9;
-  return RAW_NOTIFY_DELAY_MS;
-}
-static uint16_t rawNotifyYieldEveryFor(uint16_t total) {
-  if (total >= 800) return 12;
-  if (total >= 400) return 18;
-  return RAW_NOTIFY_YIELD_EVERY;
-}
-
 static const size_t TX_MAX = 2048;
 static const size_t RX_MAX = 12000;
 
@@ -74,11 +58,9 @@ BLECharacteristic *statusChar = nullptr;
 volatile bool deviceConnected = false;
 
 uint8_t txBuf[TX_MAX];
-uint8_t txSeen[TX_MAX];
 uint16_t txExpected = 0;
 uint16_t txGot = 0;
 uint8_t txSid = 0;
-bool txEndSeen = false;
 volatile bool transactionReady = false;
 uint16_t transactionLen = 0;
 uint8_t transactionSid = 0;
@@ -106,17 +88,7 @@ class ServerCallbacks : public BLEServerCallbacks {
   }
   void onDisconnect(BLEServer *s) override {
     deviceConnected = false;
-    // Drop any half-assembled request so a reconnect cannot resume stale bytes.
-    noInterrupts();
-    transactionReady = false;
-    transactionLen = 0;
-    transactionSid = 0;
-    txExpected = 0;
-    txGot = 0;
-    txEndSeen = false;
-    memset(txSeen, 0, sizeof(txSeen));
-    interrupts();
-    delay(120);
+    delay(80);
     s->getAdvertising()->start();
     Serial.println("BLE advertising restarted");
   }
@@ -126,8 +98,6 @@ static void resetAssembler(uint8_t sid, uint16_t total) {
   txSid = sid;
   txExpected = total;
   txGot = 0;
-  txEndSeen = false;
-  memset(txSeen, 0, sizeof(txSeen));
 }
 
 class CommandCallbacks : public BLECharacteristicCallbacks {
@@ -140,7 +110,7 @@ class CommandCallbacks : public BLECharacteristicCallbacks {
     // Compatibility / diagnostics.
     if (p[0] != RAW_TX_MARKER) {
       String text = raw;
-      if (text == "PING") notifyStatus("PONG FW1.2");
+      if (text == "PING") notifyStatus("PONG");
       return;
     }
 
@@ -158,34 +128,24 @@ class CommandCallbacks : public BLECharacteristicCallbacks {
       notifyStatus("ERR RAW SIZE");
       return;
     }
-
-    // Start a new frame only when SID/length changes, or when START arrives for
-    // a frame that has not collected any bytes yet. Do NOT reset merely because
-    // a duplicate START chunk is delivered by Bluefy/iOS.
-    if (sid != txSid || total != txExpected) {
+    if ((flags & 0x01) || sid != txSid || total != txExpected) resetAssembler(sid, total);
+    if (off != txGot) {
+      // Sequential transport by design. Reject gaps rather than writing a partial ECU frame.
+      notifyStatus("ERR RAW OFFSET");
       resetAssembler(sid, total);
-    } else if ((flags & 0x01) && txGot == 0) {
-      resetAssembler(sid, total);
+      return;
     }
+    memcpy(txBuf + off, p + 7, payload);
+    txGot += payload;
 
-    // Offset-addressed reassembly. BLE stacks may duplicate or reorder writes;
-    // copy each byte into its declared position and count only first receipt.
-    for (uint16_t i = 0; i < payload; ++i) {
-      const uint16_t pos = off + i;
-      txBuf[pos] = p[7 + i];
-      if (!txSeen[pos]) {
-        txSeen[pos] = 1;
-        ++txGot;
+    if ((flags & 0x02) || txGot >= txExpected) {
+      if (txGot == txExpected && !transactionReady) {
+        transactionSid = txSid;
+        transactionLen = txExpected;
+        transactionReady = true;
+      } else if (txGot != txExpected) {
+        notifyStatus("ERR RAW INCOMP");
       }
-    }
-    if (flags & 0x02) txEndSeen = true;
-
-    // The END flag may arrive before an earlier chunk. Execute only after every
-    // byte has actually been received. Duplicate chunks are harmless.
-    if (txEndSeen && txGot == txExpected && !transactionReady) {
-      transactionSid = txSid;
-      transactionLen = txExpected;
-      transactionReady = true;
     }
   }
 };
@@ -196,69 +156,13 @@ static bool exactPrefix(const uint8_t *a, size_t alen, const uint8_t *b, size_t 
   return true;
 }
 
-// REDLEO reply checksum used by the desktop software.
-static bool validRedleoFrame(const uint8_t *p, size_t n) {
-  if (!p || n < 3) return false;
-  if ((((uint16_t)p[0] + (uint16_t)p[n - 1]) & 0xFFU) != 0xFFU) return false;
-  uint8_t sum = 0;
-  for (size_t i = 0; i < n - 2; ++i) sum = (uint8_t)(sum + p[i]);
-  return sum == p[n - 2];
-}
-
-static bool validWritePageFrame(const uint8_t *p, size_t n) {
-  if (!p || n < 5 || p[0] != 0xCD) return false;
-  if (p[n - 1] != (uint8_t)(n & 0xFFU)) return false;
-  uint8_t sum = 0;
-  for (size_t i = 0; i < n - 3; ++i) sum = (uint8_t)(sum + p[i]);
-  if (p[n - 2] != sum) return false;
-  return (uint8_t)(p[n - 3] + p[n - 2]) == 0xFFU;
-}
-
-static bool extractValidLive53(uint8_t *rx, size_t got) {
-  if (!rx || got < 53) return false;
-  for (size_t i = 0; i + 53 <= got; ++i) {
-    if (rx[i] != 0xA1) continue;
-    if (!validRedleoFrame(rx + i, 53)) continue;
-    if (i != 0) memmove(rx, rx + i, 53);
-    return true;
-  }
-  return false;
-}
-
-// Match the proven PC bridge timing: Read Current needs a much longer idle
-// boundary than live polling; Read All also waits longer than the 53-byte live frame.
-static bool isFuelCurrentPage(const uint8_t *tx, size_t n) {
-  if (n < 2 || tx[0] != 0x9A) return false;
-  // V8 fuel pages: 0x11..0x14 depending on ECU_MODE/bank.
-  // V9+ fuel pages: 0x12/0x14/0x16/0x18.
-  switch (tx[1]) {
-    case 0x11: case 0x12: case 0x13: case 0x14:
-    case 0x16: case 0x18:
-      return true;
-    default:
-      return false;
-  }
-}
-
-static uint32_t idleGapFor(const uint8_t *tx, size_t n) {
-  if (!n) return 140;
-  switch (tx[0]) {
-    case 0x9A: return isFuelCurrentPage(tx,n) ? 950 : 650;
-    case 0xAB: return 300;
-    case 0x8B: return 300;
-    case 0x77: return 150;
-    default:   return 140;
-  }
-}
-
 static uint32_t firstByteTimeoutFor(const uint8_t *tx, size_t n) {
   if (!n) return 1500;
   switch (tx[0]) {
-    case 0xAB: return 5000;
-    case 0x9A: return isFuelCurrentPage(tx,n) ? 7000 : 3000;
-    case 0x77: return 30000;
-    case 0xCD: return 3500;
-    case 0x8B: return 5000;
+    case 0xAB: return 5000;  // Read All
+    case 0x77: return 30000; // TPS Study
+    case 0xCD: return 3500;  // write page ACK
+    case 0x8B: return 5000;  // restore
     default: return 2200;
   }
 }
@@ -266,9 +170,7 @@ static uint32_t firstByteTimeoutFor(const uint8_t *tx, size_t n) {
 static uint32_t totalTimeoutFor(const uint8_t *tx, size_t n) {
   if (!n) return 3000;
   switch (tx[0]) {
-    case 0xAB: return 12000;
-    case 0x9A: return isFuelCurrentPage(tx,n) ? 14000 : 8000;
-    case 0x8B: return 12000;
+    case 0xAB: return 10000;
     case 0x77: return 35000;
     case 0xCD: return 6000;
     default: return 5000;
@@ -287,7 +189,6 @@ static size_t transactUart(const uint8_t *tx, size_t txLen, uint8_t *rx, size_t 
   const uint32_t t0 = millis();
   const uint32_t firstTimeout = firstByteTimeoutFor(tx, txLen);
   const uint32_t totalTimeout = totalTimeoutFor(tx, txLen);
-  const uint32_t idleGap = idleGapFor(tx, txLen);
   uint32_t lastRx = 0;
   size_t got = 0;
   bool first = false;
@@ -299,19 +200,11 @@ static size_t transactUart(const uint8_t *tx, size_t txLen, uint8_t *rx, size_t 
       first = true;
     }
 
-    // Live 0x69 has a fixed, checksum-protected 53-byte A1 frame on the
-    // supported REDLEO families. As soon as a complete valid frame is present,
-    // finish immediately instead of burning the generic UART idle gap.
-    // This also strips a TX echo/noise prefix by selecting the valid A1 frame.
-    if (txLen > 0 && tx[0] == 0x69 && extractValidLive53(rx, got)) {
-      return 53;
-    }
-
     if (!first) {
       if ((uint32_t)(millis() - t0) >= firstTimeout) break;
     } else {
-      // Command-specific serial idle boundary, matched to the working PC bridge.
-      if ((uint32_t)(millis() - lastRx) >= idleGap) break;
+      // REDLEO full packets are continuous at 38400. 140ms idle is a safe frame boundary.
+      if ((uint32_t)(millis() - lastRx) >= 140) break;
     }
     delay(1);
   }
@@ -335,13 +228,6 @@ static void sendRawResponse(uint8_t sid, const uint8_t *data, uint16_t total) {
     return;
   }
 
-  const uint16_t packetDelay = rawNotifyDelayFor(total);
-  const uint16_t yieldEvery = rawNotifyYieldEveryFor(total);
-  const bool longFrame = total >= 800;
-
-  // Long 0x9A INJ VE frames need a brief quiet gap before BLE streaming.
-  if (longFrame) delay(40);
-
   for (uint16_t off = 0; off < total && deviceConnected; off += RAW_PAYLOAD_PER_PACKET) {
     const uint8_t count = (uint8_t)min((size_t)RAW_PAYLOAD_PER_PACKET, (size_t)(total - off));
     uint8_t pkt[7 + RAW_PAYLOAD_PER_PACKET];
@@ -351,23 +237,10 @@ static void sendRawResponse(uint8_t sid, const uint8_t *data, uint16_t total) {
     put16le(&pkt[3], total);
     put16le(&pkt[5], off);
     memcpy(&pkt[7], data + off, count);
-
     mapChar->setValue(pkt, 7 + count);
     mapChar->notify();
-
-    // First and last chunks are critical for browser reassembly. Repeat them
-    // on long frames so a single lost notification does not cause 0x9A timeout.
-    if (longFrame && (off == 0 || off + count >= total)) {
-      delay(22);
-      mapChar->setValue(pkt, 7 + count);
-      mapChar->notify();
-    }
-
-    delay(packetDelay);
-    if ((((off / RAW_PAYLOAD_PER_PACKET) + 1) % yieldEvery) == 0) {
-      delay(longFrame ? 30 : 18);
-      yield();
-    }
+    // iOS/Bluefy is much more reliable if notifications are paced instead of burst queued.
+    delay(3);
   }
 }
 
@@ -385,24 +258,9 @@ static void processTransaction() {
     return;
   }
 
-  if (n > 0 && txBuf[0] == 0xCD && !validWritePageFrame(txBuf, n)) {
-    Serial.printf("BLOCK BAD WRITE sid=%u len=%u\n", sid, n);
-    notifyStatus("ERR TX FRAME");
-    sendRawResponse(sid, nullptr, 0);
-    return;
-  }
-
   Serial.printf("ECU TX sid=%u len=%u cmd=%02X\n", sid, n, n ? txBuf[0] : 0);
   const size_t got = transactUart(txBuf, n, rxBuf, RX_MAX);
-  Serial.printf("ECU RX sid=%u len=%u", sid, (unsigned)got);
-  if (got > 0) {
-    Serial.printf(" first=%02X last=%02X valid=%u", rxBuf[0], rxBuf[got - 1], validRedleoFrame(rxBuf, got) ? 1 : 0);
-  }
-  Serial.println();
-  if (got >= 800) {
-    Serial.printf("BLE stream sid=%u len=%u pace=%ums long=1\n",
-                  sid, (unsigned)got, (unsigned)rawNotifyDelayFor((uint16_t)got));
-  }
+  Serial.printf("ECU RX sid=%u len=%u\n", sid, (unsigned)got);
   sendRawResponse(sid, rxBuf, (uint16_t)got);
 }
 
@@ -422,7 +280,7 @@ static void sendAfrPacket() {
 void setup() {
   Serial.begin(115200);
   delay(250);
-  Serial.println("\nBLINK TL REDLEO ECU REAL BRIDGE FW 1.2");
+  Serial.println("\nBLINK TL REDLEO ECU REAL BRIDGE");
   Serial.printf("ECU UART: 38400 8E2 RX=%d TX=%d RTS=%d\n", ECU_RX_PIN, ECU_TX_PIN, ECU_RTS_PIN);
 
   if (ECU_RX_PIN >= 0 && ECU_TX_PIN >= 0) {
