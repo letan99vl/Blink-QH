@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.2';
-  document.title = 'QH ECU · v1.0.2';
+  window.BLINK_PB_VERSION = 'QH-1.0.3';
+  document.title = 'QH ECU · v1.0.3';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2752,6 +2752,296 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   .qhRpmGauge{min-height:360px}
 }
 </style>
+<style id="qhRpmRefinement">
+/* ===== QH RPM REFINEMENT v1.0.3 ===== */
+@property --rpm-angle{
+  syntax:'<angle>';
+  inherits:true;
+  initial-value:0deg;
+}
+
+.qhCluster{
+  display:grid!important;
+  grid-template-columns:minmax(0,1.46fr) minmax(112px,.56fr)!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+
+.qhRpmGauge{
+  --rpm-angle:0deg;
+  position:relative!important;
+  min-height:248px!important;
+  border:1px solid #3f4346!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,255,255,.028),transparent 24%),
+    radial-gradient(circle at 50% 50%,#15181a 0 28%,#0b0d0f 52%,#050606 76%)!important;
+  box-shadow:
+    inset 0 0 26px rgba(0,0,0,.84),
+    inset 0 1px 0 rgba(255,255,255,.025),
+    0 6px 16px rgba(0,0,0,.20)!important;
+  transition:--rpm-angle .14s linear;
+}
+
+.qhRpmArc{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:85%!important;
+  aspect-ratio:1!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  background:none!important;
+  filter:none!important;
+}
+
+.qhRpmArc::before,
+.qhRpmArc::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  -webkit-mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 16px),
+    #000 calc(100% - 15px) calc(100% - 6px),
+    transparent calc(100% - 5px)
+  );
+  mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 16px),
+    #000 calc(100% - 15px) calc(100% - 6px),
+    transparent calc(100% - 5px)
+  );
+}
+
+/* Full color scale. */
+.qhRpmArc::before{
+  background:conic-gradient(
+    from 225deg,
+    #deb32a 0deg,
+    #e6bd31 105deg,
+    #e9ac28 160deg,
+    #eb9123 200deg,
+    #e45d20 232deg,
+    #d62b22 270deg,
+    transparent 270deg 360deg
+  );
+  filter:drop-shadow(0 0 4px rgba(224,182,44,.08));
+}
+
+/* Gray cover hides the part not yet reached by live RPM. */
+.qhRpmArc::after{
+  background:conic-gradient(
+    from 225deg,
+    transparent 0deg var(--rpm-angle),
+    #2b2d30 var(--rpm-angle) 270deg,
+    transparent 270deg 360deg
+  );
+}
+
+.qhRpmTicksArc{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:76%!important;
+  aspect-ratio:1!important;
+  transform:translate(-50%,-50%)!important;
+  border-radius:50%!important;
+  background:repeating-conic-gradient(
+    from 225deg,
+    rgba(240,240,236,.58) 0deg .5deg,
+    transparent .5deg 8deg
+  )!important;
+  -webkit-mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 7px),
+    #000 calc(100% - 6px) calc(100% - 1px),
+    transparent 100%
+  )!important;
+  mask:radial-gradient(
+    farthest-side,
+    transparent calc(100% - 7px),
+    #000 calc(100% - 6px) calc(100% - 1px),
+    transparent 100%
+  )!important;
+  opacity:.50!important;
+}
+
+.qhRpmMarker{
+  position:absolute!important;
+  left:calc(50% - 1px)!important;
+  bottom:50%!important;
+  width:2px!important;
+  height:35%!important;
+  transform-origin:50% 100%!important;
+  transform:rotate(calc(-135deg + var(--rpm-angle)))!important;
+  pointer-events:none!important;
+  z-index:4!important;
+  opacity:.92!important;
+  transition:transform .14s linear;
+}
+
+.qhRpmMarker::before{
+  content:""!important;
+  position:absolute!important;
+  top:-3px!important;
+  left:-3px!important;
+  width:8px!important;
+  height:8px!important;
+  border-radius:50%!important;
+  background:radial-gradient(circle,#fff8d0 0%,#ffe288 46%,#eeb322 100%)!important;
+  box-shadow:
+    0 0 3px rgba(255,250,210,.86),
+    0 0 8px rgba(255,226,122,.38),
+    0 0 13px rgba(232,170,31,.11)!important;
+}
+
+.qhRpmTickLabels{
+  position:absolute!important;
+  inset:0!important;
+  z-index:3!important;
+  color:#ededE8!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  letter-spacing:-.2px!important;
+}
+
+.qhRpmTickLabels span{
+  position:absolute!important;
+  transform:translate(-50%,-50%)!important;
+  text-shadow:0 1px 3px rgba(0,0,0,.82)!important;
+}
+
+.qhRpmTickLabels .r0{left:13.5%!important;top:72%!important}
+.qhRpmTickLabels .r2{left:11%!important;top:58%!important}
+.qhRpmTickLabels .r4{left:15%!important;top:44%!important}
+.qhRpmTickLabels .r6{left:24%!important;top:31%!important}
+.qhRpmTickLabels .r8{left:36.5%!important;top:22%!important}
+.qhRpmTickLabels .r10{left:50%!important;top:18.5%!important}
+.qhRpmTickLabels .r12{left:63.5%!important;top:22%!important}
+.qhRpmTickLabels .r14{left:75.5%!important;top:31%!important}
+.qhRpmTickLabels .r16{left:84.5%!important;top:44%!important}
+.qhRpmTickLabels .r18{display:none!important}
+
+.qhRpmCenter{
+  position:absolute!important;
+  left:50%!important;
+  top:53%!important;
+  transform:translate(-50%,-50%)!important;
+  z-index:5!important;
+  text-align:center!important;
+  width:64%!important;
+}
+
+.qhRpmTitle{
+  color:#e4b72e!important;
+  font-size:17px!important;
+  font-weight:950!important;
+  font-style:italic!important;
+  letter-spacing:1.1px!important;
+  text-shadow:0 0 6px rgba(224,182,44,.07)!important;
+}
+
+.qhRpmValue{
+  margin-top:4px!important;
+  color:#f2f1ed!important;
+  font-size:clamp(42px,9vw,66px)!important;
+  line-height:.92!important;
+  font-weight:950!important;
+  font-style:italic!important;
+  letter-spacing:-2px!important;
+  text-shadow:
+    0 2px 5px rgba(0,0,0,.86),
+    0 0 6px rgba(255,255,255,.015)!important;
+  font-variant-numeric:tabular-nums!important;
+}
+
+.qhRpmX{
+  margin-top:5px!important;
+  color:#cfcdc6!important;
+  font-size:15px!important;
+  font-weight:900!important;
+  font-style:italic!important;
+}
+
+.qhSideTelemetry{
+  display:grid!important;
+  grid-template-rows:1fr 1fr!important;
+  gap:8px!important;
+}
+
+.qhSideCard{
+  border:1px solid #46494c!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#111315,#08090a)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.025),
+    0 4px 12px rgba(0,0,0,.18)!important;
+  padding:10px 9px!important;
+  min-width:0!important;
+}
+
+.qhSideLabel{
+  font-size:11px!important;
+}
+
+.qhSideValue{
+  font-size:34px!important;
+}
+
+.qhSideSmallValue{
+  font-size:17px!important;
+}
+
+.qhSensorStrip{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:5px!important;
+  margin:8px 0 7px!important;
+}
+
+.qhSensorCell{
+  min-height:48px!important;
+  padding:5px 4px!important;
+}
+
+.qhSensorCell small{
+  font-size:9px!important;
+}
+
+.qhSensorCell b{
+  font-size:14px!important;
+}
+
+.qhHomeMeta{
+  margin-bottom:6px!important;
+}
+
+@media(max-width:520px){
+  .qhCluster{
+    grid-template-columns:minmax(0,1.42fr) 106px!important;
+    gap:6px!important;
+  }
+  .qhRpmGauge{min-height:228px!important}
+  .qhRpmTickLabels{font-size:10px!important}
+  .qhSideValue{font-size:30px!important}
+  .qhSideSmallValue{font-size:15px!important}
+  .qhSensorCell{min-height:44px!important}
+  .qhSensorCell b{font-size:12px!important}
+  .qhSensorCell small{font-size:8px!important}
+}
+
+@media(max-width:390px){
+  .qhCluster{grid-template-columns:minmax(0,1fr) 96px!important}
+  .qhRpmGauge{min-height:210px!important}
+  .qhRpmTitle{font-size:15px!important}
+  .qhRpmValue{font-size:clamp(36px,8vw,54px)!important}
+  .qhRpmX{font-size:13px!important}
+  .qhSideValue{font-size:27px!important}
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -2788,7 +3078,6 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
           <span class="r0">0</span><span class="r2">2</span><span class="r4">4</span>
           <span class="r6">6</span><span class="r8">8</span><span class="r10">10</span>
           <span class="r12">12</span><span class="r14">14</span><span class="r16">16</span>
-          <span class="r18">18</span>
         </div>
         <div class="qhRpmCenter">
           <div class="qhRpmTitle">RPM</div>
@@ -7237,7 +7526,7 @@ function syncMirrors(){
   const ze=document.getElementById('mapZoomEct');
   if(ze)ze.textContent=m.ect;
 
-  const rpmMax=Math.max(1,Number(RPMS[C-1])||15000);
+  const rpmMax=16000;
   const rpm=Math.max(0,Math.min(rpmMax,Number((m.rpm||'0').replace(/[^0-9.]/g,''))||0));
   document.getElementById('rpmGauge')?.style.setProperty('--rpm-angle',(rpm/rpmMax*270)+'deg');
 
