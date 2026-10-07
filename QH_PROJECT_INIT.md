@@ -141,3 +141,21 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - FW2.1 OTA build workflow completed successfully and pushed binary in commit 393f803210901705f0ca456c22102d1abc3a57f1.
 - Protocol/UI PB bumped to QH 1.0.27 in commit 3a44d4f6d50b6e9ba6835893b754420ce9a08978.
 - Workflow concurrency protection remains enabled so stale firmware jobs cannot overwrite a newer OTA manifest.
+
+
+## OTA reliability fix - QH P.b 1.0.28
+
+- Symptom: BLE OTA could run briefly, then UI showed "Đã hủy cập nhật firmware".
+- Two separate issues were identified:
+  1. The real OTA error was hidden because the app catch path sent OTA_BLE_ABORT and the later OTA:ABORT status overwrote the original failure message.
+  2. Firmware data used 160-byte write-without-response bursts, with only every 8th packet used as a write-with-response barrier. A dropped mobile/WebView BLE Write Command caused the next firmware offset to arrive out of sequence, so ESP32 correctly raised OTA:ERR=SEQ and aborted the partial update.
+- App fix:
+  - firmware BLE packets now use write-with-response for EVERY packet;
+  - default OTA data payload is 100 bytes, with adaptive fallback 60 -> 20 -> 12 bytes if the client rejects the current ATT size;
+  - transfer yields briefly after each packet so OTA error notifications can be processed before another packet is queued;
+  - cleanup OTA:ABORT no longer replaces the original error message;
+  - QH manifest fallback URLs now point only to Blink-QH, never Blink-Redleo.
+- This is an app/web fix and is specifically designed to allow existing FW2.0 hardware to update reliably to FW2.1.
+- Tradeoff: OTA is intentionally slower than the previous burst path, but sequential flash transport is much safer.
+- Main implementation commit: a2c59ad355126ed0160f00c3c9b39724063e62d5.
+- PB bump commit: 1e339cadbf7740eb6eb9a929ca1061187588a50b.
