@@ -184,3 +184,35 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - If Windows Turbo still triggers OTA:ERR=SEQ, the app automatically cleans the partial session and restarts once from byte zero in Safe mode.
 - UI shows the active mode: TURBO <N>B · ACK 1/2 or SAFE <N>B · ACK MỖI GÓI.
 - Main implementation/PB commit: c6c1efe140c738e592b36b2f66955389a8e0f39b.
+
+
+## MOC FALLBACK: CACH UPDATE OTA ON DINH
+
+Ten chinh thuc trong du an: **Cach update OTA on dinh**.
+
+- Day la moc fallback phai giu lai neu cac thu nghiem OTA nhanh ve sau bi loi.
+- Snapshot duoc khoa tai branch: `backup/ota-on-dinh-1.0.30`.
+- Snapshot commit: `bb4e57e94e0ca6f9652c3d04316c4020654eb048`.
+- Logic on dinh tren Windows Chromium:
+  - dung TX payload da probe thanh cong (thuong 160B);
+  - 1 packet nhanh + packet ke tiep write-with-response;
+  - barrier/ACK moi 2 packet;
+  - neu can fallback cuoi cung thi Safe mode ACK moi packet.
+- Khong duoc xoa branch backup nay khi toi uu OTA sau nay.
+- Neu OTA moi bi mat on dinh, uu tien quay lai dung moc nay truoc khi thu nghiem tiep.
+
+## OTA NHANH FW1.9 - QH P.b 1.0.31
+
+- User da ha thiet bi test ve ESP32 FW1.9 va yeu cau cach update nhanh nhat cho FW1.9.
+- QH 1.0.31 dung dung Turbo OTA nhanh nhat da tung duoc Blink dung cho FW1.9:
+  - Windows Chromium chi;
+  - TXPROBE chon payload lon nhat da chung minh on dinh, thuong 160B;
+  - 7 packet write-without-response + packet thu 8 write-with-response lam barrier;
+  - yield 2 ms giua cac packet khong ACK;
+  - UI hien: `OTA NHANH FW1.9 · <N>B · ACK 1/8`.
+- Tu dong fallback theo 3 tang:
+  1. OTA NHANH FW1.9: ACK 1/8.
+  2. Neu gap OTA:ERR=SEQ -> tu restart tu byte 0 bang **Cach update OTA on dinh**: ACK 1/2.
+  3. Neu van SEQ -> tu restart lan cuoi bang SAFE: ACK moi packet.
+- iOS/mobile/non-probed client khong dung Turbo FW1.9; giu duong an toan.
+- Main implementation/PB commit: `5e74af1dbc6541e49aeb80de75d45eafa4a428b3`.
