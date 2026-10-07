@@ -15,7 +15,7 @@
 /*
   BLINK TL - REDLEO ECU REAL BLE/UART BRIDGE
   QH build: mirrors Blink FW2.0 transport; OTA manifest stays in Blink-QH.
-  Release sync checkpoint: FW2.0 Read All stable stream.
+  Release sync checkpoint: FW2.1 redundant Read All stream.
   ------------------------------------------
   Phone/Bluefy/Android <-> BLE <-> ESP32 <-> REDLEO ECU UART
 
