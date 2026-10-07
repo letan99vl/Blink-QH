@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.18';
-  document.title = 'QH ECU · v1.0.18';
+  window.BLINK_PB_VERSION = 'QH-1.0.19';
+  document.title = 'QH ECU · v1.0.19';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2644,6 +2644,7 @@ html body .qhSmallBtn{
 .qhSideSplit{display:grid;grid-template-rows:1fr 1px 1fr;gap:9px;align-content:center}
 .qhSideDivider{background:#303233}
 .qhSideSmallValue{font-size:21px;font-weight:900;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.qhTpsVoltage{font-size:11px;font-weight:800;color:#d6b84d;margin-top:2px;white-space:nowrap;letter-spacing:.15px}
 
 .qhSensorStrip{
   display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;margin:8px 0;
@@ -3046,6 +3047,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   .qhRpmTickLabels{font-size:10px!important}
   .qhSideValue{font-size:30px!important}
   .qhSideSmallValue{font-size:15px!important}
+  .qhTpsVoltage{font-size:10px!important}
   .qhSensorCell{min-height:44px!important}
   .qhSensorCell b{font-size:12px!important}
   .qhSensorCell small{font-size:8px!important}
@@ -3058,6 +3060,7 @@ html body .mapwrap td.mapcell.selected:not(.afr-red):not(.afr-green):not(.afr-or
   .qhRpmValue{font-size:clamp(36px,8vw,54px)!important}
   .qhRpmX{font-size:13px!important}
   .qhSideValue{font-size:27px!important}
+  .qhTpsVoltage{font-size:9px!important}
 }
 </style>
 <style id="qhHeaderCleanup">
@@ -3888,7 +3891,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.18</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.19</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -3921,6 +3924,7 @@ html body .miniStatus{
           <div>
             <div class="qhSideLabel">TPS</div>
             <div class="qhSideSmallValue" data-mirror="tps">--%</div>
+            <div class="qhTpsVoltage" data-mirror="tpsv">-- V</div>
           </div>
           <div class="qhSideDivider"></div>
           <div>
@@ -8450,6 +8454,7 @@ function syncMirrors(){
   const m={
     rpm:text('rpmLive')||'0',
     tps:text('tpsLive')||'--%',
+    tpsv:text('tpsVLive')||'-- V',
     afr:text('afrLive')||'--',
     cell:text('cellLive')||'--',
     ect:text('ectLive')||'-- °C',
