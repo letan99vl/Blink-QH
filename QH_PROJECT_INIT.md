@@ -44,3 +44,10 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Them QH FINAL THEME o cuoi HEAD de khoa mau den/xam kim loai/vang sau tat ca CSS legacy.
 - Doi cac nhan BLINK con hien thi tren Auto Tune/Settings sang QH.
 - Kiem tra static: khong trung ID, khong thieu cac ID live/mapSelect bat buoc.
+
+## QH RPM refinement v1.0.3
+- Commit: `921ce940ba0d1faf8b90d1f3611108057c10a6ac`
+- Giam kich thuoc gauge, mong vong cung, giam font tick va glow.
+- Bo moc 18; gauge hien 0-16 va scale 0-16000 rpm.
+- Vong cung mau vang -> cam -> do chi hien den vi tri RPM live; phan chua dat duoc duoc che bang mau xam.
+- Marker va vong cung dung chung bien `--rpm-angle`, co transition ngan de chuyen dong muot hon.
