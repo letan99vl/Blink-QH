@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.7';
-  document.title = 'QH ECU · v1.0.7';
+  window.BLINK_PB_VERSION = 'QH-1.0.8';
+  document.title = 'QH ECU · v1.0.8';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3439,6 +3439,65 @@ html body .miniStatus{
   #mapsScreen .menuCard h3{font-size:14px!important}
 }
 </style>
+<style id="qhMapBackFix">
+/* ===== QH MAP BACK FIX v1.0.8 ===== */
+#mapEditorScreen .toolbarBackBtn,
+#mapEditorScreen #editorBackBtn{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+#mapEditorScreen .screenHeader{
+  position:relative!important;
+  z-index:250080!important;
+  pointer-events:auto!important;
+}
+
+#mapEditorScreen #editorHeaderBackBtn{
+  display:grid!important;
+  place-items:center!important;
+  position:relative!important;
+  z-index:250090!important;
+  pointer-events:auto!important;
+  touch-action:manipulation!important;
+  -webkit-tap-highlight-color:transparent!important;
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  border:2px solid #9b7625!important;
+  background:linear-gradient(180deg,#2a2617,#0d0e0c)!important;
+  color:#f2d988!important;
+  font-size:30px!important;
+  font-weight:900!important;
+  line-height:1!important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,232,145,.20),
+    0 0 0 1px #1f1808,
+    0 0 10px rgba(223,178,54,.14)!important;
+}
+
+#mapEditorScreen #editorHeaderBackBtn:active{
+  transform:scale(.94)!important;
+  filter:brightness(1.12)!important;
+}
+
+/* With the legacy back removed, let the real toolbar buttons use the full row. */
+#mapEditorScreen .editToolbar{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+#mapEditorScreen.standaloneFuel .editToolbar{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+@media(orientation:landscape){
+  #mapEditorScreen .editToolbar{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3554,8 +3613,8 @@ html body .miniStatus{
   </section>
 
   <section id="mapEditorScreen" class="screen">
-    <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="maps" aria-label="Quay lại bản đồ">‹</button><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
-    <div class="editToolbar"><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại">‹</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button id="mapZoomBtn" class="ghost" type="button">⛶ PHÓNG TO MAP</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
+    <div class="screenHeader"><button class="qhBackBtn" id="editorHeaderBackBtn" type="button" data-nav="maps" aria-label="Quay lại bản đồ">‹</button><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
+    <div class="editToolbar"><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại" hidden tabindex="-1">‹</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button id="mapZoomBtn" class="ghost" type="button">⛶ PHÓNG TO MAP</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
     <div class="editorInfo"><div class="livebox"><div class="k">TPS / RPM</div><div class="v" data-mirror="cell">--</div></div><div class="livebox"><div class="k">AFR LIVE</div><div class="v" data-mirror="afr">--</div></div><div class="livebox editorEctBox"><div class="k">NHIỆT ĐỘ MÁY ECT</div><div class="v" data-mirror="ect">-- °C</div></div></div>
     <div class="tabs editorTabs"><button class="tab active" data-tab="measured">AFR ĐO (QH)</button><button class="tab" data-tab="target">AFR MỤC TIÊU (QH)</button><button class="tab" data-tab="inject">THỜI GIAN PHUN</button><button class="tab" data-tab="corrected">MAP ĐÃ BÙ</button></div>
     <div class="editorStepBar"><div class="mapToolGroup mapStepGroup"><span>Bước:</span><button class="stepChip" data-mapstep="1" type="button">1</button><button class="stepChip on" data-mapstep="0.1" type="button">0.1</button><button class="stepChip" data-mapstep="0.01" type="button">0.01</button></div><button class="stepChip scanChip" id="mapScanToggle" type="button">▦ QUÉT CHỌN</button><div class="mapToolGroup mapModeGroup"><span>Chế độ:</span><button class="stepChip on" data-mapmode="unit" type="button">Unit</button><button class="stepChip" data-mapmode="percent" type="button">%</button></div><button class="stepChip" id="mapLiveCursorToggle" type="button">◎ TỰ CUỘN LIVE</button></div>
@@ -7951,6 +8010,16 @@ updateQhClock();
 setInterval(updateQhClock,1000);
 
 document.querySelectorAll('[data-nav]').forEach(e=>e.addEventListener('click',()=>showScreen(e.dataset.nav)));
+const editorHeaderBackBtn=document.getElementById('editorHeaderBackBtn');
+if(editorHeaderBackBtn){
+  const goBackFromEditor=(ev)=>{
+    try{ev?.preventDefault?.();ev?.stopPropagation?.()}catch(_e){}
+    try{window.hideFuelKeypad?.()}catch(_e){}
+    showScreen(editorReturnScreen||'maps');
+  };
+  editorHeaderBackBtn.addEventListener('click',goBackFromEditor,{passive:false});
+  editorHeaderBackBtn.addEventListener('pointerup',goBackFromEditor,{passive:false});
+}
 document.querySelectorAll('.mapBankBtn').forEach(e=>e.addEventListener('click',()=>{selectMapBank(Number(e.dataset.mapbank),true);syncBanks();if(currentFeature?.banked)renderFeature()}));
 document.querySelectorAll('[data-feature]').forEach(e=>e.addEventListener('click',()=>openFeature(e.dataset.feature)));
 document.getElementById('editorBackBtn')?.addEventListener('click',()=>{window.hideFuelKeypad?.();showScreen(editorReturnScreen||'maps')});document.getElementById('redEditorBack')?.addEventListener('click',()=>{window.hideRedKeypad?.();showScreen('maps')});
