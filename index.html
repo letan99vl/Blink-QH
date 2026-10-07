@@ -2045,6 +2045,332 @@
     .qhMenuIcon{font-size:21px;width:30px}.qhChevron{font-size:27px}
   }
 
+
+  /* ===== QH ECU COLOR CLEANUP v1.0.1 ===== */
+  /* Remove leftover Redleo red chrome. Red remains only for semantic data/error states. */
+  :root{
+    --bg:#050606!important;
+    --panel:#0b0c0d!important;
+    --panel2:#111315!important;
+    --line:#d7ad29!important;
+    --head:#17191a!important;
+    --accent:#d7ad29!important;
+    --warn:#e2b62c!important;
+    --danger:#b99023!important;
+    --ios-blue:#d7ad29!important;
+    --ios-orange:#d7ad29!important;
+  }
+
+  .app{
+    background:
+      radial-gradient(circle at 72% -5%,rgba(215,173,41,.10),transparent 30%),
+      radial-gradient(circle at -10% 36%,rgba(180,140,20,.07),transparent 30%),
+      linear-gradient(180deg,#050606,#0a0b0c 55%,#040505)!important;
+  }
+  .app::before{
+    background:
+      linear-gradient(145deg,transparent 0 30%,rgba(215,173,41,.035) 30.3% 31%,transparent 31.2% 70%,rgba(215,173,41,.025) 70.3% 71%,transparent 71.2%),
+      radial-gradient(circle at 58% 23%,rgba(255,255,255,.025),transparent 24%)!important;
+  }
+
+  /* Bottom navigation is removed in QH, reclaim the full screen. */
+  .bottomNav{display:none!important}
+  .screen{
+    inset:0!important;
+    padding-bottom:max(16px,env(safe-area-inset-bottom))!important;
+  }
+  #mapEditorScreen,#redleoEditorScreen{padding-bottom:0!important}
+
+  /* General chrome */
+  button{
+    background:linear-gradient(180deg,#242628,#111214)!important;
+    border:1px solid #4b4d4e!important;
+    color:#f3f1e8!important;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+  }
+  button.primary,.tab.active,.mapBankBtn.active,.stepChip.on,.redStep button.primary{
+    background:linear-gradient(180deg,#e2b82f,#a87908)!important;
+    border-color:#efd05f!important;
+    color:#090a0a!important;
+    box-shadow:0 0 14px rgba(215,173,41,.14)!important;
+  }
+  button.good{
+    background:linear-gradient(180deg,#31583b,#16321f)!important;
+    border-color:#3f8652!important;
+    color:#eaffef!important;
+  }
+  button.danger{
+    background:linear-gradient(180deg,#5b4a1b,#2f260f)!important;
+    border-color:#b78d1f!important;
+    color:#ffe8a2!important;
+  }
+  button.ghost,#disconnectEcuBtn,#fullscreenBtn,.tab{
+    background:linear-gradient(180deg,#1b1d1e,#0d0e0f)!important;
+    border-color:#3e4142!important;
+    color:#d8d9d4!important;
+  }
+  button:focus-visible,input:focus,select:focus,textarea:focus{
+    outline:none!important;
+    box-shadow:0 0 0 2px rgba(215,173,41,.30)!important;
+  }
+
+  /* Connection/status: OFF is neutral metal, ON remains green. */
+  .miniStatus{
+    color:#d3c48c!important;
+    background:#15150f!important;
+    border-color:#64551f!important;
+  }
+  .miniStatus .lamp{
+    background:#b79b41!important;
+    box-shadow:0 0 10px rgba(215,173,41,.42)!important;
+  }
+  .miniStatus.on{
+    color:#9affb4!important;
+    background:#0d1a11!important;
+    border-color:#164a27!important;
+  }
+  .miniStatus.on .lamp{
+    background:#30d158!important;
+    box-shadow:0 0 12px #30d158!important;
+  }
+  .badge{
+    background:#151617!important;
+    border-color:#454849!important;
+    color:#d4d5d0!important;
+  }
+  .statePill{
+    border-color:#464849!important;
+    background:#101112!important;
+    color:#aeb0ac!important;
+  }
+  .statePill.red{
+    border-color:#6b5a20!important;
+    background:#1b180d!important;
+    color:#e6cd77!important;
+  }
+
+  /* QH dashboard */
+  .mapChip{
+    border-color:#57501f!important;
+    background:#0d0e0f!important;
+  }
+  #connectEcuBtn{
+    background:linear-gradient(180deg,#e4bb31,#9f7308)!important;
+    border-color:#f0cf5a!important;
+    color:#080909!important;
+    box-shadow:0 0 18px rgba(215,173,41,.18)!important;
+  }
+  #disconnectEcuBtn,#fullscreenBtn{
+    background:linear-gradient(180deg,#202223,#101112)!important;
+    border-color:#474a4b!important;
+    color:#e1e1dc!important;
+  }
+  .rpmGauge{
+    background:conic-gradient(from 225deg,#e0b42a 0 var(--rpm-angle),#27292a var(--rpm-angle) 270deg,transparent 270deg 360deg)!important;
+    box-shadow:0 0 38px rgba(215,173,41,.10)!important;
+  }
+  .rpmGauge::before{
+    background:radial-gradient(circle at 50% 42%,#17191a,#050606 70%)!important;
+    border-color:#3e3c25!important;
+  }
+  .rpmGauge::after{border-color:rgba(215,173,41,.20)!important}
+  #rpmLive{text-shadow:0 0 20px rgba(215,173,41,.15)!important}
+  .rpmUnit{color:#e3b72e!important}
+  .heroCard,.miniCard,.wideCard,.tuneLive,.editorInfo .livebox{
+    border-color:#484629!important;
+    background:linear-gradient(150deg,#151719,#0b0c0d)!important;
+  }
+  .heroCard::after{background:rgba(215,173,41,.055)!important}
+  .heroCard.tps{border-color:#31583b!important}
+
+  /* Map menu */
+  .mapBankBar{
+    border-color:#4f4921!important;
+    background:#0d0e0f!important;
+  }
+  .mapBankBtn.active{
+    background:linear-gradient(180deg,#e0b62e,#936a06)!important;
+    border:1px solid #f0cf5b!important;
+    color:#090909!important;
+  }
+  .menuCard,.settingTile{
+    border-color:#545024!important;
+    background:linear-gradient(155deg,#17191a,#0a0b0c 70%)!important;
+    box-shadow:inset 0 0 0 1px rgba(215,173,41,.035)!important;
+  }
+  .menuCard::after{background:rgba(215,173,41,.055)!important}
+  .menuIcon{
+    border-color:#c59b25!important;
+    color:#e3b72f!important;
+    background:#1b180d!important;
+    box-shadow:0 0 16px rgba(215,173,41,.10)!important;
+  }
+  .menuCode,.settingTile .tiny{color:#847536!important}
+  .menuArrow{color:#e3b72f!important}
+  .featureCard .srcTag{
+    background:#17160e!important;
+    border-color:#5b4f1b!important;
+    color:#d6bc62!important;
+  }
+  .featureCard[data-feature="inj_ve"] .menuIcon,
+  .featureCard[data-feature="ign_degree"] .menuIcon{
+    box-shadow:0 0 18px rgba(215,173,41,.14)!important;
+  }
+
+  /* Forms/settings */
+  .settings,.optPanel,#threeRunPanel,.tuneNote,.sourceNote{
+    border-color:#4b4827!important;
+    background:linear-gradient(180deg,#111315,#090a0b)!important;
+  }
+  .field input,.field select,.field textarea,
+  .optionField input,.optionField select,.tuneModeRow select{
+    background:#090a0b!important;
+    border-color:#454326!important;
+    color:#f4f3ec!important;
+  }
+  .toggleItem,.infoCell,.threeStatus,.metaChip{
+    border-color:#414022!important;
+    background:#0d0e0f!important;
+  }
+  .toggleItem input{accent-color:#d7ad29!important}
+  .dangerNote{
+    border-color:#7a6421!important;
+    background:#1b170b!important;
+    color:#dbc983!important;
+  }
+
+  /* Editor controls */
+  .editorTabs{
+    background:#0d0e0f!important;
+    border-color:#4c4825!important;
+  }
+  .stepChip,.editorStepBar .stepChip,.redStep button{
+    border-color:#444226!important;
+    background:#101112!important;
+    color:#c7c8c1!important;
+  }
+  .stepChip.on,.editorStepBar .stepChip.on{
+    border-color:#d0a427!important;
+    background:#3a300f!important;
+    color:#ffe69b!important;
+  }
+  .editorStepBar .scanChip{color:#d9c16b!important}
+  .editorStepBar .scanChip.on,#redScanToggle.active{
+    background:#ad851c!important;
+    border-color:#ebc547!important;
+    color:#090909!important;
+    box-shadow:0 0 16px rgba(215,173,41,.16)!important;
+  }
+  #mapWrap.scanMode::after{
+    background:#b78b1c!important;
+    color:#090909!important;
+  }
+  #rotateLandscapeBtn{
+    background:linear-gradient(180deg,#202223,#101112)!important;
+    border-color:#5b5529!important;
+    color:#e8d99d!important;
+  }
+  #mapEditorScreen.landscapeRequested .screenHeader{border-bottom-color:#c99e26!important}
+
+  /* Main map cells: neutral/cream unless they carry actual AFR/fuel heat data. */
+  .mapwrap td.mapcell{
+    background:#eee8d8!important;
+    color:#151515!important;
+  }
+  .mapwrap td.mapcell:nth-child(3n){background:#e8e1cf!important}
+  .mapwrap td.mapcell.current{
+    background:#f2df91!important;
+    box-shadow:inset 0 0 0 3px #d6a91f!important;
+  }
+  .mapwrap td.mapcell.selected{
+    background:#c79b1e!important;
+    color:#090909!important;
+    box-shadow:inset 0 0 0 2px #7c5b08!important;
+  }
+  .mapwrap td.mapcell.selected.current{
+    background:#d9b63e!important;
+    box-shadow:inset 0 0 0 3px #fff1af,inset 0 0 0 5px #a87805!important;
+  }
+  #mapTable td.mapcell.inj-heat,
+  #mapTable td.mapcell.inj-heat:hover,
+  #mapTable td.mapcell.inj-heat.current,
+  #mapTable td.mapcell.inj-heat.selected,
+  #mapTable td.mapcell.inj-heat.selected.current{
+    background:var(--inj-heat)!important;
+  }
+  #mapTable td.mapcell.inj-heat.current{
+    box-shadow:inset 0 0 0 3px #d7ad29,inset 0 0 0 5px rgba(255,255,255,.92)!important;
+  }
+  #mapTable td.mapcell.inj-heat.selected{
+    box-shadow:inset 0 0 0 3px #d7ad29,inset 0 0 0 6px #55420b,inset 0 0 0 8px rgba(255,255,255,.90)!important;
+  }
+
+  /* REDLEO-named editor classes are protocol names only; visually they are QH. */
+  .redTableWrap{
+    background:#070808!important;
+    border-top-color:#4c4824!important;
+  }
+  .redTable th,.redTable td{
+    border-right-color:#4b4826!important;
+    border-bottom-color:#4b4826!important;
+  }
+  .redTable th,.redTable .rhead{
+    background:#17191a!important;
+    color:#e2e2dc!important;
+  }
+  .redCell{
+    background:#eee8d8!important;
+    color:#151515!important;
+  }
+  .redCell.sel{
+    background:#c79b1e!important;
+    color:#090909!important;
+    box-shadow:inset 0 0 0 2px #755605!important;
+  }
+  .redCell.current{
+    background:#f0dc88!important;
+    color:#111!important;
+    box-shadow:inset 0 0 0 3px #d7ad29!important;
+  }
+  .redCell.afrOff{
+    background:#1a1b1c!important;
+    color:#c8c9c4!important;
+  }
+  .redCell.afrOff.sel{
+    background:#4a411f!important;
+    color:#fff0b0!important;
+  }
+  .redEditorFoot,.editorFooter{
+    background:#090a0b!important;
+    border-top-color:#413e22!important;
+  }
+
+  /* Write/apply actions are gold, not Redleo red. */
+  .tuneMapLinks .tuneApplyCorrected{
+    background:linear-gradient(180deg,#6b5518,#342a0d)!important;
+    border-color:#b88f20!important;
+    color:#ffe7a0!important;
+    box-shadow:0 0 16px rgba(215,173,41,.10)!important;
+  }
+  #mapMinusBtn,.editorStepBar #mapMinusBtn{
+    background:#332c17!important;
+    border-color:#8f7425!important;
+    color:#e3cf87!important;
+    box-shadow:none!important;
+  }
+
+  /* Keep true semantic red only here: critical errors and measured AFR/heatmap red. */
+  .ecuNotice.error{
+    background:#4a1d24!important;
+    border-color:#ff6473!important;
+    color:#fff!important;
+  }
+  .ecuTaskStatus.error{
+    background:#4a1d24!important;
+    border-color:#ff6473!important;
+    color:#ffd8dc!important;
+  }
+
 </style>
 </head>
 <body>
