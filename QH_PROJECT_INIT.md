@@ -267,20 +267,13 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - The separate fallback branch `backup/ota-on-dinh-1.0.30` remains untouched and continues to be the project checkpoint named **Cach update OTA on dinh**.
 
 
-## CRITICAL: FW2.1 breaks ECU confirmation
+## CORRECTION: FW2.1 ECU confirmation false alarm
 
-- Real-hardware report: after updating QH ESP32 to FW2.1, BLE still comes up but the app fails at "DANG XAC NHAN ECU"; the ECU cannot be identified/used.
-- Treat QH FW2.1 as BAD / DO NOT DISTRIBUTE.
-- Source comparison showed:
-  - transactUart() in QH FW2.1 is identical to current Blink FW2.0;
-  - processTransaction() is also identical;
-  - QH FW2.1's custom difference is the two-pass >=8 KB Read All BLE response streamer.
-- Even though the two-pass path should only affect huge responses, the hardware regression means the entire QH 2.1 release is withdrawn rather than trying to patch it in place.
-- Recovery plan:
-  - FW2.2 source is rebuilt from the current Blink FW2.0 source;
-  - only FW_VERSION is advanced to 2.2 and OTA manifest endpoint is changed to Blink-QH;
-  - the custom FW2.1 two-pass Read All streamer is removed completely.
-- This forward version bump lets devices already on broken FW2.1 OTA forward to FW2.2 without a cable downgrade.
-- Source recovery commit: `114554d43bb4622b578e480e71628c9234349186`.
-- Clean recovery build trigger commit: `882879a1101953347b48087f8806506d27036b6b`.
-- Until FW2.2 binary/manifest build is confirmed successful, do not tell users FW2.1 is safe.
+- The earlier report that FW2.1 could not confirm/connect to the ECU was a test setup mistake: the ECU itself was not plugged in.
+- FW2.1 is NOT considered broken from that event.
+- Keep QH FW2.1 as the active firmware line.
+- The temporary FW2.2 recovery attempt was stopped and must not replace FW2.1.
+- FW2.1 retains the two-pass >=8 KB Read All hardening introduced for residual BLE notification loss.
+- Source restored to FW2.1 in commit `c949ef506fa45574ed5edea21fb4cc2c7ff498de`.
+- Build workflow restored to FW2.1 in commit `742f83b32a4273dbf57ac27af6a315d970bb75c2`.
+- Clean FW2.1 rebuild trigger: `0f592b31b2124ff7668605d3c01c8516c207e1bb`.
