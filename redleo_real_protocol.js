@@ -96,7 +96,7 @@ function scheduleSensorCalWarmup(epoch,identity,attempt=0){
     }
     try{
       log('LIVE ECT/IAT · reading A2 sensor calibration in background');
-      await readA2SensorPageReal(false);
+      await readA2SensorPageReal(false,{attempts:1,settleMs:180,replyTimeout:3500,background:true});
       if(epoch!==transportEpoch)return;
       if(sensorCalCache&&sensorCalIdentity===identity){
         saveStoredSensorCal(identity,sensorCalCache);
@@ -2587,16 +2587,20 @@ function directPageFrameError(rx,pg,label,minData){
   const tail=Array.from(rx.slice(Math.max(0,rx.length-8)),x=>x.toString(16).padStart(2,'0').toUpperCase()).join(' ');
   return new Error(label+' · page 0x'+(pg&255).toString(16).toUpperCase()+' frame chưa hợp lệ · RX '+rx.length+'B · cần data ≥'+minData+'B · head '+head+' · tail '+tail);
 }
-async function readDirectPageReal(pg,minData=0,label='PAGE',showUi=true){
+async function readDirectPageReal(pg,minData=0,label='PAGE',showUi=true,readOpts=null){
   requireProfile('pageRead','Đọc page 0x9A');
   pg&=255;
+  const opt=(readOpts&&typeof readOpts==='object')?readOpts:{};
+  const attempts=Math.max(1,Math.min(4,Math.round(Number(opt.attempts)||3)));
+  const settleMs=Math.max(0,Math.min(2000,Math.round(Number(opt.settleMs)||300)));
+  const replyTimeout=Math.max(1800,Math.min(20000,Math.round(Number(opt.replyTimeout)||12000)));
   if(showUi)taskUi('loading','ĐANG ĐỌC '+label+' · PAGE 0x'+pg.toString(16).toUpperCase());
   const validate=rx=>{
     const s=selectDirectPageFrame(rx,pg,minData);
     if(!s)throw directPageFrameError(rx,pg,label,minData);
     return true;
   };
-  const rx=await exchangePage9A(pg,label,3,300,12000,showUi,validate);
+  const rx=await exchangePage9A(pg,label,attempts,settleMs,replyTimeout,showUi,validate);
   const selected=selectDirectPageFrame(rx,pg,minData);
   if(!selected)throw directPageFrameError(rx,pg,label,minData);
   const {f,trailer,frameFormat}=selected;
@@ -2607,7 +2611,7 @@ async function readDirectPageReal(pg,minData=0,label='PAGE',showUi=true){
   try{applyProfileUi();}catch(_e){}
   return {page:pg,frame:f,data,rxLength:rx.length,frameFormat};
 }
-async function readA2SensorPageReal(showUi=true){
+async function readA2SensorPageReal(showUi=true,readOpts=null){
   requireProfile('optionsRead','Đọc Options/Voltage');
   if(ecuProfile&&ecuProfile.family==='v8')throw new Error('REDLEO V8: page Options/Voltage dùng layout riêng, chưa mở ở profile MAIN TUNE.');
   const v11=isV11Profile();
@@ -2618,7 +2622,7 @@ async function readA2SensorPageReal(showUi=true){
   const ultra2=v11&&isUltraPro2Direct();
   const minData=v11?(ultra2?V11_A2_286.LEN:V11_A2.LEN):(v10Direct?V10_A2.LEN:(ultra?(ultraLayout?ultraLayout.len:ULTRA_A2.BASE_LEN):(v10Family?140:133)));
   const label=v11?(ultra2?'REDLEO ULTRA PRO2 · A2 286B':'ATE / REDLEO V11 · A2 / OPTIONS'):(v10Direct?'REDLEO V10.2 · A2 268B':(ultra?('REDLEO ULTRA · A2 '+(ultraLayout?ultraLayout.len:'≥277')+'B'):(v10Family?'REDLEO V10 FAMILY · A2 PREFIX':'CẢM BIẾN / OPTIONS')));
-  const R=await readDirectPageReal(0xA2,minData,label,showUi);
+  const R=await readDirectPageReal(0xA2,minData,label,showUi,readOpts);
   const C=v11?parseV11A2Data(R.data):(v10Direct?parseV10A2Data(R.data):(ultra?parseUltraA2Data(R.data):(v10Family?parseModernA2Prefix(R.data):parseA2Data(R.data))));
   sensorCalCache=C;
   sensorCalIdentity=handshakeInfo?[
@@ -3078,31 +3082,53 @@ async function readCurrentFuelBank(bank=((typeof state!=='undefined'&&state.acti
 async function readAll(cmd=0xAB,timeoutMs=35000){
   if(cmd===0x8B)requireProfile('restore','Khôi phục ECU');
   else requireProfile('readAll','Đọc toàn bộ ECU');
-  taskUi('loading',cmd===0x8B?'ĐANG KHÔI PHỤC ECU...':'ĐANG ĐỌC TẤT CẢ ECU...');
-  const rx=await rawExchange(req5(cmd,cmd),Math.max(5000,Number(timeoutMs)||35000));
-  let C=parseReadAll(rx,cmd);
-  // Never decode a legacy/V8 Read All using the modern 9.x memory layout,
-  // even if its byte length happens to collide with a known modern length.
-  if(ecuProfile.family!=='modern'&&!C.rawOnly&&!C.v11Decoded){
-    C={raw:C.raw.slice(),sourceLength:C.sourceLength,layoutInfo:'raw-'+C.sourceLength+'-'+ecuProfile.key,rawOnly:true,banks:[],hidden:{}};
+
+  // READ ALL is a foreground/manual transaction. It must outrank live 0x69 and
+  // the optional A2 sensor-calibration warmup; otherwise a failed background A2
+  // retry can make the user-facing READ ALL appear to load for tens of seconds.
+  const resumeLive=liveRunning;
+  if(sensorWarmupTimer){clearTimeout(sensorWarmupTimer);sensorWarmupTimer=null;}
+  stopLiveLoop();
+
+  try{
+    taskUi('loading',cmd===0x8B?'ĐANG KHÔI PHỤC ECU...':'ĐANG ĐỌC TẤT CẢ ECU...');
+    // Let only the transaction already on the wire finish. Background A2 now
+    // has a 3.5 s / one-attempt ceiling, so a manual READ ALL cannot be starved.
+    await waitForEcuIdle(8000);
+    await new Promise(r=>setTimeout(r,60));
+
+    const rx=await rawExchange(req5(cmd,cmd),Math.max(5000,Number(timeoutMs)||35000));
+    let C=parseReadAll(rx,cmd);
+    // Never decode a legacy/V8 Read All using the modern 9.x memory layout,
+    // even if its byte length happens to collide with a known modern length.
+    if(ecuProfile.family!=='modern'&&!C.rawOnly&&!C.v11Decoded){
+      C={raw:C.raw.slice(),sourceLength:C.sourceLength,layoutInfo:'raw-'+C.sourceLength+'-'+ecuProfile.key,rawOnly:true,banks:[],hidden:{}};
+    }
+    window.blinkReadAllRaw=C.raw.slice();
+    window.blinkReadAllLayout={length:C.sourceLength,layout:C.layoutInfo,rawOnly:!!C.rawOnly};
+    if(C.rawOnly){
+      // Never keep a decoded cache from an earlier Read All when the newest
+      // response could only be preserved as RAW.
+      readCache=null;
+      const s=document.getElementById('redIoStatus');
+      if(s)s.textContent='ECU REAL · READ ALL '+C.sourceLength+'B OK · RAW backup'+(ecuProfile&&ecuProfile.family==='v8'?' · V8 expected ~8087B':ecuProfile&&ecuProfile.family==='v11'?' · ATE V11 full image preserved':'');
+      log('ReadAll raw frame accepted:',C.sourceLength+'B');
+    }else if(C.v11Decoded){
+      syncV11ReadAll(C);
+    }else{
+      syncAll(C);
+    }
+    try{applyProfileUi();}catch(_e){}
+    taskUi('success',(cmd===0x8B?'KHÔI PHỤC ECU':'ĐỌC TẤT CẢ ECU')+' · OK');
+    return C;
+  }finally{
+    if(resumeLive&&cmdChar()&&mapChar()&&handshakeInfo&&profileCap('live')&&!otaPaused){
+      scheduleLiveResume(380);
+      // If this ECU still has no saved sensor curves, retry A2 only after the
+      // foreground READ ALL is completely finished. The warmup is one-shot/short.
+      if(!sensorCalCache)scheduleSensorCalWarmup(transportEpoch,sensorIdentity(),0);
+    }
   }
-  window.blinkReadAllRaw=C.raw.slice();
-  window.blinkReadAllLayout={length:C.sourceLength,layout:C.layoutInfo,rawOnly:!!C.rawOnly};
-  if(C.rawOnly){
-    // Never keep a decoded cache from an earlier Read All when the newest
-    // response could only be preserved as RAW.
-    readCache=null;
-    const s=document.getElementById('redIoStatus');
-    if(s)s.textContent='ECU REAL · READ ALL '+C.sourceLength+'B OK · RAW backup'+(ecuProfile&&ecuProfile.family==='v8'?' · V8 expected ~8087B':ecuProfile&&ecuProfile.family==='v11'?' · ATE V11 full image preserved':'');
-    log('ReadAll raw frame accepted:',C.sourceLength+'B');
-  }else if(C.v11Decoded){
-    syncV11ReadAll(C);
-  }else{
-    syncAll(C);
-  }
-  try{applyProfileUi();}catch(_e){}
-  taskUi('success',(cmd===0x8B?'KHÔI PHỤC ECU':'ĐỌC TẤT CẢ ECU')+' · OK');
-  return C;
 }
 
 // ----- write builders -----
