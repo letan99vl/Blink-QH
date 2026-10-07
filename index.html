@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.16';
-  document.title = 'QH ECU · v1.0.16';
+  window.BLINK_PB_VERSION = 'QH-1.0.17';
+  document.title = 'QH ECU · v1.0.17';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -3842,6 +3842,41 @@ html body .miniStatus{
   fill:#f6f5ef!important;
 }
 </style>
+<style id="qhAutoTuneDirect">
+/* ===== QH AUTO TUNE DIRECT v1.0.17 ===== */
+/* Legacy menu remains in DOM only to preserve mode/three-run state elements. */
+#tuneScreen{display:none!important}
+
+/* Direct AFR editor toolbar layout. */
+#mapEditorScreen.autoTuneMap .editToolbar{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+#mapEditorScreen.autoTuneMap #applyCorrectedBtn{
+  grid-column:1/-1!important;
+}
+#mapEditorScreen.autoTuneMap #recordBtn{
+  border-color:#b58b22!important;
+  background:linear-gradient(180deg,#dcb22e,#8d6709)!important;
+  color:#0b0b09!important;
+  text-shadow:0 1px 0 rgba(255,238,173,.65)!important;
+}
+#mapEditorScreen.autoTuneMap #recordBtn.danger{
+  border-color:#d6493b!important;
+  background:linear-gradient(180deg,#b52d27,#6e1716)!important;
+  color:#fff3eb!important;
+  text-shadow:0 1px 0 #000!important;
+}
+@media(max-width:520px){
+  #mapEditorScreen.autoTuneMap .editToolbar{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  }
+  #mapEditorScreen.autoTuneMap .editToolbar button{
+    min-height:42px!important;
+    font-size:9px!important;
+    padding:4px 5px!important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -3853,7 +3888,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.16</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.17</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -3928,7 +3963,7 @@ html body .miniStatus{
       <button class="qhMenuRow" type="button" data-nav="settings"><span class="qhMenuIcon">⌕</span><span class="qhMenuText"><b>TÙY CHỌN</b><small>Thông số hệ thống</small></span><span class="qhChevron">›</span></button>
       <button class="qhMenuRow" type="button" data-nav="ecu"><span class="qhMenuIcon">▦</span><span class="qhMenuText"><b>ECU</b><small>Đọc / ghi dữ liệu ECU</small></span><span class="qhChevron">›</span></button>
       <button class="qhMenuRow" type="button" data-nav="maps"><span class="qhMenuIcon">▱</span><span class="qhMenuText"><b>BẢN ĐỒ</b><small>Fuel · Ignition · Compensation</small></span><span class="qhChevron">›</span></button>
-      <button class="qhMenuRow" type="button" data-nav="tune"><span class="qhMenuIcon">◎</span><span class="qhMenuText"><b>AUTO TUNE</b><small>AFR · học phản ứng · bù MAP</small></span><span class="qhChevron">›</span></button>
+      <button class="qhMenuRow" id="homeAutoTuneBtn" type="button"><span class="qhMenuIcon">◎</span><span class="qhMenuText"><b>AUTO TUNE</b><small>AFR · học phản ứng · bù MAP</small></span><span class="qhChevron">›</span></button>
       <button class="qhMenuRow qhDataRow" type="button" data-nav="maps"><span class="qhMenuIcon">⊙</span><span class="qhMenuText"><b>DỮ LIỆU</b></span><span class="qhChevron">›</span></button>
     </div>
   </section>
@@ -3947,7 +3982,7 @@ html body .miniStatus{
 
   <section id="mapEditorScreen" class="screen">
     <div class="screenHeader"><button class="qhBackBtn" id="editorHeaderBackBtn" type="button" data-nav="maps" aria-label="Quay lại bản đồ">‹</button><div class="screenTitleWrap"><div class="screenTitle" id="editorTitle">Thời gian phun (INJ VE)</div><div class="screenSub" id="editorSub">MAP NO.1 · TPS × RPM · ms</div></div><div class="miniStatus" id="editorBleStatus"><span class="lamp"></span><span>OFF</span></div></div>
-    <div class="editToolbar"><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại" hidden tabindex="-1">‹</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button id="mapZoomBtn" class="ghost" type="button">⛶ PHÓNG TO MAP</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
+    <div class="editToolbar"><button class="backBtn toolbarBackBtn" id="editorBackBtn" type="button" aria-label="Quay lại" title="Quay lại" hidden tabindex="-1">‹</button><button id="readMapBtn" class="good">↓ ĐỌC HIỆN TẠI</button><button id="writeMapBtn" class="danger">▣ LƯU HIỆN TẠI</button><button id="mapZoomBtn" class="ghost" type="button">⛶ PHÓNG TO MAP</button><button id="clearMeasuredEditorBtn" class="danger autoTuneEditorOnly" type="button">⌫ XÓA BẢNG AFR</button><button id="threeHistoryBtn" class="ghost autoTuneEditorOnly">▦ LỊCH SỬ</button><button id="recordBtn" class="good autoTuneEditorOnly" type="button">● GHI AFR</button><button id="applyCorrectedBtn" class="danger autoTuneEditorOnly">✦ MAP ĐÃ BÙ → ECU</button></div>
     <div class="editorInfo"><div class="livebox"><div class="k">TPS / RPM</div><div class="v" data-mirror="cell">--</div></div><div class="livebox"><div class="k">AFR LIVE</div><div class="v" data-mirror="afr">--</div></div><div class="livebox editorEctBox"><div class="k">NHIỆT ĐỘ MÁY ECT</div><div class="v" data-mirror="ect">-- °C</div></div></div>
     <div class="tabs editorTabs"><button class="tab active" data-tab="measured">AFR ĐO (QH)</button><button class="tab" data-tab="target">AFR MỤC TIÊU (QH)</button><button class="tab" data-tab="inject">THỜI GIAN PHUN</button><button class="tab" data-tab="corrected">MAP ĐÃ BÙ</button></div>
     <div class="editorStepBar"><div class="mapToolGroup mapStepGroup"><span>Bước:</span><button class="stepChip" data-mapstep="1" type="button">1</button><button class="stepChip on" data-mapstep="0.1" type="button">0.1</button><button class="stepChip" data-mapstep="0.01" type="button">0.01</button></div><button class="stepChip scanChip" id="mapScanToggle" type="button">▦ QUÉT CHỌN</button><div class="mapToolGroup mapModeGroup"><span>Chế độ:</span><button class="stepChip on" data-mapmode="unit" type="button">Unit</button><button class="stepChip" data-mapmode="percent" type="button">%</button></div><button class="stepChip" id="mapLiveCursorToggle" type="button">◎ TỰ CUỘN LIVE</button></div>
@@ -4054,7 +4089,7 @@ html body .miniStatus{
   <section id="tuneScreen" class="screen scrollScreen">
     <div class="screenHeader"><button class="qhBackBtn" type="button" data-nav="dashboard" aria-label="Quay về">‹</button><div class="screenTitleWrap"><div class="screenTitle">Auto Tune</div><div class="screenSub">Ghi AFR · học phản ứng · bù MAP</div></div><div id="tuneBleStatus" class="miniStatus"><span class="lamp"></span><span>OFF</span></div></div>
     <div class="tuneHero"><div class="tuneLive"><div class="k">AFR</div><div class="v" data-mirror="afr">--</div></div><div class="tuneLive"><div class="k">RPM</div><div class="v" data-mirror="rpm">0</div></div><div class="tuneLive"><div class="k">TPS</div><div class="v" data-mirror="tps">--%</div></div><div class="tuneLive"><div class="k">Ô HIỆN TẠI</div><div class="v" data-mirror="cell">--</div></div></div>
-    <div class="tuneModeRow"><select id="tuneMode"><option value="normal">MODE THƯỜNG</option><option value="three">MODE CHẠY 3 LƯỢT</option></select><button id="recordBtn" class="good">GHI AFR</button></div>
+    <div class="tuneModeRow"><select id="tuneMode"><option value="normal">MODE THƯỜNG</option><option value="three">MODE CHẠY 3 LƯỢT</option></select></div>
     <div class="recordActions"><button id="clearMeasured" class="danger" style="grid-column:1/-1">XÓA AFR ĐO</button></div><div class="tuneMapLinks"><button class="ghost" data-auto-tab="measured">AFR ĐO QH</button><button class="ghost" data-auto-tab="target">AFR MỤC TIÊU QH</button><button class="ghost" data-auto-tab="corrected">MAP PHUN ĐÃ BÙ</button><button class="ghost" data-auto-tab="inject">THỜI GIAN PHUN</button><button id="tuneApplyCorrectedBtn" class="danger tuneApplyCorrected" type="button">✦ MAP PHUN ĐÃ BÙ → ECU</button></div>
     <div id="threeRunPanel" class="threePanel" hidden><button id="threeRunStartBtn" class="good">BẮT ĐẦU 3 LƯỢT</button><button id="threeRunStepBtn" class="primary" disabled>KẾT THÚC LƯỢT</button><button id="threeRunCancelBtn" class="danger" disabled>HỦY PHIÊN</button><div id="threeRunStatus" class="threeStatus"><b>Mode chạy 3 lượt:</b> chưa bắt đầu.</div></div>
     <div class="tuneNote">Lượt 1 đo AFR và tạo MAP kế tiếp. Lượt 2 học phản ứng PW/AFR. Lượt 3 tạo FINAL MAP. Auto Tune QH giữ nguyên thuật toán; giao tiếp ECU dùng protocol REDLEO REAL qua cầu BLE/UART.</div>
@@ -5467,8 +5502,8 @@ function setRecording(on){
   state.recording=!!on;
   state.lastCellKey='';
   state.cellEnteredAt=performance.now();
-  $('recordBtn').textContent=state.recording?'Dừng ghi AFR':'Bắt đầu ghi AFR';
-  $('recordBtn').className=state.recording?'danger':'good';
+  $('recordBtn').textContent=state.recording?'■ DỪNG GHI AFR':'● GHI AFR';
+  $('recordBtn').className=(state.recording?'danger':'good')+' autoTuneEditorOnly';
   $('recordBadge').textContent='GHI AFR: '+(state.recording?'ON':'OFF');
   $('recordBadge').className='badge '+(state.recording?'ok':'');
 }
@@ -6461,7 +6496,13 @@ async function disconnectAfr(){
   $('connectAfrBtn').disabled=false;
 }
 
-function syncMeasuredClearButton(){const b=$('clearMeasuredEditorBtn');if(!b)return;b.style.display=state.tab==='measured'?'':'none';b.disabled=state.threeRun.active;}
+function syncMeasuredClearButton(){
+  const measured=state.tab==='measured';
+  const b=$('clearMeasuredEditorBtn');
+  if(b){b.style.display=measured?'':'none';b.disabled=state.threeRun.active;}
+  const r=$('recordBtn');
+  if(r)r.style.display=measured?'':'none';
+}
 function clearMeasuredMap(){
   if(state.threeRun.active)return alert('Không thể xóa AFR khi MODE 3 LƯỢT đang chạy.');
   if(!confirm('Xóa toàn bộ AFR đã đo của MAP No.'+state.activeMap+'?'))return;
@@ -7564,7 +7605,7 @@ window.autoReadVisibleEcuPage=autoReadVisibleEcuPage;
 
 let editorReturnScreen='maps';
 function openOurEditor(tab,fromTune=false,returnScreen=null){
-  const names={measured:'AFR đo QH',target:'AFR mục tiêu QH',inject:'Thời gian phun (INJ VE)',corrected:'MAP phun đã bù của Blink'};
+  const names={measured:'AFR đo QH',target:'AFR mục tiêu QH',inject:'Thời gian phun (INJ VE)',corrected:'MAP phun đã bù của QH'};
   const screen=document.getElementById('mapEditorScreen');
   const standaloneFuel=tab==='inject'&&!fromTune;
   editorReturnScreen=returnScreen||(fromTune?'tune':'maps');
@@ -7572,7 +7613,7 @@ function openOurEditor(tab,fromTune=false,returnScreen=null){
   screen?.classList.toggle('standaloneFuel',standaloneFuel);
   screen?.classList.toggle('autoTuneMap',!standaloneFuel);
   document.getElementById('editorTitle').textContent=names[tab]||'Bản đồ';
-  document.getElementById('editorSub').textContent='MAP NO.'+state.activeMap+' · '+(tab==='inject'?'TPS/RPM ECU · '+(ecuAxisMeta.source||'AXIS'):'AUTO TUNE CỦA BLINK');
+  document.getElementById('editorSub').textContent='MAP NO.'+state.activeMap+' · '+(tab==='inject'?'TPS/RPM ECU · '+(ecuAxisMeta.source||'AXIS'):'AUTO TUNE CỦA QH');
   setTab(tab);document.querySelector('.editorTabs').style.display=standaloneFuel?'none':'grid';
   document.getElementById('applyCorrectedBtn').style.display=fromTune?'':'none';
   syncBanks();showScreen('editor');
@@ -8452,6 +8493,7 @@ updateQhClock();
 setInterval(updateQhClock,1000);
 
 document.querySelectorAll('[data-nav]').forEach(e=>e.addEventListener('click',()=>showScreen(e.dataset.nav)));
+document.getElementById('homeAutoTuneBtn')?.addEventListener('click',()=>openOurEditor('measured',true,'dashboard'));
 const editorHeaderBackBtn=document.getElementById('editorHeaderBackBtn');
 if(editorHeaderBackBtn){
   const goBackFromEditor=(ev)=>{
