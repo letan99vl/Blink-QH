@@ -170,3 +170,17 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Generic abort text "Đã hủy cập nhật firmware." was removed from the current source. If OTA fails on 1.0.29, the UI must show the real error (SEQ/FLASH/HASH/DATA/GATT/etc.) or a diagnostic "Phiên OTA đã dừng..." message only for a non-cleanup abort.
 - Reliable OTA transport from 1.0.28 remains: every firmware packet uses write-with-response, starting at 100B with 60 -> 20 -> 12B fallback.
 - Implementation/PB commit: 75b9074720120091e0f9543aad9d86afc47bd667.
+
+
+## OTA Windows Turbo balance - QH P.b 1.0.30
+
+- User feedback on P.b 1.0.29: OTA no longer immediately failed, but Windows Chrome transfer became unacceptably slow because every firmware packet waited for a GATT response.
+- Existing FW1.9 supports safe desktop TX probing (TXPROBE) and the web layer already records the largest proven payload in window.blinkBridgeTxPayload.
+- P.b 1.0.30 adds platform-adaptive OTA pacing:
+  - Windows Chromium + adaptive TX probe: use the proven payload (normally up to 160B);
+  - Turbo uses a 2-packet cadence: first packet without response, second packet with response as a hard flow-control barrier;
+  - this is intentionally much more conservative than the historical 8-packet burst that could trigger OTA:ERR=SEQ;
+  - iOS/mobile/non-probed clients stay in Safe mode: 100B and write-with-response on every packet.
+- If Windows Turbo still triggers OTA:ERR=SEQ, the app automatically cleans the partial session and restarts once from byte zero in Safe mode.
+- UI shows the active mode: TURBO <N>B · ACK 1/2 or SAFE <N>B · ACK MỖI GÓI.
+- Main implementation/PB commit: c6c1efe140c738e592b36b2f66955389a8e0f39b.
