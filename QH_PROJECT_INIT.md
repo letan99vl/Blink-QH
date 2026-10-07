@@ -97,3 +97,13 @@ File `ota/blink_esp32.bin` la binary lon va GitHub connector khong doc duoc byte
 - Build run thanh cong: `37644174078`; artifact ID `11494290268`.
 - IPA: `QH-ECU-v1.0.21.ipa`; SHA256 `db1a9c58ba1cbb9fe23648a5a3367e4ba1df3264d43192bf5ae96fbe3a3e9d2a`.
 - IPA hien tai la unsigned, phu hop sideload/ky lai. TestFlight/App Store can provisioning/certificate cua Apple Developer.
+
+
+## Read All stall recovery v1.0.25
+- Symptom: Read All could intermittently stop around 63-64% and remain loading until timeout.
+- Root cause class: one lost middle RAW_RX BLE notification leaves the 8-10 KB assembler incomplete even though ECU already returned the frame.
+- Added an 8-second Read All no-progress watchdog.
+- Read All now retries automatically once after a stall/0xAB timeout.
+- If the negotiated RX stream was above 96B (normally 160B), the retry degrades runtime RX to 96B through FW1.8 RXJUMBO control to reduce BLE queue pressure.
+- No ESP32 firmware update is required; QH FW1.8 already accepts RXJUMBO payloads 64..160B.
+- Read All progress remains visible as percent and received/total bytes.
