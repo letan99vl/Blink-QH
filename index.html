@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.36';
-  document.title = 'QH ECU · v1.0.36';
+  window.BLINK_PB_VERSION = 'QH-1.0.37';
+  document.title = 'QH ECU · v1.0.37';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4083,7 +4083,7 @@ html body .miniStatus{
 </style>
 
 <style id="qhIosSettingsFlowFix">
-/* ===== QH iOS SETTINGS FLOW FIX v1.0.36 =====
+/* ===== QH iOS SETTINGS FLOW FIX v1.0.37 =====
    settingsScreen is a flex column. WebKit may flex-shrink the settingsTiles
    container while its grid children keep their painted height, which makes
    the following AUTO TUNE panel overlap the second tile row. Keep every
@@ -4122,6 +4122,13 @@ html body .miniStatus{
   #settingsScreen > .settings{
     flex-shrink:0!important;
   }
+
+  /* WebKit can still paint the second tile row below the height it reports
+     for the grid. Reserve a hard visual clearance before AUTO TUNE so the
+     following panel can never cover QH ECU / Firmware. */
+  #settingsScreen .settingsTiles + details.settings{
+    margin-top:24px!important;
+  }
 }
 </style>
 </head>
@@ -4135,7 +4142,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.36</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.37</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
