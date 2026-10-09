@@ -360,3 +360,20 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Visible build: QH P.b 1.0.39.
 - Implementation commit: `09d68433ffe72e126b893fe18767ee7b34a2441d`.
 - UI/editor behavior only; no ECU protocol, BLE, OTA or FW2.1 transport logic changed.
+
+
+## Auto Tune opening regression fix - QH P.b 1.0.40
+
+- Regression introduced in P.b 1.0.39: pressing the HOME AUTO TUNE entry no longer opened the editor.
+- Root cause:
+  - setTab() lives in the main application script;
+  - P.b 1.0.39 added `requestAnimationFrame(updateMapSelectionPad)` directly inside setTab();
+  - `updateMapSelectionPad()` is private to the later MAP touch-controls IIFE and is not visible in the main script scope;
+  - pressing AUTO TUNE called setTab('measured'), which threw a ReferenceError before openOurEditor() could finish showing the editor.
+- Fix:
+  - removed the cross-scope call from setTab();
+  - render()/highlightSelection() continues to drive the private pad refresh from inside its own touch-controls IIFE;
+  - AFR MUC TIEU keypad + floating +/- functionality from P.b 1.0.39 is retained.
+- Guardrail: do not call private functions from the MAP touch-controls IIFE directly from the main app script unless they are explicitly exported on window.
+- Visible build: QH P.b 1.0.40.
+- Implementation commit: `f863b8631555121a72a84eac138eaa4e933b7f7d`.
