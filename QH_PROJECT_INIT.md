@@ -322,3 +322,18 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Visible build: QH P.b 1.0.37.
 - Implementation commit: `d44e92c159e9fe846a046e2db4e5034c25275f0c`.
 - UI-only change; no BLE/ECU/OTA/FW2.1 logic changed.
+
+
+## iOS settings horizontal alignment - QH P.b 1.0.38
+
+- Real iPhone screenshot after the overlap fix showed the AUTO TUNE and OTA `details.settings` frames shifted slightly to the right compared with the Settings header and 2x2 tile grid.
+- Root cause traced to legacy `.settings[open]` popup CSS which still defined `left/right/bottom`. Although later CSS changed the panel back to normal flow, iOS/WebKit could still retain a horizontal visual offset from those stale inset values.
+- Fix applied to direct Settings panels:
+  - clear `left/right/top/bottom` back to `auto`;
+  - clear inline inset;
+  - use `width:auto`, `align-self:stretch`, `margin-inline:0`;
+  - keep `box-sizing:border-box` and no transform.
+- The existing 24px iOS clearance between the 2x2 tile grid and AUTO TUNE remains unchanged.
+- Visible build: QH P.b 1.0.38.
+- Implementation commit: `52dd9bb2bbda94bbee3561f7b6bad3f4c5b9aabe`.
+- UI-only change; no BLE, ECU protocol, OTA transport, or FW2.1 logic changed.
