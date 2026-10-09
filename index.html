@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.35';
-  document.title = 'QH ECU · v1.0.35';
+  window.BLINK_PB_VERSION = 'QH-1.0.36';
+  document.title = 'QH ECU · v1.0.36';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4081,6 +4081,49 @@ html body .miniStatus{
   .qhTopBattery b{font-size:11px}
 }
 </style>
+
+<style id="qhIosSettingsFlowFix">
+/* ===== QH iOS SETTINGS FLOW FIX v1.0.36 =====
+   settingsScreen is a flex column. WebKit may flex-shrink the settingsTiles
+   container while its grid children keep their painted height, which makes
+   the following AUTO TUNE panel overlap the second tile row. Keep every
+   settings section at its intrinsic height and let scrollScreen do the scroll. */
+#settingsScreen{
+  align-content:flex-start!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+}
+#settingsScreen > .screenHeader,
+#settingsScreen > .settingsTiles,
+#settingsScreen > .settings{
+  flex:0 0 auto!important;
+}
+#settingsScreen .settingsTiles{
+  position:relative!important;
+  height:auto!important;
+  min-height:0!important;
+  grid-auto-rows:minmax(78px,auto)!important;
+  align-items:stretch!important;
+  overflow:visible!important;
+  contain:none!important;
+}
+#settingsScreen .settingTile{
+  height:auto!important;
+  align-self:stretch!important;
+}
+#settingsScreen .settingsTiles + .settings{
+  position:relative!important;
+  clear:both!important;
+  margin-top:0!important;
+  transform:none!important;
+}
+@supports (-webkit-touch-callout:none){
+  #settingsScreen > .settingsTiles,
+  #settingsScreen > .settings{
+    flex-shrink:0!important;
+  }
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -4092,7 +4135,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.35</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.36</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -4173,7 +4216,6 @@ html body .miniStatus{
     <div class="qhMainMenu">
       <button class="qhMenuRow" type="button" data-nav="settings"><span class="qhMenuIcon">⌕</span><span class="qhMenuText"><b>TÙY CHỌN</b><small>Thông số hệ thống</small></span><span class="qhChevron">›</span></button>
       <button class="qhMenuRow" type="button" data-nav="ecu"><span class="qhMenuIcon">▦</span><span class="qhMenuText"><b>ECU</b><small>Đọc / ghi dữ liệu ECU</small></span><span class="qhChevron">›</span></button>
-      <button class="qhMenuRow" type="button" data-nav="maps"><span class="qhMenuIcon">▱</span><span class="qhMenuText"><b>BẢN ĐỒ</b><small>Fuel · Ignition · Compensation</small></span><span class="qhChevron">›</span></button>
       <button class="qhMenuRow" id="homeAutoTuneBtn" type="button"><span class="qhMenuIcon">◎</span><span class="qhMenuText"><b>AUTO TUNE</b><small>AFR · học phản ứng · bù MAP</small></span><span class="qhChevron">›</span></button>
       <button class="qhMenuRow qhDataRow" type="button" data-nav="maps"><span class="qhMenuIcon">⊙</span><span class="qhMenuText"><b>DỮ LIỆU</b></span><span class="qhChevron">›</span></button>
     </div>
