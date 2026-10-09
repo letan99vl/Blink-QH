@@ -307,3 +307,18 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Visible build: QH P.b 1.0.36.
 - Implementation commit: `da6ba47a59f7abc86df17f671c875d5f7ef784ee`.
 - UI-only change; no BLE, ECU protocol, OTA, or FW2.1 logic changed.
+
+
+## iOS settings overlap hard-clearance follow-up - QH P.b 1.0.37
+
+- P.b 1.0.36 reduced the flex-shrink issue but a real iPhone screenshot still showed the AUTO TUNE panel painting over the lower part of the QH ECU / Firmware tile row.
+- Additional WebKit behavior observed: even with flex shrink disabled, iOS could report the settingsTiles grid shorter than the area actually painted by the second row.
+- 1.0.37 adds a deterministic iOS-only clearance:
+  - `#settingsScreen .settingsTiles + details.settings { margin-top:24px!important; }`
+  - wrapped in `@supports (-webkit-touch-callout:none)`.
+- This guarantees the first Settings details panel (AUTO TUNE / HOC TPS) starts below the visually painted tile grid even if WebKit misreports intrinsic grid height.
+- Existing 1.0.36 flex-flow safeguards remain in place.
+- Home **BAN DO** row remains removed; **DU LIEU** remains the single home entry to maps/data.
+- Visible build: QH P.b 1.0.37.
+- Implementation commit: `d44e92c159e9fe846a046e2db4e5034c25275f0c`.
+- UI-only change; no BLE/ECU/OTA/FW2.1 logic changed.
