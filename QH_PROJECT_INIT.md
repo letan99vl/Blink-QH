@@ -337,3 +337,26 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Visible build: QH P.b 1.0.38.
 - Implementation commit: `52dd9bb2bbda94bbee3561f7b6bad3f4c5b9aabe`.
 - UI-only change; no BLE, ECU protocol, OTA transport, or FW2.1 logic changed.
+
+
+## AFR target keypad + floating controls audit - QH P.b 1.0.39
+
+- User noticed AFR MUC TIEU QH did not have the custom numeric keypad or the floating save / + / - control rail.
+- Audit result for editable table/map surfaces:
+  - THOI GIAN PHUN / INJ VE: already had keypad + floating controls.
+  - REDLEO ECU map editor: already has generic keypad + floating controls for all value-editable ECU maps.
+  - Legacy Idle ECT motor table: already has its own keypad + floating save / + / - controls.
+  - AFR MUC TIEU QH: was the missing editable map surface.
+  - AFR DO QH and MAP DA BU are read-only/result views, so keypad and +/- are intentionally not shown.
+- P.b 1.0.39 generalizes the main map keypad/selection controls from inject-only to both editable tabs: TARGET AFR and INJECT.
+- AFR target keypad behavior:
+  - reads/writes state.target instead of state.inject;
+  - 2 decimal precision;
+  - clamp 0..30 AFR;
+  - keypad header/value uses AFR units instead of ms;
+  - floating +/- follows the selected Step and Unit/% mode just like injection.
+- Floating save on TARGET only persists QH target data locally via saveSoon()/flashSave; it does NOT invoke the ECU fuel-map write command.
+- mapValueEditor class controls keypad visibility/reserved map space for both editable tabs, including portrait, landscape and software-landscape/map zoom.
+- Visible build: QH P.b 1.0.39.
+- Implementation commit: `09d68433ffe72e126b893fe18767ee7b34a2441d`.
+- UI/editor behavior only; no ECU protocol, BLE, OTA or FW2.1 transport logic changed.
