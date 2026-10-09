@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.38';
-  document.title = 'QH ECU · v1.0.38';
+  window.BLINK_PB_VERSION = 'QH-1.0.39';
+  document.title = 'QH ECU · v1.0.39';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4083,7 +4083,7 @@ html body .miniStatus{
 </style>
 
 <style id="qhIosSettingsFlowFix">
-/* ===== QH iOS SETTINGS FLOW FIX v1.0.38 =====
+/* ===== QH iOS SETTINGS FLOW FIX v1.0.39 =====
    settingsScreen is a flex column. WebKit may flex-shrink the settingsTiles
    container while its grid children keep their painted height, which makes
    the following AUTO TUNE panel overlap the second tile row. Keep every
@@ -4153,6 +4153,36 @@ html body .miniStatus{
   }
 }
 </style>
+
+<style id="qhEditableMapControls">
+/* ===== QH EDITABLE MAP CONTROLS v1.0.39 =====
+   AFR MUC TIEU QH and THOI GIAN PHUN share the same safe keypad and
+   floating +/- controls. Read-only tabs remain control-free. */
+#mapEditorScreen.mapValueEditor{--fuel-keypad-h:304px}
+#mapEditorScreen.mapValueEditor .fuelKeypadToggle{display:grid;place-items:center}
+#mapEditorScreen.mapValueEditor.mapKeypadOpen .fuelKeypadToggle{display:none!important}
+#mapEditorScreen.mapValueEditor.mapKeypadOpen .fuelKeypad{display:flex}
+#mapEditorScreen.mapValueEditor.mapKeypadOpen #mapWrap{
+  margin-bottom:var(--fuel-keypad-h)!important;
+}
+body.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen #mapWrap{
+  bottom:var(--fuel-keypad-h)!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin-bottom:0!important;
+}
+@media (orientation:landscape){
+  #mapEditorScreen.mapValueEditor{--fuel-keypad-h:132px}
+}
+body.appForceLandscape #mapEditorScreen.mapValueEditor{--fuel-keypad-h:132px}
+body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen #mapWrap{
+  bottom:var(--fuel-keypad-h)!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+}
+</style>
 </head>
 <body>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -4164,7 +4194,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.38</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.39</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -4274,7 +4304,7 @@ html body .miniStatus{
       <div class="zoomStat">ECT <b id="mapZoomEct">-- °C</b></div>
       <button id="mapZoomExit" type="button">THU NHỎ</button>
     </div>
-    <button id="fuelKeypadToggle" class="fuelKeypadToggle" type="button" aria-label="Mở bàn phím nhập thời gian phun" title="Bàn phím số">⌨</button>
+    <button id="fuelKeypadToggle" class="fuelKeypadToggle" type="button" aria-label="Mở bàn phím nhập giá trị" title="Bàn phím số">⌨</button>
     <div id="fuelKeypad" class="fuelKeypad" aria-hidden="true">
       <div class="fuelKeypadHead"><span id="fuelKeypadCell">Chưa chọn ô</span><strong id="fuelKeypadValue">-- ms</strong></div>
       <div class="fuelKeypadGrid">
@@ -4822,7 +4852,7 @@ function commitCell(td){
 function isEditableTab(){return !state.threeRun.active&&(state.tab==='target'||state.tab==='inject')}
 function beginEdit(td){
   if(!isEditableTab())return;
-  if(state.tab==='inject'&&window.BlinkFuelKeypad?.preferCustom?.()){
+  if(window.BlinkFuelKeypad?.preferCustom?.()){
     setSelection(+td.dataset.r,+td.dataset.c,false);
     window.BlinkFuelKeypad.open();
     return;
@@ -6794,7 +6824,18 @@ function clearMeasuredMap(){
   saveSoon();
   flashSave('Đã xóa bảng AFR đo · MAP No.'+state.activeMap);
 }
-function setTab(tab){resetQuickType();state.tab=tab;document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));syncMeasuredClearButton();render();}
+function setTab(tab){
+  resetQuickType();
+  state.tab=tab;
+  const screen=document.getElementById('mapEditorScreen');
+  const valueEditor=tab==='target'||tab==='inject';
+  screen?.classList.toggle('mapValueEditor',valueEditor);
+  if(!valueEditor)window.hideFuelKeypad?.();
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  syncMeasuredClearButton();
+  render();
+  requestAnimationFrame(updateMapSelectionPad);
+}
 async function toggleRecord(){
   if(state.threeRun.active)return;
   if(!state.recording){
@@ -8948,7 +8989,7 @@ function updateMapSelectionPad(){
   const screen=document.getElementById('mapEditorScreen');
   // Editor-local positioning remains valid through physical rotation AND the
   // 90deg transform used by Blink when device rotation is locked.
-  if(!screen?.classList.contains('active')||state.tab!=='inject'||!state.selection.active||scanPointer!==null){
+  if(!screen?.classList.contains('active')||!editableMap()||!state.selection.active||scanPointer!==null){
     hideMapSelectionPad();
     return;
   }
@@ -8981,26 +9022,28 @@ function cellAt(x,y){const el=document.elementFromPoint(x,y);return el?.closest?
 let fuelKeypadBuffer='',fuelKeypadDirty=false,fuelKeypadSelectionKey='';
 function standaloneFuelEditorActive(){
   const screen=document.getElementById('mapEditorScreen');
-  return !!(screen?.classList.contains('active')&&screen.classList.contains('standaloneFuel')&&state.tab==='inject');
+  return !!(screen?.classList.contains('active')&&screen.classList.contains('mapValueEditor')&&editableMap());
 }
 function preferCustomFuelKeypad(){
   if(!standaloneFuelEditorActive())return false;
   try{return matchMedia('(pointer:coarse)').matches||innerWidth<=1100}catch(_e){return innerWidth<=1100}
 }
 function selectedFuelMeta(){
-  if(!state.selection.active)return null;
+  if(!state.selection.active||!editableMap())return null;
   const b=selectionBounds(),r=state.selection.focusR,c=state.selection.focusC;
-  const v=Number(state.inject?.[r]?.[c]);
-  return {b,r,c,v,count:(b.r1-b.r0+1)*(b.c1-b.c0+1),key:b.r0+':'+b.c0+':'+b.r1+':'+b.c1+':'+r+':'+c};
+  const src=state.tab==='target'?state.target:state.inject;
+  const v=Number(src?.[r]?.[c]);
+  return {b,r,c,v,count:(b.r1-b.r0+1)*(b.c1-b.c0+1),key:state.tab+':'+b.r0+':'+b.c0+':'+b.r1+':'+b.c1+':'+r+':'+c};
 }
 function formatFuelEntry(v){
   if(!Number.isFinite(Number(v)))return '';
-  return Number(v).toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
+  const digits=state.tab==='target'?2:3;
+  return Number(v).toFixed(digits).replace(/0+$/,'').replace(/\.$/,'');
 }
 function syncFuelKeypadSelection(force=false){
   if(!fuelKeypad||fuelKeypad.getAttribute('aria-hidden')==='true')return;
   const m=selectedFuelMeta();
-  if(!m){fuelKeypadCell.textContent='Chưa chọn ô';fuelKeypadValue.textContent='-- ms';return}
+  if(!m){fuelKeypadCell.textContent='Chưa chọn ô';fuelKeypadValue.textContent=state.tab==='target'?'-- AFR':'-- ms';return}
   if(force||m.key!==fuelKeypadSelectionKey||!fuelKeypadDirty){
     fuelKeypadSelectionKey=m.key;
     fuelKeypadBuffer=formatFuelEntry(m.v);
@@ -9008,7 +9051,7 @@ function syncFuelKeypadSelection(force=false){
   }
   const tps=TPS_ROWS[m.r]==='IDLE'?'IDLE':TPS_ROWS[m.r]+'%';
   fuelKeypadCell.textContent=tps+' · '+RPMS[m.c]+' RPM · '+m.count+' ô';
-  fuelKeypadValue.textContent=(fuelKeypadBuffer||'--')+' ms';
+  fuelKeypadValue.textContent=(fuelKeypadBuffer||'--')+(state.tab==='target'?' AFR':' ms');
 }
 function keepFuelSelectionVisible(){
   if(!fuelKeypad||fuelKeypad.getAttribute('aria-hidden')==='true'||!wrap)return;
@@ -9044,10 +9087,13 @@ function applyFuelKeypadLive(){
   const typed=fuelKeypadBuffer;
   const parsed=typed===''?0:Number(typed);
   if(!Number.isFinite(parsed))return;
-  const safe=clamp(parsed,0,fuelProtocolMaxMs()),b=selectionBounds();
-  for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++)state.inject[r][c]=Number(safe.toFixed(3));
+  const targetMode=state.tab==='target';
+  const safe=clamp(parsed,0,targetMode?30:fuelProtocolMaxMs()),b=selectionBounds();
+  const dst=targetMode?state.target:state.inject;
+  const digits=targetMode?2:3;
+  for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++)dst[r][c]=Number(safe.toFixed(digits));
   render();saveSoon();
-  $('selectionInfo').textContent='Đang nhập '+(typed===''?'0':typed)+' ms · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' ô';
+  $('selectionInfo').textContent='Đang nhập '+(typed===''?'0':typed)+(targetMode?' AFR':' ms')+' · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' ô';
   requestAnimationFrame(()=>{updateMapSelectionPad();keepFuelSelectionVisible()});
 }
 function fuelKeypadAppend(ch){
@@ -9164,6 +9210,11 @@ floatPlusBtn?.addEventListener('click',e=>{stopPadEvent(e);adjustMap(1)});
 floatMinusBtn?.addEventListener('click',e=>{stopPadEvent(e);adjustMap(-1)});
 floatSaveBtn?.addEventListener('click',e=>{
   stopPadEvent(e);
+  if(state.tab==='target'){
+    saveSoon();
+    flashSave('Đã lưu AFR mục tiêu QH · MAP No.'+state.activeMap);
+    return;
+  }
   const btn=document.getElementById('writeMapBtn');
   if(btn&&!btn.disabled)btn.click();
   else showEcuNotice('error','CHƯA THỂ LƯU HIỆN TẠI','Nút LƯU HIỆN TẠI đang bị khóa. Kiểm tra kết nối ECU/trạng thái ghi.',0);
