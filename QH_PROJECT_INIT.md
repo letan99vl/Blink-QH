@@ -288,3 +288,22 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Dashboard bottom padding was reduced to `max(6px, env(safe-area-inset-bottom))` to reclaim the previous unused lower space and effectively move the whole home layout downward.
 - Visible build bumped to QH P.b 1.0.35.
 - Implementation commit: `9bf8a8952a834d4176ea349be94a728bce991e4d`.
+
+
+## iOS settings overlap + home map cleanup - QH P.b 1.0.36
+
+- Real iPhone screenshot showed the AUTO TUNE / HOC TPS panel overlapping the second row of Settings tiles (QH ECU / Firmware).
+- Root cause: settingsScreen is a flex-column screen. On iOS/WebKit, the settingsTiles flex item could shrink to fit the viewport while its grid children still painted at full height, so the following Settings panel began before the tile grid visually ended.
+- Fix:
+  - settingsScreen keeps vertical scrolling;
+  - screenHeader, settingsTiles, and direct Settings panels are locked to `flex: 0 0 auto`;
+  - settingsTiles keeps intrinsic height, visible overflow, and grid rows `minmax(78px, auto)`;
+  - iOS-specific `flex-shrink: 0` guard added with `@supports (-webkit-touch-callout:none)`;
+  - AUTO TUNE block is forced back into normal document flow with no transform/margin overlap.
+- Home cleanup:
+  - removed the redundant **BAN DO** home menu row;
+  - kept **DU LIEU** as the single home entry to the maps/data screen (`data-nav="maps"`);
+  - active MAP selector/state widgets are otherwise unchanged.
+- Visible build: QH P.b 1.0.36.
+- Implementation commit: `da6ba47a59f7abc86df17f671c875d5f7ef784ee`.
+- UI-only change; no BLE, ECU protocol, OTA, or FW2.1 logic changed.
