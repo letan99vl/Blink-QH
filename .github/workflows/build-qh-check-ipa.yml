@@ -1,0 +1,87 @@
+name: Build QH ECU Check IPA v1.0.41
+on:
+  push:
+    branches:
+      - release/qh-ios-1.0.41-offline-ui
+    paths:
+      - .github/workflows/build-qh-check-ipa.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Checkout source snapshot
+        uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Embed web UI while keeping ECU protocol remote
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path.cwd()
+          web=root/'index.html'
+          html=web.read_text(encoding='utf-8')
+          assert "window.BLINK_PB_VERSION = 'QH-1.0.40'" in html, 'unexpected UI source version'
+          html=html.replace("window.BLINK_PB_VERSION = 'QH-1.0.40'", "window.BLINK_PB_VERSION = 'QH-1.0.41'", 1)
+          html=html.replace("document.title = 'QH ECU · v1.0.40'", "document.title = 'QH ECU · v1.0.41'", 1)
+          old="const src='redleo_real_protocol.js?v='+encodeURIComponent(v);"
+          assert old in html, 'protocol loader not found'
+          html=html.replace(old, "const src='https://letan99vl.github.io/Blink-QH/redleo_real_protocol.js?v='+encodeURIComponent(v);", 1)
+          local=root/'iOS/QHECU/WebAssets/index.html'
+          local.parent.mkdir(parents=True, exist_ok=True)
+          local.write_text(html, encoding='utf-8')
+          swift=root/'iOS/QHECU/Main.swift'
+          code=swift.read_text(encoding='utf-8')
+          start=code.find('    private func loadQH() {')
+          end=code.find('\n    private static let webBluetoothBootstrap', start)
+          assert start>0 and end>start, 'Swift WebView method not found'
+          code=code[:start]+'''    private func loadQH() {
+                  let candidate = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "WebAssets")
+                      ?? Bundle.main.url(forResource: "index", withExtension: "html")
+                  guard let url = candidate else {
+                      NSLog("QH ECU: missing embedded UI resource")
+                      return
+                  }
+                  webView.loadFileURL(url, allowingReadAccessTo: url.deletingLastPathComponent())
+              }
+          '''+code[end:]
+          swift.write_text(code, encoding='utf-8')
+          plist=root/'iOS/QHECU/Info.plist'
+          info=plist.read_text(encoding='utf-8').replace('<string>1.0.21</string>', '<string>1.0.41</string>').replace('<string>21</string>', '<string>41</string>')
+          plist.write_text(info, encoding='utf-8')
+          print('QH UI embedded, BLE native, external protocol configured, v1.0.41')
+          PY
+      - name: Generate project
+        run: |
+          cd iOS
+          xcodegen generate --spec project.yml
+          xcodebuild -list -project QHECU.xcodeproj
+      - name: Compile unsigned iPhoneOS app
+        run: |
+          xcodebuild -project iOS/QHECU.xcodeproj -scheme QHECU -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+      - name: Verify embedded UI and package IPA
+        run: |
+          set -e
+          APP="build/Build/Products/Release-iphoneos/QH ECU.app"
+          test -d "$APP"
+          mkdir -p "$APP/WebAssets"
+          cp iOS/QHECU/WebAssets/index.html "$APP/WebAssets/index.html"
+          test -s "$APP/WebAssets/index.html"
+          grep -q "https://letan99vl.github.io/Blink-QH/redleo_real_protocol.js" "$APP/WebAssets/index.html"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Info.plist"
+          mkdir -p Payload
+          ditto "$APP" "Payload/QH ECU.app"
+          /usr/bin/zip -qry QH-ECU-v1.0.41-CHECK-UNSIGNED.ipa Payload
+          shasum -a 256 QH-ECU-v1.0.41-CHECK-UNSIGNED.ipa > QH-ECU-v1.0.41-CHECK-UNSIGNED.ipa.sha256
+          ls -lh QH-ECU-v1.0.41-CHECK-UNSIGNED.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QH-ECU-v1.0.41-CHECK-UNSIGNED
+          path: |
+            QH-ECU-v1.0.41-CHECK-UNSIGNED.ipa
+            QH-ECU-v1.0.41-CHECK-UNSIGNED.ipa.sha256
+          retention-days: 14
+          if-no-files-found: error
