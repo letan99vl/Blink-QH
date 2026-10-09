@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.37';
-  document.title = 'QH ECU · v1.0.37';
+  window.BLINK_PB_VERSION = 'QH-1.0.38';
+  document.title = 'QH ECU · v1.0.38';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4083,7 +4083,7 @@ html body .miniStatus{
 </style>
 
 <style id="qhIosSettingsFlowFix">
-/* ===== QH iOS SETTINGS FLOW FIX v1.0.37 =====
+/* ===== QH iOS SETTINGS FLOW FIX v1.0.38 =====
    settingsScreen is a flex column. WebKit may flex-shrink the settingsTiles
    container while its grid children keep their painted height, which makes
    the following AUTO TUNE panel overlap the second tile row. Keep every
@@ -4097,6 +4097,28 @@ html body .miniStatus{
 #settingsScreen > .settingsTiles,
 #settingsScreen > .settings{
   flex:0 0 auto!important;
+}
+
+/* Clear legacy popup offsets from the old .settings[open] rule. On iOS
+   WebKit those stale left/right values can visually shift the inline box even
+   after position was overridden back to static. Let flex stretch determine
+   the exact same left/right edges as the header and tile grid. */
+#settingsScreen > details.settings{
+  position:relative!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  inset-inline:auto!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  margin-inline:0!important;
+  align-self:stretch!important;
+  box-sizing:border-box!important;
+  transform:none!important;
 }
 #settingsScreen .settingsTiles{
   position:relative!important;
@@ -4142,7 +4164,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.37</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.38</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
