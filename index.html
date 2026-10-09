@@ -5,11 +5,11 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.34';
-  document.title = 'QH ECU · v1.0.34';
+  window.BLINK_PB_VERSION = 'QH-1.0.35';
+  document.title = 'QH ECU · v1.0.35';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -2530,7 +2530,13 @@ html body .ecuTaskStatus.error{background:#4a1d24!important;border-color:#ff6473
   background:
     radial-gradient(circle at 50% 12%,rgba(224,182,44,.045),transparent 28%),
     linear-gradient(180deg,#050606,#08090a 55%,#050606)!important;
-  padding:max(9px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom))!important;
+  /* iPhone/PWA/WKWebView: move the complete home layout below the notch /
+     Dynamic Island. Use the real iOS safe area plus a small visual breathing
+     gap; reclaim the previous unused bottom space instead of shrinking cards. */
+  padding:
+    max(24px,calc(env(safe-area-inset-top) + 8px))
+    10px
+    max(6px,env(safe-area-inset-bottom))!important;
 }
 .qhDashHeader{
   display:flex;align-items:center;justify-content:space-between;
@@ -4086,7 +4092,7 @@ html body .miniStatus{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.34</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.35</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
