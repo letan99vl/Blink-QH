@@ -277,3 +277,14 @@ Ten chinh thuc trong du an: **Cach update OTA on dinh**.
 - Source restored to FW2.1 in commit `c949ef506fa45574ed5edea21fb4cc2c7ff498de`.
 - Build workflow restored to FW2.1 in commit `742f83b32a4273dbf57ac27af6a315d970bb75c2`.
 - Clean FW2.1 rebuild trigger: `0f592b31b2124ff7668605d3c01c8516c207e1bb`.
+
+
+## iPhone notch / Dynamic Island home offset - QH P.b 1.0.35
+
+- User feedback: on the QH home/dashboard, the QH ECU logo/header sat too close to the top edge and could be covered by the iPhone notch / Dynamic Island, while there was still unused space near the bottom.
+- Fix is UI-only; no BLE/ECU/FW transport logic changed.
+- Added `viewport-fit=cover` to the viewport meta tag so iOS/WKWebView exposes the real safe-area insets.
+- QH dashboard top padding is now `max(24px, calc(env(safe-area-inset-top) + 8px))`.
+- Dashboard bottom padding was reduced to `max(6px, env(safe-area-inset-bottom))` to reclaim the previous unused lower space and effectively move the whole home layout downward.
+- Visible build bumped to QH P.b 1.0.35.
+- Implementation commit: `9bf8a8952a834d4176ea349be94a728bce991e4d`.
