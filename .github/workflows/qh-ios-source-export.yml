@@ -1,0 +1,33 @@
+name: QH iOS Release Source Export
+on:
+  push:
+    branches:
+      - release/qh-ios-1.0.41-offline-ui
+    paths:
+      - .github/workflows/qh-ios-source-export.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source paths
+        run: |
+          test -s index.html
+          test -s redleo_real_protocol.js
+          test -s iOS/QHECU/Main.swift
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qh-ios-1.0.41-source-snapshot
+          include-hidden-files: true
+          path: |
+            index.html
+            redleo_real_protocol.js
+            iOS/**
+            .github/workflows/build-ios-ipa.yml
+            QH_PROJECT_INIT.md
+            PROJECT_STATE.md
+          if-no-files-found: error
+          retention-days: 14
