@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.39';
-  document.title = 'QH ECU · v1.0.39';
+  window.BLINK_PB_VERSION = 'QH-1.0.40';
+  document.title = 'QH ECU · v1.0.40';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4083,7 +4083,7 @@ html body .miniStatus{
 </style>
 
 <style id="qhIosSettingsFlowFix">
-/* ===== QH iOS SETTINGS FLOW FIX v1.0.39 =====
+/* ===== QH iOS SETTINGS FLOW FIX v1.0.40 =====
    settingsScreen is a flex column. WebKit may flex-shrink the settingsTiles
    container while its grid children keep their painted height, which makes
    the following AUTO TUNE panel overlap the second tile row. Keep every
@@ -4155,7 +4155,7 @@ html body .miniStatus{
 </style>
 
 <style id="qhEditableMapControls">
-/* ===== QH EDITABLE MAP CONTROLS v1.0.39 =====
+/* ===== QH EDITABLE MAP CONTROLS v1.0.40 =====
    AFR MUC TIEU QH and THOI GIAN PHUN share the same safe keypad and
    floating +/- controls. Read-only tabs remain control-free. */
 #mapEditorScreen.mapValueEditor{--fuel-keypad-h:304px}
@@ -4194,7 +4194,7 @@ body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.39</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.40</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -6834,7 +6834,6 @@ function setTab(tab){
   document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   syncMeasuredClearButton();
   render();
-  requestAnimationFrame(updateMapSelectionPad);
 }
 async function toggleRecord(){
   if(state.threeRun.active)return;
