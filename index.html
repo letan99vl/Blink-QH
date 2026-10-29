@@ -12444,7 +12444,9 @@ function validateBackup(ctx,record){
     !Array.isArray(record.indices)||record.indices.length!==2||
     record.indices.some((v,i)=>v!==ctx.indices[i])||
     !Number.isInteger(record.originalLimit)||record.originalLimit<500||
-    record.originalLimit>30000)
+    record.originalLimit>30000||
+    (record.originalRaw!==undefined&&(!Array.isArray(record.originalRaw)||
+      record.originalRaw.length!==420||record.originalRaw.some(v=>!Number.isInteger(v)||v<0||v>255))))
    throw new Error('Backup không hợp lệ hoặc không thuộc đúng ECU/MAP/RPM đang chọn.');
  return record;
 }
@@ -12484,8 +12486,11 @@ async function readSnapshot(ctx){
    throw Error('ECU/MAP thay đổi trong lúc thao tác. Đã hủy giao dịch.');
  const result=await ctx.a.readFeaturePageReal('ign_degree',ctx.bank,false);
  const m=matrixCopy(result?.matrix||ctx.b.getData('ign_degree',ctx.bank));
+ const raw=Array.from(result?.data||[]).slice(0,420);
+ if(raw.length!==420||raw.some(v=>!Number.isInteger(v)||v<0||v>255))
+   throw Error('Không đọc được đủ 420 byte góc đánh lửa ECU; không cho phép ghi.');
  const limiter=await ctx.a.backfireReadLimiter(ctx.bank,false);
- return {m,rpm:Number(limiter.rpm)};
+ return {m,raw,rpm:Number(limiter.rpm)};
 }
 function levelFor(ctx,number){
  const lvl=ctx.c.levels?.find(x=>x.level===Number(number));
@@ -12498,23 +12503,29 @@ function levelFor(ctx,number){
 function regionMatch(ctx,m,value){
  return m.every(row=>ctx.indices.every(c=>same(row[c],value)));
 }
-function outsideMatch(ctx,m,b){
+function outsideMatch(ctx,m,b,raw){
  for(let r=0;r<14;r++)for(let c=0;c<30;c++){
    if(ctx.indices.includes(c))continue;
+   const off=(13-r)*30+c;
+   if(b.originalRaw&&raw&&raw[off]!==b.originalRaw[off])return false;
    if(!same(m[r][c],b.originalIgn[r][c]))return false;
  }
  return true;
 }
-function baseMatch(ctx,m,b){
- return ctx.indices.every(c=>m.every((row,r)=>same(row[c],b.originalIgn[r][c])));
+function baseMatch(ctx,m,b,raw){
+ return ctx.indices.every(c=>m.every((row,r)=>{
+   const off=(13-r)*30+c;
+   return (!b.originalRaw||!raw||raw[off]===b.originalRaw[off])&&
+     same(row[c],b.originalIgn[r][c]);
+ }));
 }
 function statusFrom(ctx,snap,b){
  const identified=(ctx.c.levels||[]).find(x=>x.available&&regionMatch(ctx,snap.m,x.actual));
  if(b){
-   if(snap.rpm===6000&&identified&&identified.level===b.level&&outsideMatch(ctx,snap.m,b))
+   if(snap.rpm===6000&&identified&&identified.level===b.level&&outsideMatch(ctx,snap.m,b,snap.raw))
      return {tone:'active',msg:'BACKFIRE ĐANG BẬT · MAP '+ctx.bank+
        ' · LV'+identified.level+' ('+identified.actual+'° thực tế) · 28 ô · giới hạn 6000 RPM. Đã xác minh từ ECU.'};
-   if(snap.rpm===b.originalLimit&&baseMatch(ctx,snap.m,b)&&outsideMatch(ctx,snap.m,b))
+   if(snap.rpm===b.originalLimit&&baseMatch(ctx,snap.m,b,snap.raw)&&outsideMatch(ctx,snap.m,b,snap.raw))
      return {tone:'restored',msg:'ĐANG DÙNG MAP GỐC · MAP '+ctx.bank+
        ' · giới hạn '+snap.rpm+' RPM. Có backup để chuyển lại.'};
    return {tone:'partial',msg:'ECU/MAP có dữ liệu khác bản Backfire và bản gốc đã lưu. Không tự kết luận ON/OFF. Không ghi đè nếu chưa kiểm tra backup.'};
@@ -12595,17 +12606,31 @@ async function check({auto=false}={}){
    return null;
  }
 }
-async function writeIgn(ctx,m){
+async function writeIgn(ctx,snapshot,writeByte,legacyMatrix=null){
+ // For new backups: preserve every raw byte outside the 28 targeted cells.
+ if(typeof ctx.a.backfireWriteIgnPatch==='function'&&typeof writeByte!=='undefined'){
+   const patches=[];
+   for(let r=0;r<14;r++)for(const c of ctx.indices){
+     const off=(13-r)*30+c;
+     const next=typeof writeByte==='function'?Number(writeByte(r,c,off)):Number(writeByte);
+     patches.push({r,c,expectedRaw:snapshot.raw[off],writeRaw:next});
+   }
+   await ctx.a.backfireWriteIgnPatch(ctx.bank,patches);
+   return;
+ }
+ // A backup exported from an earlier QH 1.1.18 test may lack originalRaw.
+ // Retain a recovery route for it instead of destroying the old backup.
+ if(!legacyMatrix)throw Error('Backup không có byte gốc, cần nhập backup đầy đủ để khôi phục.');
  const data=ctx.b.getData('ign_degree',ctx.bank);
  matrixCopy(data);
- for(let r=0;r<14;r++)for(let c=0;c<30;c++)data[r][c]=m[r][c];
+ for(let r=0;r<14;r++)for(let c=0;c<30;c++)data[r][c]=legacyMatrix[r][c];
  ctx.b.saveFeature();
  if(!ctx.b.prepareFeatureWrite('ign_degree'))throw Error('Chưa dựng được bảng ghi lửa ECU.');
  await ctx.a.writeFeatureReal('ign_degree');
 }
 async function restoreCore(ctx,b,{quiet=false}={}){
  const snap=await readSnapshot(ctx);
- if(!outsideMatch(ctx,snap.m,b))
+ if(!outsideMatch(ctx,snap.m,b,snap.raw))
    throw Error('380+ ô ngoài vùng Backfire đã khác backup. Chặn khôi phục để tránh đè bản tune khác.');
  const level=ctx.c.levels?.find(x=>x.level===b.level);
  for(let r=0;r<14;r++)for(const c of ctx.indices){
@@ -12615,15 +12640,19 @@ async function restoreCore(ctx,b,{quiet=false}={}){
  }
  if(snap.rpm!==6000&&snap.rpm!==b.originalLimit)
    throw Error('RPM MAX đã bị thay đổi ngoài Backfire. Không ghi đè giá trị mới '+snap.rpm+'.');
- if(!baseMatch(ctx,snap.m,b)){
-   const target=snap.m.map(r=>r.slice());
-   for(let r=0;r<14;r++)for(const c of ctx.indices)target[r][c]=b.originalIgn[r][c];
-   await writeIgn(ctx,target);
+ if(!baseMatch(ctx,snap.m,b,snap.raw)){
+   if(b.originalRaw){
+     await writeIgn(ctx,snap,(_r,_c,off)=>b.originalRaw[off]);
+   }else{
+     const target=snap.m.map(r=>r.slice());
+     for(let r=0;r<14;r++)for(const c of ctx.indices)target[r][c]=b.originalIgn[r][c];
+     await writeIgn(ctx,snap,undefined,target);
+   }
  }
  if(snap.rpm!==b.originalLimit)
    await ctx.a.backfireWriteLimiter(ctx.bank,b.originalLimit,snap.rpm);
  const verified=await readSnapshot(ctx);
- if(verified.rpm!==b.originalLimit||!baseMatch(ctx,verified.m,b)||!outsideMatch(ctx,verified.m,b))
+ if(verified.rpm!==b.originalLimit||!baseMatch(ctx,verified.m,b,verified.raw)||!outsideMatch(ctx,verified.m,b,verified.raw))
    throw Error('ECU chưa xác minh đủ 28 ô lửa gốc + RPM gốc.');
  b.state='restored';b.restoredAt=Date.now();saveBackup(ctx,b);
  if(!quiet)fmtStatus('restored','ĐÃ KHÔI PHỤC MAP '+ctx.bank+
@@ -12652,18 +12681,16 @@ async function start(){
      if(base.rpm<6000)throw Error('Giới hạn tua gốc '+base.rpm+' nhỏ hơn 6000; không tự nâng giới hạn.');
      const b={
        format:'QH-BACKFIRE-BACKUP-V1',device:ctx.device,bank:ctx.bank,indices:ctx.indices.slice(),
-       rpmAxes:[5500,6000],originalIgn:base.m,originalLimit:base.rpm,
+       rpmAxes:[5500,6000],originalIgn:base.m,originalRaw:base.raw,originalLimit:base.rpm,
        level:lvl.level,actual:lvl.actual,state:'pending',createdAt:Date.now()
      };
      saveBackup(ctx,b); // Baseline must survive before ANY ECU write.
      try{
-       const changed=base.m.map(r=>r.slice());
-       for(let r=0;r<14;r++)for(const c of ctx.indices)changed[r][c]=lvl.actual;
-       await writeIgn(ctx,changed);
+       await writeIgn(ctx,base,lvl.raw);
        await ctx.a.backfireWriteLimiter(ctx.bank,6000,base.rpm);
        const verified=await readSnapshot(ctx);
        if(verified.rpm!==6000||!regionMatch(ctx,verified.m,lvl.actual)||
-          !outsideMatch(ctx,verified.m,b))throw Error('ECU đọc lại không khớp 28 ô hoặc RPM 6000.');
+          !outsideMatch(ctx,verified.m,b,verified.raw))throw Error('ECU đọc lại không khớp 28 ô hoặc RPM 6000.');
        b.state='active';b.appliedAt=Date.now();saveBackup(ctx,b);
        fmtStatus('active','ĐÃ BẬT BACKFIRE · MAP '+ctx.bank+' · LV'+lvl.level+
          ' = '+lvl.actual+'° thực tế · 28 ô · RPM 6000. ECU READBACK OK.');
