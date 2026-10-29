@@ -5588,6 +5588,65 @@ function boot(){
   });
 }
 
-window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
+
+/* QH 1.1.18 · Backfire helper: exact, per-profile byte handling for the
+   selected bank's RPM ceiling only. No new ECU commands or firmware changes.
+   Unknown and V11 serializers are deliberately unsupported here. */
+function qhBackfireLimiterSpec(){
+  if(isV91Direct())return {kind:'V9.1X',length:30,offset:4};
+  if(isV92Direct())return {kind:'V9.2',length:62,offset:4};
+  if(isUltraDirect())return {kind:'ULTRA PRO1',length:42,offset:6};
+  if(isV10Direct())return {kind:'V10.2',length:18,offset:4};
+  return null;
+}
+function qhBackfireCapabilities(){
+  const spec=qhBackfireLimiterSpec();
+  const levels=[-19,-21,-23].map((target,i)=>{
+    if(!spec)return {level:i+1,target,actual:null,raw:null,available:false};
+    const raw=encMainIgn(target),actual=decMainIgn(raw);
+    const available=raw>0&&raw<255&&Number.isFinite(actual)&&Math.abs(actual-target)<=0.21;
+    return {level:i+1,target,actual,raw,available};
+  });
+  return {profile:ecuProfile?.label||'UNKNOWN',supported:!!spec,
+    limiterKind:spec?.kind||null,levels};
+}
+async function qhBackfireReadLimiter(bank,showUi=false){
+  const spec=qhBackfireLimiterSpec();
+  if(!spec)throw new Error('Backfire RPM chưa được hỗ trợ trên đời ECU này. Không ghi giới hạn tua.');
+  bank=normalizeBankForProfile(bank);
+  const R=await readIdlePageReal(bank,showUi);
+  const data=R.data;
+  if(!(data instanceof Uint8Array)||data.length<spec.length)
+    throw new Error('ECU trả thiếu Idle/Limit bytes của '+spec.kind+'.');
+  const rpm=(data[spec.offset]<<8)|data[spec.offset+1];
+  if(rpm<500||rpm>30000)throw new Error('Giới hạn RPM đọc được không hợp lệ: '+rpm);
+  return {bank,rpm,profile:spec.kind,page:page(6,bank)};
+}
+async function qhBackfireWriteLimiter(bank,targetRpm,expectedCurrentRpm){
+  const spec=qhBackfireLimiterSpec();
+  if(!spec)throw new Error('Không ghi được giới hạn tua: ECU chưa có serializer an toàn.');
+  requireProfile('mainWrite','Ghi giới hạn tua cho Backfire');
+  bank=normalizeBankForProfile(bank);
+  targetRpm=Number(targetRpm);
+  if(!Number.isInteger(targetRpm)||targetRpm<500||targetRpm>30000)
+    throw new Error('Giới hạn tua Backfire không hợp lệ.');
+  const before=await qhBackfireReadLimiter(bank,false);
+  if(!Number.isFinite(Number(expectedCurrentRpm))||before.rpm!==Number(expectedCurrentRpm))
+    throw new Error('Giới hạn RPM đã thay đổi trên ECU (hiện '+before.rpm+
+      ', dự kiến '+expectedCurrentRpm+'). Hủy ghi để tránh dùng baseline cũ.');
+  if(before.rpm===targetRpm)return {...before,after:targetRpm,unchanged:true};
+  const pg=page(6,bank),baseline=requireCachedPageAtLeast(pg,spec.length,'QH Backfire RPM');
+  const payload=baseline.slice(0,spec.length);
+  payload[spec.offset]=(targetRpm>>8)&255;
+  payload[spec.offset+1]=targetRpm&255;
+  await writeWritablePrefixPage(pg,payload,baseline,
+    'QH Backfire '+spec.kind+' RPM · MAP '+bank,'mainWrite',1);
+  const after=await qhBackfireReadLimiter(bank,false);
+  if(after.rpm!==targetRpm)
+    throw new Error('GHI RPM có ACK nhưng đọc lại sai: '+after.rpm+' / '+targetRpm);
+  return {...after,before:before.rpm,after:after.rpm,unchanged:false};
+}
+
+window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
