@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.4';
-  document.title = 'QH ECU · v1.1.4';
+  window.BLINK_PB_VERSION = 'QH-1.1.5';
+  document.title = 'QH ECU · v1.1.5';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4413,6 +4413,42 @@ body[data-ui-mode="full"] .app{background:#010503!important}
 #qhFullPcScreen.fit #qhFullMapTable{min-width:100%;width:100%}
 #qhFullPcScreen.fit #qhFullMapTable th,#qhFullPcScreen.fit #qhFullMapTable td{min-width:0;font-size:clamp(6px,1.35vw,10px);padding:0}
 </style>
+
+<style id="qhVisibleIoStatusV115">
+/* Legacy ECU status was z-index 100000, behind FULL (255000) and SIMPLE (260000).
+ * Keep this shared status in front of both mode screens and numeric keypads. */
+body[data-ui-mode] #ecuTaskStatus{
+  z-index:600000!important;
+  left:50%!important;right:auto!important;
+  top:max(89px,calc(env(safe-area-inset-top) + 84px))!important;
+  transform:translateX(-50%)!important;
+  width:max-content!important;max-width:min(520px,94vw)!important;
+  min-height:54px;padding:12px 18px!important;
+  border-radius:12px!important;border:1px solid #24e84e!important;
+  background:#06160a!important;color:#f1fff4!important;
+  box-shadow:0 12px 34px #000d,0 0 17px #1ff64f55!important;
+  font-size:clamp(12px,2.4vw,15px)!important;line-height:1.45;
+  letter-spacing:0!important;text-align:left!important;
+}
+body[data-ui-mode] #ecuTaskStatus.loading{border-color:#39ff68!important;background:#071e0b!important}
+body[data-ui-mode] #ecuTaskStatus.success{border-color:#1fe450!important;color:#bbffcb!important}
+body[data-ui-mode] #ecuTaskStatus.error{border-color:#ff6464!important;background:#290a0a!important;color:#ffe1e1!important}
+body[data-ui-mode] #ecuTaskStatus.offline{border-color:#ffa047!important;background:#241205!important}
+body[data-ui-mode] #ecuTaskStatus .ecuTaskIcon{width:23px;height:23px;min-width:23px}
+body[data-ui-mode] #ecuTaskStatus.loading .ecuTaskIcon{border:3px solid #164e25;border-top-color:#35ff62!important;animation:ecuSpin .72s linear infinite!important}
+body[data-ui-mode] #ecuTaskStatus .ecuTaskText{white-space:normal!important;overflow-wrap:anywhere;line-height:1.35}
+body[data-ui-mode] #ecuNotice{z-index:610000!important;top:max(10px,env(safe-area-inset-top))!important}
+#qhFullPcScreen.qhIoBusy .qhPcTabs{pointer-events:none;opacity:.75}
+#qhFullPcScreen.qhIoBusy .qhPcActions button:disabled{opacity:.72;cursor:wait}
+#qhFullPcScreen.qhIoBusy #qhFullMapSelect{opacity:.7}
+@media(max-width:700px){
+  body[data-ui-mode] #ecuTaskStatus{
+    top:max(72px,calc(env(safe-area-inset-top) + 60px))!important;
+    min-height:48px;padding:10px 13px!important;
+    max-width:94vw!important;
+  }
+}
+</style>
 </head>
 <body>
 
@@ -4523,7 +4559,7 @@ body[data-ui-mode="full"] .app{background:#010503!important}
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.4</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.5</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -10132,15 +10168,61 @@ updateMapControls();
     else if(/^\d$/.test(k)&&fkBuffer.length<10)fkBuffer+=k;
     redrawKey();
   }));
-  function trigger(selector){const b=document.querySelector(selector);if(b&&!b.disabled)b.click()}
-  async function readCurrent(){
+  let fullIoBusy=false;
+  async function fullIoFeedback(kind,id,action,{auto=false}={}){
+    if(fullIoBusy){
+      if(!auto)window.setEcuTaskStatus?.('loading','ECU đang xử lý lệnh trước đó. Vui lòng đợi kết quả.');
+      return false;
+    }
+    const isRead=kind==='read';
+    const op=isRead?'READ':'SEND';
+    const label=tabMeta[id]?.title||String(id).toUpperCase();
+    const bank=state.activeMap;
+    const bankInfo=(id==='inj_ve'||profileFeature(id)?.banked)?' · MAP No.'+bank:'';
+    const readBtn=document.getElementById('qhPcReadCurrent');
+    const sendBtn=document.getElementById('qhPcWriteCurrent');
+    const bankSelect=document.getElementById('qhFullMapSelect');
+    const controlled=[readBtn,sendBtn,bankSelect].filter(Boolean);
+    const prev=controlled.map(el=>el.disabled);
+    const previousRead=readBtn?.textContent;
+    const previousSend=sendBtn?.textContent;
+    fullIoBusy=true;
+    screen.classList.add('qhIoBusy');
+    controlled.forEach(el=>el.disabled=true);
+    if(isRead&&readBtn)readBtn.textContent='⟳ READING...';
+    if(!isRead&&sendBtn)sendBtn.textContent='⟳ SENDING...';
+    window.setEcuTaskStatus?.('loading',(isRead?'⏳ ĐANG ĐỌC ECU · ':'⏳ ĐANG GHI ECU · ')+label+bankInfo);
     try{
-      const api=window.BlinkRealProtocol;if(!api)throw new Error('ECU protocol is not ready.');
-      if(activeTab==='inj_ve')await api.readCurrentFuelBank(state.activeMap,true);
-      else if(activeTab==='options')await fb()?.readOptions();
-      else await api.readFeaturePageReal(backendTab(),state.activeMap,true);
+      if(!state.ecuConnected)throw new Error('ECU chưa kết nối.');
+      const api=window.BlinkRealProtocol;
+      if(!api)throw new Error('Protocol Blink-Redleo chưa sẵn sàng.');
+      const result=await action(api,bank);
+      // Fuel send is ACK-only; never claim that 420 cells were read back.
+      const suffix=(!isRead&&id==='inj_ve')?' · ECU ACK (CHƯA ĐỌC LẠI)':' · HOÀN TẤT';
+      window.setEcuTaskStatus?.('success',(isRead?'✓ ĐÃ ĐỌC · ':'✓ ĐÃ GỬI · ')+label+bankInfo+suffix,3200);
+      return result===undefined?true:result;
+    }catch(e){
+      window.setEcuTaskStatus?.('error','✕ '+op+' '+label+' THẤT BẠI · '+String(e?.message||e),7500);
+      return false;
+    }finally{
+      controlled.forEach((el,i)=>el.disabled=prev[i]);
+      if(readBtn&&previousRead!==undefined)readBtn.textContent=previousRead;
+      if(sendBtn&&previousSend!==undefined)sendBtn.textContent=previousSend;
+      screen.classList.remove('qhIoBusy');
+      fullIoBusy=false;
+    }
+  }
+  async function readCurrent(){
+    const id=activeTab;
+    const result=await fullIoFeedback('read',id,async(api,bank)=>{
+      let result;
+      if(id==='inj_ve')result=await api.readCurrentFuelBank(bank,true);
+      else if(id==='options')result=await fb()?.readOptions();
+      else result=await api.readFeaturePageReal(backendTab(),bank,true);
       render();
-    }catch(e){try{showEcuNotice('error','READ CURRENT',String(e?.message||e),0)}catch(_e){}}
+      return result;
+    });
+    return result;
   }
   function syncHiddenRedTableForWrite(){
     if(activeTab==='inj_ve'||activeTab==='options')return;
@@ -10150,16 +10232,18 @@ updateMapControls();
       throw new Error('This ECU map is not available for writing.');
   }
   async function writeCurrent(){
-    try{
-      const api=window.BlinkRealProtocol;if(!api)throw new Error('ECU protocol is not ready.');
-      if(activeTab==='inj_ve')await api.writeCurrentFuelAndVerify(state.activeMap);
-      else if(activeTab==='options')await fb()?.writeOptions();
+    const id=activeTab;
+    return fullIoFeedback('write',id,async(api,bank)=>{
+      let result;
+      if(id==='inj_ve')result=await api.writeCurrentFuelAndVerify(bank);
+      else if(id==='options')result=await fb()?.writeOptions();
       else{
         syncHiddenRedTableForWrite();
-        await api.writeFeatureReal(backendTab());
+        result=await api.writeFeatureReal(backendTab());
       }
       render();
-    }catch(e){try{showEcuNotice('error','SEND CURRENT',String(e?.message||e),0)}catch(_e){}}
+      return result;
+    });
   }
   document.getElementById('qhPcConnect')?.addEventListener('click',()=>{if(state.ecuConnected)document.getElementById('disconnectEcuBtn')?.click();else document.getElementById('connectEcuBtn')?.click()});
   document.getElementById('qhPcSettings')?.addEventListener('click',()=>{activeTab='options';fkCell=null;render()});
@@ -10173,18 +10257,14 @@ updateMapControls();
   });
   let fullTabReadToken=0;
   async function readFeatureOnTabOpen(id,token){
-    if(id==='inj_ve'||!state.ecuConnected||state.ecuPhase!=='live')return;
-    try{
-      const api=window.BlinkRealProtocol;
-      if(!api)throw new Error('REDLEO protocol not ready');
-      if(id==='options')await fb()?.readOptions();
-      else await api.readFeaturePageReal(id,state.activeMap,true);
+    if(id==='inj_ve'||!state.ecuConnected||state.ecuPhase!=='live'||fullIoBusy)return;
+    await fullIoFeedback('read',id,async(api,bank)=>{
+      const result=id==='options'
+        ?await fb()?.readOptions()
+        :await api.readFeaturePageReal(id,bank,true);
       if(token===fullTabReadToken&&activeTab===id)render();
-    }catch(e){
-      if(token===fullTabReadToken&&activeTab===id){
-        try{showEcuNotice('error','READ '+id.toUpperCase(),String(e?.message||e),0)}catch(_e){}
-      }
-    }
+      return result;
+    },{auto:true});
   }
   document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>{
     activeTab=b.dataset.qhFullTab;fkCell=null;activeFeature=null;
