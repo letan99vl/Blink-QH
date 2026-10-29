@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.22';
-  document.title = 'QH ECU · v1.1.22';
+  window.BLINK_PB_VERSION = 'QH-1.1.23';
+  document.title = 'QH ECU · v1.1.23';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5784,33 +5784,49 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  #qhFullSelectionPad #qhPcSmooth{font-size:20px!important}
 }
 </style>
-<style id="qhMapStepNextToTitleV122">
-/* QH 1.1.22: relocate the ORIGINAL step dropdown beside the dynamic map heading.
-   Retain its ID/value/steps and the floating +/- actions; never duplicate it. */
+<style id="qhMapStepThreeButtonsV123">
+/* QH v1.1.23: three directly selectable steps in the same line as MAP title. */
 #qhFullPcScreen .qhPcMapHead .qhPcTitleStep{
  display:flex!important;align-items:center!important;justify-content:flex-start!important;
- min-width:0!important;gap:7px!important;
+ min-width:0!important;max-width:100%!important;gap:7px!important;
 }
 #qhFullPcScreen .qhPcMapHead .qhPcTitleStep h2{
  flex:0 1 auto!important;min-width:0!important;
  overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
 }
-#qhFullPcScreen .qhPcMapHead #qhPcStep{
- flex:0 0 77px!important;width:77px!important;min-width:77px!important;max-width:77px!important;
- height:28px!important;min-height:28px!important;padding:0 5px!important;
- border:1px solid #2dbb55!important;border-radius:5px!important;
- color:#eaffef!important;background:#081e0e!important;
- font-size:11px!important;font-weight:800!important;
+#qhFullPcScreen .qhPcMapHead #qhPcStep{display:none!important}
+#qhFullPcScreen .qhPcMapHead .qhPcStepChoices{
+ display:inline-flex!important;align-items:center!important;flex:0 0 auto!important;
+ gap:3px!important;white-space:nowrap!important;
+}
+#qhFullPcScreen .qhPcMapHead .qhPcStepChoices button{
+ flex:0 0 auto!important;min-width:37px!important;height:28px!important;min-height:28px!important;
+ padding:0 5px!important;border-radius:5px!important;
+ border:1px solid #2c9950!important;background:#09230f!important;color:#dbfce3!important;
+ font-size:11px!important;font-weight:900!important;line-height:1!important;
+ cursor:pointer!important;white-space:nowrap!important;
+}
+#qhFullPcScreen .qhPcMapHead .qhPcStepChoices button[aria-pressed="true"]{
+ background:#29eb5c!important;border-color:#6dff99!important;color:#031b0b!important;
+ box-shadow:0 0 6px #2bec6199!important;
 }
 @media(max-width:720px){
  #qhFullPcScreen .qhPcMapHead .qhPcTitleStep{gap:4px!important}
- #qhFullPcScreen .qhPcMapHead #qhPcStep{
-  flex-basis:67px!important;width:67px!important;min-width:67px!important;max-width:67px!important;
-  font-size:10px!important
+ #qhFullPcScreen .qhPcMapHead .qhPcStepChoices{gap:2px!important}
+ #qhFullPcScreen .qhPcMapHead .qhPcStepChoices button{
+  min-width:35px!important;height:26px!important;min-height:26px!important;
+  padding:0 3px!important;font-size:10px!important;
+ }
+}
+@media(max-width:480px){
+ #qhFullPcScreen .qhPcMapHead .qhPcTitleStep{gap:3px!important}
+ #qhFullPcScreen .qhPcMapHead .qhPcStepChoices{gap:1px!important}
+ #qhFullPcScreen .qhPcMapHead .qhPcStepChoices button{
+  min-width:33px!important;padding:0 2px!important;font-size:9px!important;
  }
 }
 @media(max-height:450px){
- #qhFullPcScreen .qhPcMapHead #qhPcStep{height:25px!important;min-height:25px!important}
+ #qhFullPcScreen .qhPcMapHead .qhPcStepChoices button{height:23px!important;min-height:23px!important}
 }
 </style>
 </head>
@@ -5818,7 +5834,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.22</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.23</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5860,7 +5876,12 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
   <div class="qhPcMapHead">
     <div class="qhPcTitleStep">
       <h2>BẢN ĐỒ PHUN XĂNG</h2>
-      <select id="qhPcStep" aria-label="Adjustment step" title="Bước điều chỉnh vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
+      <div class="qhPcStepChoices" id="qhPcStepChoices" role="group" aria-label="Bước tăng giảm vùng chọn">
+        <button type="button" data-qh-pc-step="1" aria-pressed="false" title="Bước điều chỉnh ±1">±1</button>
+        <button type="button" data-qh-pc-step="0.1" aria-pressed="true" title="Bước điều chỉnh ±0.1">±0.1</button>
+        <button type="button" data-qh-pc-step="0.01" aria-pressed="false" title="Bước điều chỉnh ±0.01">±0.01</button>
+      </div>
+      <select id="qhPcStep" aria-label="Bước tăng giảm đang chọn" tabindex="-1" aria-hidden="true" hidden><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
     </div>
     <div class="unit">Đơn vị: ms</div>
     <div class="qhPcHeadOps">
@@ -6006,7 +6027,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.22</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.23</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -12586,6 +12607,19 @@ window.QHPadDrag={place};
   document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
   document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
   document.getElementById('qhPcMinus')?.addEventListener('click',()=>bumpFullSelection(-1));
+  // The three visible buttons change the existing local step; +/- keeps using
+  // qhPcStep, so this never triggers ECU I/O or alters the map on its own.
+  const qhPcStepControl=document.getElementById('qhPcStep');
+  const qhPcStepButtons=[...document.querySelectorAll('#qhPcStepChoices [data-qh-pc-step]')];
+  for(const btn of qhPcStepButtons){
+    btn.addEventListener('click',()=>{
+      const next=btn.dataset.qhPcStep;
+      if(!qhPcStepControl||!['1','0.1','0.01'].includes(next))return;
+      qhPcStepControl.value=next;
+      qhPcStepButtons.forEach(other=>other.setAttribute('aria-pressed',String(other===btn)));
+      qhPcStepControl.dispatchEvent(new Event('change',{bubbles:true}));
+    });
+  }
   document.getElementById('qhPcSmooth')?.addEventListener('click',smoothFullSelected);
   document.getElementById('qhPcSaveArrow')?.addEventListener('click',()=>{
     window.QHMapUx.dismissPad('qhFullSelectionPad');
