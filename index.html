@@ -12538,7 +12538,7 @@ function lockUi(on){
 }
 async function transaction(action){
  if(busy)return false;
- if(window.QHFullPc?.isBusy?.())throw Error('Đang có lệnh ECU khác.');
+ if(window.QHFullPc?.isBusy)throw Error('Đang có lệnh ECU khác.');
  busy=true;lockUi(true);fmtStatus('busy','Đang thực hiện '+action+'; không ngắt BLE hoặc tắt ứng dụng.');
  try{return await action()}
  finally{busy=false;lockUi(false);refreshButtons();window.QHFullPc?.render?.()}
