@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.9';
-  document.title = 'QH ECU · v1.1.9';
+  window.BLINK_PB_VERSION = 'QH-1.1.10';
+  document.title = 'QH ECU · v1.1.10';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5537,7 +5537,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.9</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.10</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -8104,6 +8104,9 @@ function updateLive(){
   $('afrVLive').textContent=fmt(state.live.afrV,3)+' V';
   const cur=currentCell(); $('cellLive').textContent=(TPS_ROWS[cur.r]==='IDLE'?'IDLE':TPS_ROWS[cur.r]+'%')+' / '+RPMS[cur.c];
   $('sampleInfo').textContent=state.totalSamples.toLocaleString()+' mẫu AFR'+(state.threeRun.active?' · lượt '+state.threeRun.pass+'/3':'');
+  // QH 1.1.10: event-driven cursor invalidation on a fresh ECU LIVE frame.
+  // This is display-only; the ECU 0x69 cadence and BLE mutex are unchanged.
+  window.QHFastCursor?.signal?.();
 }
 
 async function connectAfr(){
@@ -10872,7 +10875,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   'use strict';
   let uiMode=null, sfCell=null, sfBuffer='';
   const simpleSelection=window.QHMapUx.makeSelection();
-  let simpleFollow=true,simpleManualUntil=0,simpleCursorKey='';
+  let simpleFollow=true,simpleManualUntil=0,simpleCursorKey='',simpleLiveTd=null;
   const rowGroups=[[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12],[13]];
   const colGroups=Array.from({length:15},(_,i)=>[i*2,i*2+1]);
 
@@ -10966,20 +10969,24 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     return sr<0||sc<0?null:{sr,sc};
   }
   function updateSimpleCursor(){
-    const t=document.getElementById('qhSimpleFuelTable');
+    const t=document.getElementById('qhSimpleFuelTable'),screen=document.getElementById('qhSimpleFuelScreen');
     if(!t)return;
-    const cur=simpleFollow?window.QHMapUx.liveCell():null;
+    const showing=uiMode==='simple'&&screen?.classList.contains('active');
+    const cur=showing&&simpleFollow?window.QHMapUx.liveCell():null;
     const pos=cur?simpleCellFromEcu(cur.r,cur.c):null;
     const key=pos?pos.sr+':'+pos.sc:'';
-    t.querySelectorAll('td.val.qhLiveCursor').forEach(td=>td.classList.remove('qhLiveCursor'));
+    // No DOM class toggles for repeated samples within the same ECU cell.
+    if(key===simpleCursorKey&&(key?simpleLiveTd&&t.contains(simpleLiveTd):!simpleLiveTd))return;
+    if(simpleLiveTd)simpleLiveTd.classList.remove('qhLiveCursor');
+    simpleLiveTd=null;
     if(!pos){simpleCursorKey='';return}
     const td=t.querySelector('td.val[data-sr="'+pos.sr+'"][data-sc="'+pos.sc+'"]');
-    if(!td)return;
-    td.classList.add('qhLiveCursor');
+    if(!td){simpleCursorKey='';return}
+    td.classList.add('qhLiveCursor');simpleLiveTd=td;
     if(key!==simpleCursorKey&&Date.now()>simpleManualUntil){
       const wrap=document.getElementById('qhSimpleFuelWrap');
       if(wrap){
-        const left=td.offsetLeft, right=left+td.offsetWidth;
+        const left=td.offsetLeft,right=left+td.offsetWidth;
         if(left<wrap.scrollLeft+75)wrap.scrollLeft=Math.max(0,left-75);
         else if(right>wrap.scrollLeft+wrap.clientWidth-8)wrap.scrollLeft=right-wrap.clientWidth+8;
       }
@@ -11088,6 +11095,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     document.getElementById('qhSimpleFuelScreen').classList.remove('active');
     document.getElementById('qhSimpleKeypad').classList.remove('show');
     sfCell=null;window.QHMapUx.clearSelection(simpleSelection);simpleCursorKey='';
+    if(simpleLiveTd)simpleLiveTd.classList.remove('qhLiveCursor');simpleLiveTd=null;
   }
   document.getElementById('qhSfBack')?.addEventListener('click',closeSimpleFuel);
   document.getElementById('qhSfKeyboard')?.addEventListener('click',openSimpleKeypad);
@@ -11174,14 +11182,31 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   document.getElementById('qhSfWriteAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="SEND_ALL"]')?.click());
   // QHOrientation handles FULL/SIMPLE zoom and restoration in one browser-only controller.
 
-  // Keep SIMPLE view synchronized after a read, map switch, or protocol update.
-  setInterval(()=>{
-    if(uiMode==='simple'&&document.getElementById('qhSimpleFuelScreen')?.classList.contains('active')){
-      renderSimpleFuel();
+  // Incremental SIMPLE data sync: never discard 120 live cells every 500ms.
+  // A changed ECU axis still rebuilds the map, preserving its displayed 8x15 grouping.
+  function refreshSimpleCellValues(){
+    if(uiMode!=='simple'||!document.getElementById('qhSimpleFuelScreen')?.classList.contains('active'))return;
+    const t=document.getElementById('qhSimpleFuelTable'),head=t?.tHead?.rows?.[0],body=t?.tBodies?.[0];
+    if(!head||head.cells.length!==16||!body||body.rows.length!==8){renderSimpleFuel();return;}
+    for(let sc=0;sc<15;sc++)if(head.cells[sc+1]?.textContent!==simpleLabelCol(sc)){renderSimpleFuel();return;}
+    for(let sr=0;sr<8;sr++)if(body.rows[sr]?.cells?.[0]?.textContent!==simpleLabelRow(sr)){renderSimpleFuel();return;}
+    const cells=t.querySelectorAll('td.val');
+    if(cells.length!==120){renderSimpleFuel();return;}
+    for(const td of cells){
+      const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
+      const v=simpleValue(sr,sc),label=v.toFixed(2);
+      if(td.textContent!==label)td.textContent=label;
+      const bg=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#fff';
+      if(td.dataset.qhHeat!==bg){td.dataset.qhHeat=bg;td.style.background=bg;}
     }
-  },500);
+    const bank=document.getElementById('qhSfMap');
+    if(bank&&bank.value!==String(state.activeMap))bank.value=String(state.activeMap);
+    if(window.QHMapUx.showAfr)updateSimpleAfrBadges();
+  }
+  setInterval(refreshSimpleCellValues,500);
 
-  window.QHDualMode={get mode(){return uiMode},choose:chooseMode,openSimpleFuel,renderSimpleFuel};
+  window.QHDualMode={get mode(){return uiMode},choose:chooseMode,openSimpleFuel,renderSimpleFuel,
+    refreshCells:refreshSimpleCellValues,updateLiveCursor:updateSimpleCursor};
 })();
 </script>
 
@@ -11190,7 +11215,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   'use strict';
   let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',activeFeature=null;
   const fullSelection=window.QHMapUx.makeSelection();
-  let fullFollow=true,fullManualUntil=0,fullLastCursor='';
+  let fullFollow=true,fullManualUntil=0,fullLastCursor='',fullLiveEls=[];
   const fb=()=>window.QHFullFeatureBridge||null;
   const backendTab=()=>activeTab==='options'&&fb()?.usesOptionsTable?.()?'ate_options':activeTab;
   const screen=document.getElementById('qhFullPcScreen');
@@ -11252,14 +11277,19 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     requestAnimationFrame(()=>ux.positionPad('qhFullPcScreen','qhFullMapTable','qhFullSelectionPad',fullSelection));
   }
   function updateFullCursor(){
-    if(!table)return;
+    if(!table||document.body.dataset.uiMode!=='full'||screen.classList.contains('suspended'))return;
     const cells=fullFollow&&state?.ecuConnected?(fb()?.getLiveCells(backendTab())||[]):[];
     const key=cells.map(p=>p.r+':'+p.c).join(',');
-    table.querySelectorAll('td.v.qhLiveCursor').forEach(td=>td.classList.remove('qhLiveCursor'));
+    // Cache live elements; the old 500ms loop removed/re-added the same classes
+    // even when the ECU was still inside the identical RPM/TPS cell.
+    if(key===fullLastCursor&&fullLiveEls.length===cells.length&&
+       fullLiveEls.every(td=>table.contains(td)))return;
+    for(const td of fullLiveEls)td.classList.remove('qhLiveCursor');
+    fullLiveEls=[];
     let first=null;
     for(const {r,c} of cells){
       const td=table.querySelector('td.v[data-r="'+r+'"][data-c="'+c+'"]');
-      if(td){td.classList.add('qhLiveCursor');if(!first)first=td;}
+      if(td){td.classList.add('qhLiveCursor');fullLiveEls.push(td);if(!first)first=td;}
     }
     if(first&&key!==fullLastCursor&&Date.now()>fullManualUntil){
       const wrap=document.getElementById('qhFullMapWrap');
@@ -11587,8 +11617,16 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }));
   document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{screen.classList.remove('suspended');render()});
   document.addEventListener('keydown',e=>{if(e.key==='F11'&&document.body.dataset.uiMode==='full'){e.preventDefault();fit=!fit;screen.classList.toggle('fit',fit)}});
-  setInterval(()=>{if(document.body.dataset.uiMode==='full'&&!screen.classList.contains('suspended')){syncConn();updateFullCursor();if(activeTab==='inj_ve')updateFullAfrBadges();}},500);
-  window.QHFullPc={render,show:()=>{screen.classList.remove('suspended');render()},hide:()=>{window.QHOrientation?.exit('full');screen.classList.add('suspended')},get activeTab(){return activeTab}};
+  // Low-frequency connection/AFR fallback; cursor follows every actual ECU sample.
+  setInterval(()=>{
+    if(document.body.dataset.uiMode!=='full'||screen.classList.contains('suspended'))return;
+    syncConn();updateFullCursor();
+    if(activeTab==='inj_ve'&&window.QHMapUx.showAfr)updateFullAfrBadges();
+  },900);
+  window.QHFullPc={render,updateLiveCursor:updateFullCursor,
+    show:()=>{screen.classList.remove('suspended');render()},
+    hide:()=>{window.QHOrientation?.exit('full');screen.classList.add('suspended')},
+    get activeTab(){return activeTab}};
 })();
 </script>
 
@@ -11727,6 +11765,46 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
  document.getElementById('qhSfZoomExit')?.addEventListener('click',schedule);
  setTimeout(schedule,50);
  window.QHMapRowFit={refresh:schedule,fitAll};
+})();
+</script>
+
+<script id="qhFastLiveCursorV110">
+/*
+ * QH 1.1.10: visual-only immediate ECU cursor update. One rAF per fresh
+ * updateLive() signal; no 500ms cursor gate and no 0x69/BLE timing changes.
+ * Never predict RPM/TPS or change selected cells / map write state.
+ */
+(function(){
+  'use strict';
+  let pending=false,signals=0,frames=0,lastUiDelayMs=0,queuedAt=0;
+  const mirror=(name,text)=>{
+    document.querySelectorAll('[data-mirror="'+name+'"]').forEach(el=>{
+      if(el.textContent!==text)el.textContent=text;
+    });
+  };
+  function flush(){
+    pending=false;frames++;
+    lastUiDelayMs=queuedAt?Math.max(0,performance.now()-queuedAt):0;
+    if(document.hidden)return;
+    const mode=document.body.dataset.uiMode;
+    if(mode==='full')window.QHFullPc?.updateLiveCursor?.();
+    else if(mode==='simple')window.QHDualMode?.updateLiveCursor?.();
+    // The large mirror synchronizer stays on its old slow schedule; only
+    // RPM/TPS numbers follow the faster display-only cursor path.
+    const rpm=document.getElementById('rpmLive')?.textContent;
+    const tps=document.getElementById('tpsLive')?.textContent;
+    if(rpm!=null)mirror('rpm',rpm);
+    if(tps!=null)mirror('tps',tps);
+  }
+  function signal(){
+    signals++;
+    if(pending||document.hidden)return;
+    pending=true;queuedAt=performance.now();
+    requestAnimationFrame(flush);
+  }
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)signal();});
+  window.QHFastCursor={signal,
+    stats(){return {signals,frames,lastUiDelayMs:Number(lastUiDelayMs.toFixed(1)),ecuLivePollUnchangedMs:180};}};
 })();
 </script>
 </body>
