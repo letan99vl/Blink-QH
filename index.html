@@ -12282,6 +12282,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
         result=await api.writeFeatureReal(backendTab());
       }
       render();
+      if(id==='ign_degree'||id==='idle_limit')window.QHBackfire?.invalidate?.();
       return result;
     });
   }
@@ -12376,7 +12377,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     if(activeTab==='inj_ve'&&window.QHMapUx.showAfr)updateFullAfrBadges();
   },900);
   window.QHFullPc={render,updateLiveCursor:updateFullCursor,
-    show:()=>{screen.classList.remove('suspended');render()},
+    show:()=>{screen.classList.remove('suspended');render();window.QHBackfire?.invalidate?.()},
     hide:()=>{window.QHOrientation?.exit('full');screen.classList.add('suspended')},
     get isBusy(){return fullIoBusy},
     get activeTab(){return activeTab}};
@@ -12545,8 +12546,22 @@ async function transaction(action){
 function refreshButtons(){
  const connected=!!state.ecuConnected&&state.ecuPhase==='live';
  const selected=window.QHFullPc?.activeTab==='ign_degree';
- const possible=!!api()?.backfireCapabilities?.()?.supported;
+ const caps=api()?.backfireCapabilities?.();
+ const possible=!!caps?.supported;
  if(open)open.disabled=!selected;
+ el('qhBfLevel')?.querySelectorAll('option').forEach(opt=>{
+   const level=caps?.levels?.find(x=>x.level===Number(opt.value));
+   opt.disabled=!level?.available;
+   opt.title=opt.disabled?'ECU không mã hóa được góc này':'ECU biểu diễn được '+level.actual+'°';
+ });
+ if(connected&&!possible){
+   if(tone!=='unsupported'){
+     tone='unsupported';
+     if(open)open.textContent='🔥 BACKFIRE: KHÔNG HỖ TRỢ';
+     if(el('qhBfStatus'))el('qhBfStatus').textContent='ECU '+(caps?.profile||'UNKNOWN')+
+       ': không có serializer Backfire đã kiểm chứng hoặc các mức âm yêu cầu vượt codec. Không ghi ECU.';
+   }
+ }
  for(const id of ['qhBfStart','qhBfRestore','qhBfCheck','qhBfExport','qhBfImport']){
    const btn=el(id);if(!btn)continue;
    btn.disabled=busy||!connected||!possible;
@@ -12740,7 +12755,12 @@ setInterval(()=>{
    if(autoFailCount<=8)void check({auto:true});
  }
 },1700);
-window.QHBackfire={get busy(){return busy},check,start,restore};
+window.QHBackfire={get busy(){return busy},check,start,restore,
+ invalidate(){
+   if(busy)return;
+   lastAutoKey='';
+   fmtStatus('unknown','Góc lửa hoặc giới hạn RPM có thể đã thay đổi. Cần đọc lại ECU để xác định Backfire ON/OFF.');
+ }};
 fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc chờ tự kiểm tra.');
 })();
 </script>
