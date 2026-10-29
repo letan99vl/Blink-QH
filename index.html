@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.15';
-  document.title = 'QH ECU · v1.1.15';
+  window.BLINK_PB_VERSION = 'QH-1.1.16';
+  document.title = 'QH ECU · v1.1.16';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5583,14 +5583,20 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 #qhFullPcScreen:not(.qhOneHandFuel) .qhPcMapHead{grid-template-columns:minmax(0,1fr) auto auto!important}
 #qhFullPcScreen:not(.qhOneHandFuel) .qhPcMapHead .unit{display:block!important}
 #qhFullPcScreen:not(.qhOneHandFuel) #qhFullMapSelect{max-width:none!important}
-#qhFullPcScreen .qhPcMapTools #qhPcOneHandToggle{
- display:none!important;flex:0 0 auto!important;white-space:nowrap!important;
- border:1px solid #4ce875!important;border-radius:3px!important;
- background:#0b3517!important;color:#e9ffed!important;font-weight:900!important
+#qhFullPcScreen .qhPcMapTools #qhPcFuelDensity{
+ display:none!important;flex:0 0 auto!important;align-items:center!important;
+ gap:2px!important;padding:1px!important;border:1px solid #2c8540!important;
+ border-radius:4px!important;background:#031309!important;white-space:nowrap!important
 }
-#qhFullPcScreen.qhFuelTab .qhPcMapTools #qhPcOneHandToggle{display:inline-flex!important;align-items:center!important}
-#qhFullPcScreen.qhFuelTab:not(.qhOneHandFuel) #qhPcOneHandToggle{
- background:#161f18!important;border-color:#509461!important;color:#bdd5c3!important
+#qhFullPcScreen.qhFuelTab .qhPcMapTools #qhPcFuelDensity{display:inline-flex!important}
+#qhFullPcScreen .qhPcMapTools #qhPcFuelDensity button{
+ min-width:31px!important;height:25px!important;min-height:25px!important;
+ flex:0 0 auto!important;padding:0 4px!important;border:0!important;
+ border-radius:3px!important;background:#0b2913!important;color:#a9cdb2!important;
+ font-size:10px!important;font-weight:900!important;line-height:1!important
+}
+#qhFullPcScreen .qhPcMapTools #qhPcFuelDensity button[aria-pressed="true"]{
+ color:#06200e!important;background:#31ed5f!important;box-shadow:0 0 7px #26e95b70!important
 }
 #qhFullPcScreen.qhOptionsTab #qhFullMapWrap{
  flex:0 0 auto!important;max-height:min(34dvh,245px)!important;min-height:0!important;
@@ -5617,9 +5623,35 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 /* Keep the original READ/WRITE dock at the bottom of FULL Options. */
 #qhFullPcScreen.qhOptionsTab .qhPcActions{margin-top:auto!important}
 @media(max-width:480px){
- #qhFullPcScreen.qhFuelTab .qhPcMapTools #qhPcOneHandToggle{
-   height:26px!important;min-height:26px!important;padding:0 6px!important;font-size:10px!important
+ #qhFullPcScreen .qhPcMapTools #qhPcFuelDensity button{
+   min-width:29px!important;padding:0 3px!important;font-size:10px!important
  }
+}
+</style>
+
+<style id="qhFuelDensityV116">
+/* X1 is original Full. X2 is old one-hand. X3/X4 preserve X2 row height,
+   while the viewport-aware controller shows 3/6 more RPM columns. */
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable th,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable td,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable th,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable td{
+ width:var(--qh-fuel-density-cell-width,35px)!important;
+ min-width:var(--qh-fuel-density-cell-width,35px)!important;
+ max-width:var(--qh-fuel-density-cell-width,35px)!important;
+ font-size:var(--qh-fuel-density-font,9px)!important;
+ padding:0!important;letter-spacing:-.35px!important;
+ overflow:hidden!important;text-overflow:clip!important;
+}
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable .rh,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable .rh{
+ width:var(--qh-fuel-density-rowhead,35px)!important;
+ min-width:var(--qh-fuel-density-rowhead,35px)!important;
+ max-width:var(--qh-fuel-density-rowhead,35px)!important;
+ font-size:9px!important;letter-spacing:0!important;
+}
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable td.v[data-afr-corner]::after{
+ font-size:var(--qh-fuel-density-afr-font,7px)!important;
 }
 </style>
 </head>
@@ -5627,7 +5659,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.15</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.16</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5674,7 +5706,12 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     </div>
   </div>
   <div class="qhPcMapTools" id="qhPcMapTools">
-    <button id="qhPcOneHandToggle" type="button" aria-pressed="true" title="Chỉ dùng cho bản đồ phun xăng. Tắt để khôi phục bố cục cũ.">✋ 1 TAY: BẬT</button>
+    <div id="qhPcFuelDensity" role="group" aria-label="Mức hiển thị cột RPM của bản đồ phun">
+      <button type="button" data-qh-fuel-density="1" aria-pressed="false" title="X1 · Bố cục gốc, đầy đủ 30 cột RPM">X1</button>
+      <button type="button" data-qh-fuel-density="2" aria-pressed="true" title="X2 · Chế độ 1 tay cũ">X2</button>
+      <button type="button" data-qh-fuel-density="3" aria-pressed="false" title="X3 · Thêm 3 cột RPM nhìn thấy, giữ cỡ chữ X2">X3</button>
+      <button type="button" data-qh-fuel-density="4" aria-pressed="false" title="X4 · Thêm 6 cột RPM nhìn thấy, thu chữ nếu cần">X4</button>
+    </div>
     <select id="qhFullMapSelect" aria-label="Chọn map ECU"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
     <button id="qhPcZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
     <button id="qhPcKeyboard" type="button" title="Chọn một hoặc hai góc, rồi mở bàn phím">⌨ BÀN PHÍM</button>
@@ -5780,7 +5817,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.15</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.16</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11618,10 +11655,14 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
 (function(){
   'use strict';
   let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',activeFeature=null;
-  // Keep compact fuel UI ON by default. OFF restores pre-1.1.13 map layout.
-  // This device-local preference never modifies ECU data or other tabs.
-  let oneHandEnabled=true;
-  try{oneHandEnabled=localStorage.getItem('qhFuelOneHandV1')!=='0'}catch(_e){}
+  // X1 = old one-hand OFF, X2 = old one-hand ON; X3/X4 compress columns.
+  // Migrate device-local legacy ON/OFF preference without changing ECU data.
+  let fuelDensity=2;
+  try{
+    const saved=Number(localStorage.getItem('qhFuelDensityV116'));
+    if([1,2,3,4].includes(saved))fuelDensity=saved;
+    else if(localStorage.getItem('qhFuelOneHandV1')==='0')fuelDensity=1;
+  }catch(_e){}
   const fullSelection=window.QHMapUx.makeSelection();
   let fullFollow=true,fullManualUntil=0,fullLastCursor='',fullLiveEls=[];
   const fb=()=>window.QHFullFeatureBridge||null;
@@ -11745,11 +11786,45 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     sel.style.display=banked?'':'none';
     sel.value=String(state.activeMap||1);
   }
+  let fuelDensityFrame=0;
+  function scheduleFuelDensityLayout(){
+    if(fuelDensityFrame)return;
+    fuelDensityFrame=requestAnimationFrame(()=>{
+      fuelDensityFrame=0;
+      if(activeTab!=='inj_ve'||fuelDensity<3||!screen.classList.contains('qhFuelTab'))return;
+      if(wrap.clientWidth<80)return;
+      const zoom=screen.classList.contains('qhMapMagnified');
+      const mobile=window.matchMedia('(max-width:720px)').matches;
+      const rowHead=zoom?36:(mobile?33:35);
+      const appWidth=parseFloat(screen.style.getPropertyValue('--qh-app-width'))||wrap.clientWidth;
+      const x2Width=zoom?Math.max(25,Math.min(34,(appWidth-40)/29)):(mobile?35:37);
+      const styles=getComputedStyle(wrap);
+      const pad=(parseFloat(styles.paddingLeft)||0)+(parseFloat(styles.paddingRight)||0);
+      const available=Math.max(10,wrap.clientWidth-pad-rowHead-2);
+      const x2Visible=Math.max(1,Math.min(29,Math.floor(available/x2Width)));
+      const goal=Math.min(29,x2Visible+3*(fuelDensity-2));
+      const width=Math.min(x2Width,available/goal);
+      const baseFont=mobile?9:10;
+      // X3 retains X2's font. X4 reduces font only once a five-digit RPM
+      // heading no longer fits at the X2 size.
+      const font=fuelDensity===4?Math.min(baseFont,Math.max(5.5,(width-2.5)/2.85)):baseFont;
+      screen.style.setProperty('--qh-fuel-density-cell-width',width.toFixed(2)+'px');
+      screen.style.setProperty('--qh-fuel-density-rowhead',rowHead+'px');
+      screen.style.setProperty('--qh-fuel-density-font',font.toFixed(2)+'px');
+      screen.style.setProperty('--qh-fuel-density-afr-font',Math.min(8,Math.max(5,font*0.75)).toFixed(2)+'px');
+      screen.dataset.qhFuelVisibleRpm=String(goal);
+    });
+  }
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(scheduleFuelDensityLayout).observe(wrap);
+  if(typeof MutationObserver!=='undefined')new MutationObserver(scheduleFuelDensityLayout)
+    .observe(screen,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',scheduleFuelDensityLayout,{passive:true});
+  window.visualViewport?.addEventListener('resize',scheduleFuelDensityLayout,{passive:true});
   function renderFuel(){
     activeFeature=null;
-    // QH 1.1.13: only HIDE the physical 500-RPM fuel column in this view.
-    // Keep all 420 ECU values, raw c indices, axes and write payload unchanged.
-    const visibleCols=RPMS.map((rpm,c)=>({rpm,c})).filter(col=>!oneHandEnabled||col.c!==0);
+    // X1 shows all 30 physical RPM points. X2/X3/X4 hide only the 500-RPM
+    // display column, preserving every source c index and all 420 ECU values.
+    const visibleCols=RPMS.map((rpm,c)=>({rpm,c})).filter(col=>fuelDensity===1||col.c!==0);
     let h='<thead><tr><th class="rh">TPS %</th>';
     for(const col of visibleCols)h+='<th>'+col.rpm+'</th>';
     h+='</tr></thead><tbody>';
@@ -11829,15 +11904,14 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }
   function render(){
     if(!table||typeof state==='undefined')return;
-    const fuel=activeTab==='inj_ve',oneHand=fuel&&oneHandEnabled;
+    const fuel=activeTab==='inj_ve',oneHand=fuel&&fuelDensity>=2;
     screen.classList.toggle('qhFuelTab',fuel);
     screen.classList.toggle('qhOneHandFuel',oneHand);
     screen.classList.toggle('qhOptionsTab',activeTab==='options');
-    const toggle=document.getElementById('qhPcOneHandToggle');
-    if(toggle){
-      toggle.textContent=oneHandEnabled?'✋ 1 TAY: BẬT':'✋ 1 TAY: TẮT';
-      toggle.setAttribute('aria-pressed',String(oneHandEnabled));
-    }
+    screen.dataset.qhFuelDensity=String(fuelDensity);
+    document.querySelectorAll('#qhPcFuelDensity [data-qh-fuel-density]').forEach(b=>{
+      b.setAttribute('aria-pressed',String(Number(b.dataset.qhFuelDensity)===fuelDensity));
+    });
     setHeader();setBankControl();syncConn();
     const tpsPanel=document.getElementById('qhFullTpsManual');
     if(tpsPanel){tpsPanel.hidden=activeTab!=='options';tpsPanel.style.display=activeTab==='options'?'block':'none';}
@@ -11846,7 +11920,10 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
       wrap.style.display='none';optionsPanel.style.display='block';renderOptionsInline();return;
     }
     wrap.style.display='block';optionsPanel.style.display='none';
-    if(activeTab==='inj_ve')renderFuel(); else renderFeatureInline(backendTab());
+    if(activeTab==='inj_ve'){
+      renderFuel();
+      scheduleFuelDensityLayout();
+    }else renderFeatureInline(backendTab());
   }
   function syncConn(){
     const on=!!state?.ecuConnected,box=document.getElementById('qhPcConn'),txt=document.getElementById('qhPcConnText');
@@ -12015,15 +12092,17 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     new MutationObserver(sync).observe(original,{attributes:true,attributeFilter:['disabled']});
     sync();
   }
-  document.getElementById('qhPcOneHandToggle')?.addEventListener('click',()=>{
-    if(activeTab!=='inj_ve')return;
-    oneHandEnabled=!oneHandEnabled;
-    try{localStorage.setItem('qhFuelOneHandV1',oneHandEnabled?'1':'0')}catch(_e){}
-    // A selection may include the hidden 500 RPM column. Clear on toggle.
-    clearFullSelection();fkCell=null;fullLastCursor='';
+  document.querySelectorAll('#qhPcFuelDensity [data-qh-fuel-density]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(activeTab!=='inj_ve'||fullIoBusy)return;
+    const next=Number(btn.dataset.qhFuelDensity);
+    if(![1,2,3,4].includes(next)||next===fuelDensity)return;
+    fuelDensity=next;
+    try{localStorage.setItem('qhFuelDensityV116',String(next))}catch(_e){}
+    // A selection may contain 500 RPM, hidden only in X2/X3/X4.
+    clearFullSelection();fkCell=null;fullLastCursor='';fullManualUntil=Date.now()+1500;
     wrap.scrollLeft=0;wrap.scrollTop=0;
     render();window.QHMapRowFit?.refresh?.();
-  });
+  }));
   document.getElementById('qhPcKeyboard')?.addEventListener('click',openKey);
   document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
   document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
