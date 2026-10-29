@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.11';
-  document.title = 'QH ECU · v1.1.11';
+  window.BLINK_PB_VERSION = 'QH-1.1.12';
+  document.title = 'QH ECU · v1.1.12';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5400,12 +5400,47 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  #qhSimpleFuelScreen .qhSfHint{display:none!important}
 }
 </style>
+
+<style id="qhTpsAndSavedPadV112">
+/* QH 1.1.12: keep saved selection highlighted, but its controls hidden until the next touch. */
+#qhFullSelectionPad.qhPadDismissed,#qhSimpleSelectionPad.qhPadDismissed{display:none!important}
+.qhModeTitle{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;flex-wrap:wrap!important}
+#qhModeVersion{white-space:nowrap!important;flex:0 0 auto!important;padding:5px 9px!important;
+  background:#021b08!important;color:#afffc1!important;border:1px solid #40ec6f!important;
+  border-radius:5px!important;font-size:clamp(11px,1.6vw,14px)!important;font-weight:900!important}
+#qhFullTpsManual{display:none;flex:0 0 auto!important;min-height:0;max-height:min(275px,47dvh);overflow:auto;
+  border-bottom:1px solid #218c3a;background:#020d05;padding:8px 10px;box-sizing:border-box;
+  -webkit-overflow-scrolling:touch}
+#qhFullTpsManual[hidden]{display:none!important}
+#qhFullTpsManual .qhFtpsHeading{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:7px}
+#qhFullTpsManual .qhFtpsHeading strong{color:#88ffa5;font-size:13px;font-weight:900;letter-spacing:.5px}
+#qhFullTpsManual .qhFtpsHeading span{color:#b9d3bd;font-size:10px}
+#qhFullTpsManual .qhFtpsFields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#qhFullTpsManual .qhFtpsStat{min-width:0;padding:5px 7px;border:1px solid #1fa545;border-radius:3px;background:#04180a}
+#qhFullTpsManual .qhFtpsStat small{display:block;color:#92c79e;font-size:10px;font-weight:700}
+#qhFullTpsManual .qhFtpsStat strong{display:block;color:#fafffb;margin-top:3px;font-size:clamp(12px,1.7vw,18px);
+  font-variant-numeric:tabular-nums}
+#qhFullTpsManual .qhFtpsButtons{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+#qhFullTpsManual button{height:33px;min-height:33px;padding:0 10px;color:#eaffec;background:#0a3217;
+  border:1px solid #39e260;border-radius:4px;font-size:11px;font-weight:800;cursor:pointer}
+#qhFullTpsManual button:disabled{opacity:.5;cursor:not-allowed}
+#qhFullTpsManual #qhFtpsSync{border-color:#a3e3b2;background:#10331a}
+#qhFtpsStatus{color:#a9d8b2;margin:6px 0 0;font-size:10px;line-height:1.3}
+#qhFtpsStatus[data-error="1"]{color:#ff9999}
+@media(max-width:480px){
+  #qhModeVersion{padding:4px 7px!important}
+  #qhFullTpsManual{max-height:min(320px,53dvh);padding:6px}
+  #qhFullTpsManual .qhFtpsButtons button{font-size:10px;padding:0 6px}
+  #qhFullTpsManual .qhFtpsStat{padding:4px}
+  #qhFullTpsManual .qhFtpsStat small{font-size:9px}
+}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle">QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.12</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5463,6 +5498,21 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <button id="qhPcMinus" type="button" title="Giảm vùng chọn" aria-label="Decrease selection">−</button>
   </div>
 
+
+  <section id="qhFullTpsManual" aria-label="Học TPS thủ công từ cảm biến LIVE" hidden>
+    <div class="qhFtpsHeading"><strong>HỌC TPS THỦ CÔNG</strong><span>Như Blink Redleo · chỉ chỉnh TPS trên ứng dụng, không ghi ECU</span></div>
+    <div class="qhFtpsFields">
+      <div class="qhFtpsStat"><small>ĐIỆN ÁP TPS LIVE</small><strong id="qhFtpsLive">-- V</strong></div>
+      <div class="qhFtpsStat"><small>TPS MIN (V)</small><strong id="qhFtpsMin">-- V</strong></div>
+      <div class="qhFtpsStat"><small>TPS MAX (V)</small><strong id="qhFtpsMax">-- V</strong></div>
+    </div>
+    <div class="qhFtpsButtons">
+      <button id="qhFtpsLearnMin" type="button" title="Thả hết ga rồi học điện áp TPS MIN từ LIVE">HỌC TPS MIN</button>
+      <button id="qhFtpsLearnMax" type="button" title="Mở hết ga rồi học điện áp TPS MAX từ LIVE">HỌC TPS MAX</button>
+      <button id="qhFtpsSync" type="button" title="Đọc Options A2 để trở về chuẩn TPS ECU, không ghi ECU">ĐỌC &amp; ĐỒNG BỘ TPS ECU</button>
+    </div>
+    <p id="qhFtpsStatus" role="status" aria-live="polite">Kết nối ECU, đóng hết ga để học MIN rồi mở hết ga học MAX. Chỉ áp dụng khi đủ hai giá trị, cách nhau hơn 0,10 V.</p>
+  </section>
   <div id="qhFullOptionsPanel" style="display:none;flex:1;min-height:0;overflow:auto;padding:12px 14px;background:#010503">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px" id="qhFullOptionsGrid"></div>
   </div>
@@ -5537,7 +5587,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.11</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.12</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -6041,6 +6091,7 @@ function load(){
           for(const k of ['measured','counts','target','inject']){
             if(validMatrix(b[k]))state.mapBanks[i][k]=b[k];
           }
+          if(typeof b.tpsCaptureKey==='string')state.mapBanks[i].tpsCaptureKey=b.tpsCaptureKey;
         }
       }
       state.activeMap=clamp(Math.round(Number(s.activeMap)||1),1,4);
@@ -6071,14 +6122,168 @@ function save(){
   $('saveInfo').textContent='Đã lưu MAP No.'+state.activeMap+' · '+new Date().toLocaleTimeString();
 }
 function saveThreeRunHistory(){localStorage.setItem('afrAutoTune3RunHistoryV1',JSON.stringify(state.threeRunHistory.slice(0,12)));}
+
+/* QH manual TPS from Blink Redleo: learn MIN+MAX atomically, back up AFR,
+ * bind to ECU identity, accept only fresh LIVE; never write ECU. */
+let qhTpsManual=null,qhTpsEcu=null,qhTpsSyncBusy=false;
+function qhTpsIdentity(){
+ const api=window.BlinkRealProtocol,h=api?.handshake,p=api?.profile;
+ if(!h||!p||!['MODERN_V9','MODERN_V10','MODERN_V11'].includes(p.key))return '';
+ return [p.key,h.ident||'',h.firmware||'',h.ecuId??'',h.sumSignal??''].map(String).join('|');
+}
+function qhTpsStatus(msg,err=false){
+ const el=document.getElementById('qhFtpsStatus');
+ if(el){el.textContent=String(msg||'');el.dataset.error=err?'1':'0'}
+ if(err)window.setEcuTaskStatus?.('error',String(msg),5000);
+}
+function qhTpsReady(){
+ const id=qhTpsIdentity(),m=qhTpsManual;
+ return !!(id&&m&&m.id===id&&m.minCaptured&&m.maxCaptured&&
+   Number.isFinite(m.min)&&Number.isFinite(m.max)&&m.max-m.min>0.10);
+}
+function qhTpsPaint(){
+ const el=document.getElementById('qhFullTpsManual');if(!el||el.hidden)return;
+ const id=qhTpsIdentity(),m=qhTpsManual?.id===id?qhTpsManual:null;
+ const volts=Number(state.live.tpsV),fresh=state.ecuConnected&&tpsTelemetryFresh();
+ const set=(key,v)=>{const e=document.getElementById(key);if(e&&e.textContent!==v)e.textContent=v};
+ const fv=v=>Number.isFinite(v)?v.toFixed(3)+' V':'-- V';
+ set('qhFtpsLive',fresh?fv(volts):'-- V');
+ set('qhFtpsMin',fv(m?.minCaptured?m.min:Number(state.cal.tpsMin)));
+ set('qhFtpsMax',fv(m?.maxCaptured?m.max:Number(state.cal.tpsMax)));
+ const on=!!(id&&state.ecuConnected&&state.ecuPhase==='live'&&!qhTpsSyncBusy);
+ for(const name of ['qhFtpsLearnMin','qhFtpsLearnMax','qhFtpsSync']){
+   const btn=document.getElementById(name);if(btn)btn.disabled=!on;
+ }
+}
+function qhTpsAllowed(){
+ const api=window.BlinkRealProtocol;
+ if(!state.ecuConnected||state.ecuPhase!=='live'||!qhTpsIdentity()){
+   qhTpsStatus('Cần kết nối ECU hỗ trợ TPS LIVE và đã xác thực để học thủ công.',true);return false;
+ }
+ if(qhTpsSyncBusy||state.recording||state.threeRun.active||state.ecuWriteQueued||
+   api?.manualIoActive||api?.otaPaused){
+   qhTpsStatus('Dừng ghi AFR, chạy 3 lượt và đọc/ghi ECU trước khi học TPS.',true);return false;
+ }
+ return true;
+}
+function qhTpsSeparateAfr(key,id,lo,hi,source){
+ const changed=state.mapBanks.map((b,i)=>({b,i})).filter(({b})=>b.tpsCaptureKey!==key);
+ const old=changed.filter(({b})=>Array.isArray(b.counts)&&b.counts.some(row=>Array.isArray(row)&&row.some(n=>Number(n)>0)));
+ if(old.length){
+   try{
+     const store='qhTPSAfrBackupsV1',saved=JSON.parse(localStorage.getItem(store)||'[]');
+     const prev=Array.isArray(saved)?saved:[];
+     prev.push({date:new Date().toISOString(),identity:id,newTpsMin:lo,newTpsMax:hi,source,
+       maps:old.map(({b,i})=>({mapNo:i+1,oldCaptureKey:b.tpsCaptureKey||'unverified',
+         measured:b.measured,counts:b.counts}))});
+     localStorage.setItem(store,JSON.stringify(prev.slice(-4)));
+   }catch(e){qhTpsStatus('Sao lưu AFR cũ không thành công, chưa thay TPS: '+String(e?.message||e),true);return false}
+ }
+ for(const {b} of changed){b.measured=blankMatrix(null);b.counts=blankMatrix(0);b.tpsCaptureKey=key}
+ if(changed.length)state.totalSamples=state.mapBanks.reduce((sum,b)=>sum+
+   (b.counts||[]).reduce((a,row)=>a+(Array.isArray(row)?row.reduce((t,n)=>t+(Number(n)||0),0):0),0),0);
+ return true;
+}
+function qhTpsSetPair(lo,hi,key,id,source){
+ if(!id||!Number.isFinite(lo)||!Number.isFinite(hi)||lo<0||hi>5||hi-lo<=0.10)return false;
+ if(!qhTpsSeparateAfr(key,id,lo,hi,source))return false;
+ state.cal.tpsMin=lo;state.cal.tpsMax=hi;
+ if(Number.isFinite(state.live.tpsV))state.live.tps=clamp((state.live.tpsV-lo)/(hi-lo)*100,0,100);
+ state.lastCellKey='';resetTpsTrendState();syncControls();updateLive();render();saveSoon();
+ qhTpsPaint();return true;
+}
+function qhTpsEndpoint(which,reading,{requireFresh=false}={}){
+ if(!['min','max'].includes(which)||!qhTpsAllowed())return false;
+ const v=Number(reading);
+ if(!Number.isFinite(v)||v<0||v>5){qhTpsStatus('TPS '+which.toUpperCase()+' cần điện áp 0–5 V.',true);return false}
+ if(requireFresh&&(!tpsTelemetryFresh()||!Number.isFinite(state.live.tpsV))){
+   qhTpsStatus('Cần dữ liệu TPS LIVE mới; không học từ số đo cũ.',true);return false;
+ }
+ const id=qhTpsIdentity();
+ if(!qhTpsManual||qhTpsManual.id!==id)qhTpsManual={id,min:NaN,max:NaN,minCaptured:false,maxCaptured:false,key:''};
+ qhTpsManual[which]=v;qhTpsManual[which+'Captured']=true;
+ if(!qhTpsReady()){
+   qhTpsStatus('Đã học '+which.toUpperCase()+' '+v.toFixed(3)+' V. Cần đủ MIN/MAX và chênh lệch trên 0,10 V; CHƯA thay đổi TPS, KHÔNG ghi ECU.',
+     qhTpsManual.minCaptured&&qhTpsManual.maxCaptured);
+   syncControls();return true;
+ }
+ const lo=qhTpsManual.min,hi=qhTpsManual.max,key=id+'|QH-MANUAL|'+lo.toFixed(4)+'|'+hi.toFixed(4);
+ if(!qhTpsSetPair(lo,hi,key,id,'QH MANUAL'))return false;
+ qhTpsManual.key=key;qhTpsStatus('TPS THỦ CÔNG ĐANG DÙNG: '+lo.toFixed(3)+' → '+hi.toFixed(3)+' V. Không gửi ECU.');
+ return true;
+}
+function qhTpsLearn(which){
+ if(!tpsTelemetryFresh()||!Number.isFinite(state.live.tpsV)){
+   qhTpsStatus('Chưa có điện áp TPS LIVE mới để học '+which.toUpperCase()+'.',true);return false;
+ }
+ return qhTpsEndpoint(which,state.live.tpsV,{requireFresh:true});
+}
+function qhTpsVerified(min,max,origin='OPTIONS A2'){
+ const lo=Number(min),hi=Number(max),id=qhTpsIdentity();
+ if(!id||!Number.isFinite(lo)||!Number.isFinite(hi)||lo<0||hi>5||hi-lo<=0.10)return false;
+ const key=id+'|ECU|'+lo.toFixed(4)+'|'+hi.toFixed(4);
+ qhTpsEcu={id,min:lo,max:hi,key,source:String(origin),verifiedAt:Date.now()};
+ // Background A2 must NOT overwrite a manual ruler captured for this ECU.
+ if(qhTpsReady()){qhTpsPaint();return true}
+ const ok=qhTpsSetPair(lo,hi,key,id,'QH ECU OPTIONS');
+ if(ok)qhTpsStatus('TPS ECU ĐÃ ĐỌC: '+lo.toFixed(3)+' → '+hi.toFixed(3)+' V ('+origin+').');
+ return ok;
+}
+function qhTpsUseEcuPair(min,max,origin='ECU STUDY'){
+ const id=qhTpsIdentity(),lo=Number(min),hi=Number(max);
+ if(!id||!Number.isFinite(lo)||!Number.isFinite(hi)||lo<0||hi>5||hi-lo<=0.10)return false;
+ const prev=qhTpsManual;qhTpsManual=null;
+ const key=id+'|ECU|'+lo.toFixed(4)+'|'+hi.toFixed(4);
+ if(!qhTpsSetPair(lo,hi,key,id,origin)){qhTpsManual=prev;return false}
+ qhTpsEcu={id,min:lo,max:hi,key,source:String(origin),verifiedAt:Date.now()};
+ qhTpsStatus('TPS ĐỒNG BỘ TỪ ECU: '+lo.toFixed(3)+' → '+hi.toFixed(3)+' V.');
+ return true;
+}
+async function qhTpsSync(){
+ if(!qhTpsAllowed())return false;
+ const api=window.BlinkRealProtocol,id=qhTpsIdentity();
+ if(!api||typeof api.readA2SensorPageReal!=='function'){
+   qhTpsStatus('ECU này chưa hỗ trợ đọc TPS Options A2.',true);return false;
+ }
+ qhTpsSyncBusy=true;qhTpsPaint();qhTpsStatus('ĐANG ĐỌC & ĐỒNG BỘ TPS OPTIONS A2 TỪ ECU...');
+ try{
+   await api.readA2SensorPageReal(false);
+   if(!state.ecuConnected||qhTpsIdentity()!==id)throw Error('ECU đã ngắt hoặc thay đổi');
+   const c=qhTpsEcu;
+   if(!c||c.id!==id||c.max-c.min<=0.10)throw Error('Chưa đọc được TPS MIN/MAX ECU hợp lệ');
+   if(!qhTpsUseEcuPair(c.min,c.max,'TPS A2 ĐỒNG BỘ'))
+     throw Error('Không sao lưu được AFR cũ; giữ chuẩn TPS trước đó');
+   qhTpsStatus('ĐÃ TRỞ VỀ TPS ECU: '+c.min.toFixed(3)+' → '+c.max.toFixed(3)+' V, KHÔNG ghi ECU.');
+   return true;
+ }catch(e){qhTpsStatus('Đồng bộ TPS thất bại: '+String(e?.message||e),true);return false}
+ finally{qhTpsSyncBusy=false;qhTpsPaint()}
+}
+function qhTpsReset(reason='ECU đã ngắt kết nối'){
+ qhTpsManual=null;qhTpsEcu=null;qhTpsSyncBusy=false;
+ state.live.tpsV=NaN;resetTpsTrendState();
+ qhTpsStatus('TPS: '+reason+'. Chờ kết nối và đọc lại từ ECU.');
+ qhTpsPaint();
+}
+window.QHManualTps={learn:qhTpsLearn,setEndpoint:qhTpsEndpoint,sync:qhTpsSync,
+ onEcuPair:qhTpsVerified,applyEcuPair:qhTpsUseEcuPair,reset:qhTpsReset,paint:qhTpsPaint,
+ get active(){return qhTpsReady()},info(){return qhTpsReady()?{...qhTpsManual}:null}};
+window.blinkResetEcuTpsCalibration=qhTpsReset;
+window.blinkSetVerifiedEcuTps=qhTpsVerified;
+
 function syncControls(){
   if(!Number.isFinite(state.cal.afrValueMin))state.cal.afrValueMin=9;
   if(!Number.isFinite(state.cal.afrValueMax))state.cal.afrValueMax=18;
-  $('tpsMin').value=state.cal.tpsMin; $('tpsMax').value=state.cal.tpsMax;
+  const pendingTps=qhTpsManual?.id===qhTpsIdentity()?qhTpsManual:null;
+  $('tpsMin').value=pendingTps?.minCaptured?pendingTps.min:state.cal.tpsMin;
+  $('tpsMax').value=pendingTps?.maxCaptured?pendingTps.max:state.cal.tpsMax;
+  qhTpsPaint();
   $('settleMs').value=state.cal.settleMs; $('afrVoltMin').value=state.cal.afrVoltMin; $('afrVoltMax').value=state.cal.afrVoltMax; $('afrValueMin').value=state.cal.afrValueMin; $('afrValueMax').value=state.cal.afrValueMax; $('afrDelayMs').value=state.cal.afrDelayMs; $('limitPct').value=state.cal.limitPct; $('threeRunLimitPct').value=state.cal.threeRunLimitPct; $('tuneMode').value=state.mode;
 }
-function pullControls(){
-  state.cal.tpsMin=num($('tpsMin').value,.45); state.cal.tpsMax=num($('tpsMax').value,4.5);
+function pullControls(changedId=''){
+  if(changedId==='tpsMin'||changedId==='tpsMax'){
+    const raw=String($(changedId).value??'').trim();
+    if(!qhTpsEndpoint(changedId==='tpsMin'?'min':'max',raw?Number(raw):NaN))syncControls();
+  }
   state.cal.settleMs=Math.max(0,num($('settleMs').value,0)); state.cal.afrVoltMin=clamp(num($('afrVoltMin').value,0),0,5); state.cal.afrVoltMax=clamp(num($('afrVoltMax').value,2.66),0.01,5); if(state.cal.afrVoltMax<=state.cal.afrVoltMin+0.001)state.cal.afrVoltMax=Math.min(5,state.cal.afrVoltMin+0.01); state.cal.afrValueMin=clamp(num($('afrValueMin').value,9),5,25); state.cal.afrValueMax=clamp(num($('afrValueMax').value,18),5.1,30); if(state.cal.afrValueMax<=state.cal.afrValueMin+0.1)state.cal.afrValueMax=Math.min(30,state.cal.afrValueMin+0.1); state.cal.afrDelayMs=Math.max(0,num($('afrDelayMs').value,0)); state.cal.limitPct=Math.max(0,num($('limitPct').value,100)); state.cal.threeRunLimitPct=clamp(num($('threeRunLimitPct').value,30),1,100); saveSoon();
 }
 
@@ -6761,11 +6966,7 @@ function parseReadAllFuelMap(f){
   state.inject=out;
 
   // Dgv_Option row0/1 carries TPS min/max in the fake/read-all format.
-  if(f[92]||f[93]){
-    state.cal.tpsMin=f[92]*20/1024;
-    state.cal.tpsMax=f[93]*20/1024;
-    syncControls();
-  }
+  if(f[92]||f[93])qhTpsVerified(f[92]*20/1024,f[93]*20/1024,'READ ALL ECU');
 
   saveSoon();
   if(state.tab==='inject'||state.tab==='corrected')render();
@@ -7482,10 +7683,8 @@ function parseTpsStudyFrame(f){
     );
   }
 
-  state.cal.tpsMin=minV;
-  state.cal.tpsMax=maxV;
-  syncControls();
-  saveSoon();
+  if(!qhTpsUseEcuPair(minV,maxV,'TPS STUDY ECU'))
+    throw Error('Không thể cập nhật TPS ECU hoặc sao lưu AFR cũ.');
 
   $('studyTpsInfo').textContent=
     'TPS Study OK · '+minV.toFixed(3)+' V → '+maxV.toFixed(3)+' V';
@@ -8194,9 +8393,9 @@ load();$('mapSelect').value=String(state.activeMap);syncControls();setRecording(
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 $('connectEcuBtn').onclick=connectEcu;$('disconnectEcuBtn').onclick=disconnectEcu;$('readMapBtn').onclick=()=>queueReadCurrentMap(state.activeMap);$('writeMapBtn').onclick=writeCurrentFuelMap;$('applyCorrectedBtn').onclick=applyCorrectedAndWrite;$('connectAfrBtn').onclick=connectAfr;$('disconnectAfrBtn').onclick=disconnectAfr;$('recordBtn').onclick=toggleRecord;$('mapSelect').onchange=()=>selectMapBank(+$('mapSelect').value,true);$('studyTpsBtn').onclick=queueTpsStudy;$('refreshNativePortsBtn').onclick=refreshNativePorts;
 $('tuneMode').onchange=()=>setTuneMode($('tuneMode').value);$('threeRunStartBtn').onclick=startThreeRunSession;$('threeRunStepBtn').onclick=finishThreeRunPass;$('threeRunCancelBtn').onclick=cancelThreeRun;$('threeHistoryBtn').onclick=openThreeRunHistory;$('downloadThreeRunBtn').onclick=downloadLatestThreeRun;$('closeThreeHistoryBtn').onclick=()=>$('threeHistoryDialog').close();
-$('learnMin').onclick=()=>{if(!Number.isFinite(state.live.tpsV))return alert('Chưa có dữ liệu TPS từ ECU.');state.cal.tpsMin=state.live.tpsV;resetTpsTrendState();syncControls();saveSoon();};
-$('learnMax').onclick=()=>{if(!Number.isFinite(state.live.tpsV))return alert('Chưa có dữ liệu TPS từ ECU.');state.cal.tpsMax=state.live.tpsV;resetTpsTrendState();syncControls();saveSoon();};
-['tpsMin','tpsMax','settleMs','afrVoltMin','afrVoltMax','afrValueMin','afrValueMax','afrDelayMs','limitPct','threeRunLimitPct'].forEach(id=>$(id).addEventListener('change',()=>{pullControls();if(id==='tpsMin'||id==='tpsMax')resetTpsTrendState();render();renderThreeRunUi();}));
+$('learnMin').onclick=()=>qhTpsLearn('min');
+$('learnMax').onclick=()=>qhTpsLearn('max');
+['tpsMin','tpsMax','settleMs','afrVoltMin','afrVoltMax','afrValueMin','afrValueMax','afrDelayMs','limitPct','threeRunLimitPct'].forEach(id=>$(id).addEventListener('change',()=>{pullControls(id);render();renderThreeRunUi();}));
 $('clearMeasured').onclick=clearMeasuredMap;$('clearMeasuredEditorBtn').onclick=clearMeasuredMap;
 
 function formHasFocus(){const el=document.activeElement;return !!el&&(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(el.tagName)||el.isContentEditable);}
@@ -10747,6 +10946,8 @@ updateMapControls();
     if(label)label.textContent='P.b '+pb;
     const qhPb=document.getElementById('qhPbLabel');
     if(qhPb)qhPb.textContent='P.b '+pb;
+    const modeVersion=document.getElementById('qhModeVersion');
+    if(modeVersion)modeVersion.textContent='P.b '+pb;
     const src='redleo_real_protocol.js?v='+encodeURIComponent(v);
     document.write('<script src="'+src+'"><\/script>');
   })();
@@ -10846,12 +11047,19 @@ function refreshBadge(td,b){
   }
 }
 
+function qhDismissPad(padId){
+  const pad=document.getElementById(padId);if(!pad)return;
+  pad.classList.add('qhPadDismissed');pad.classList.remove('shown');
+}
+function qhRestorePad(padId){
+  document.getElementById(padId)?.classList.remove('qhPadDismissed');
+}
 function qhPadAnchor(screenId,tableId,padId,selection){
   const screen=document.getElementById(screenId),table=document.getElementById(tableId),pad=document.getElementById(padId);
   if(!screen||!table||!pad)return;
   const b=selection.active?window.QHMapUx.bounds(selection):null;
   const cell=b?table.querySelector('td[data-r="'+b.r0+'"][data-c="'+b.c1+'"],td[data-sr="'+b.r0+'"][data-sc="'+b.c1+'"]'):null;
-  const visible=!!cell&&screen.getClientRects().length>0&&selection.active;
+  const visible=!!cell&&screen.getClientRects().length>0&&selection.active&&!pad.classList.contains('qhPadDismissed');
   pad.classList.toggle('shown',visible);
   if(!visible)return;
   const a=cell.getBoundingClientRect(),base=screen.getBoundingClientRect();
@@ -10867,6 +11075,7 @@ function qhPadAnchor(screenId,tableId,padId,selection){
 
 window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},positionPad:qhPadAnchor,
   badge,badgeForGroup,refreshBadge,makeSelection,selectTap,bounds,includes,clearSelection,
+  dismissPad:qhDismissPad,restorePad:qhRestorePad,
   liveCell,closest};
 })();
 </script>
@@ -11022,6 +11231,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     t.querySelectorAll('td.val').forEach(td=>td.addEventListener('click',()=>{
       const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
       simpleManualUntil=Date.now()+3500;
+      window.QHMapUx.restorePad('qhSimpleSelectionPad');
       window.QHMapUx.selectTap(simpleSelection,sr,sc);
       updateSimpleSelectionVisual();
     }));
@@ -11102,6 +11312,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   document.getElementById('qhSfPlus')?.addEventListener('click',()=>bumpSimpleSelected(1));
   document.getElementById('qhSfMinus')?.addEventListener('click',()=>bumpSimpleSelected(-1));
   document.getElementById('qhSfSaveArrow')?.addEventListener('click',()=>{
+    window.QHMapUx.dismissPad('qhSimpleSelectionPad');
     document.getElementById('qhSfWrite')?.click();
   });
   document.getElementById('qhSfClearSelection')?.addEventListener('click',()=>{
@@ -11257,6 +11468,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }
   function selectFullCell(r,c){
     fullManualUntil=Date.now()+3500;
+    window.QHMapUx.restorePad('qhFullSelectionPad');
     window.QHMapUx.selectTap(fullSelection,r,c);
     fkCell={r,c};updateFullSelectionVisual();
   }
@@ -11410,6 +11622,9 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   function render(){
     if(!table||typeof state==='undefined')return;
     setHeader();setBankControl();syncConn();
+    const tpsPanel=document.getElementById('qhFullTpsManual');
+    if(tpsPanel){tpsPanel.hidden=activeTab!=='options';tpsPanel.style.display=activeTab==='options'?'block':'none';}
+    if(activeTab==='options')window.QHManualTps?.paint?.();
     if(activeTab==='options'&&!fb()?.usesOptionsTable?.()){
       wrap.style.display='none';optionsPanel.style.display='block';renderOptionsInline();return;
     }
@@ -11565,11 +11780,21 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
       return result;
     });
   }
+  document.getElementById('qhFtpsLearnMin')?.addEventListener('click',()=>window.QHManualTps?.learn('min'));
+  document.getElementById('qhFtpsLearnMax')?.addEventListener('click',()=>window.QHManualTps?.learn('max'));
+  document.getElementById('qhFtpsSync')?.addEventListener('click',()=>void window.QHManualTps?.sync());
+  setInterval(()=>{
+    if(document.body.dataset.uiMode==='full'&&activeTab==='options'&&!screen.classList.contains('suspended'))
+      window.QHManualTps?.paint?.();
+  },200);
   document.getElementById('qhPcKeyboard')?.addEventListener('click',openKey);
   document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
   document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
   document.getElementById('qhPcMinus')?.addEventListener('click',()=>bumpFullSelection(-1));
-  document.getElementById('qhPcSaveArrow')?.addEventListener('click',()=>document.getElementById('qhPcWriteCurrent')?.click());
+  document.getElementById('qhPcSaveArrow')?.addEventListener('click',()=>{
+    window.QHMapUx.dismissPad('qhFullSelectionPad');
+    document.getElementById('qhPcWriteCurrent')?.click();
+  });
   document.getElementById('qhPcLiveFollow')?.addEventListener('click',()=>{
     fullFollow=!fullFollow;fullLastCursor='';
     const btn=document.getElementById('qhPcLiveFollow');
