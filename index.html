@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.20';
-  document.title = 'QH ECU · v1.1.20';
+  window.BLINK_PB_VERSION = 'QH-1.1.21';
+  document.title = 'QH ECU · v1.1.21';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5759,7 +5759,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 </style>
 
 <style id="qhSmoothDragPad119">
-/* QH 1.1.19: Redleo blue I action and 460ms hold-to-drag on the whole pad. */
+/* QH 1.1.21: Redleo blue I action and 220ms hold-to-drag on the whole pad. */
 #qhFullSelectionPad,#qhSimpleSelectionPad{
  touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;
  -webkit-touch-callout:none!important;
@@ -5789,7 +5789,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.20</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.21</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5974,7 +5974,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.20</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.21</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11478,7 +11478,7 @@ const IDS=[
   {screenId:'qhSimpleFuelScreen',padId:'qhSimpleSelectionPad'}
 ];
 const PREFIX='qhFloatingPadLocationV119:';
-const HOLD_MS=460;
+const HOLD_MS=220;
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
 let gesture=null,suppressUntil=0,suppressPad=null;
 function mode(screen){return screen.classList.contains('qhSoftwareRotated')||
