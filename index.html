@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.0';
-  document.title = 'QH ECU · v1.1.0';
+  window.BLINK_PB_VERSION = 'QH-1.1.1';
+  document.title = 'QH ECU · v1.1.1';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4273,6 +4273,146 @@ body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen
   body[data-ui-mode="full"].mapZoomMode #mapTable th,
   body[data-ui-mode="full"].mapZoomMode #mapTable td{padding:0!important;font-size:clamp(6px,1.2vw,10px)!important}
 </style>
+
+<style id="qhNeonSkinV2">
+:root{
+  --qh-neon:#27ff58;--qh-neon2:#14d93f;--qh-dark:#020704;--qh-panel:#061109;--qh-panel2:#08180d;
+  --qh-line:#1ef252;--qh-text:#f4fff6;--qh-muted:#8dbb96;--qh-warn:#f0df38;
+}
+html,body{background:#010503!important;color:var(--qh-text)!important}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:
+  linear-gradient(135deg,rgba(39,255,88,.035) 25%,transparent 25%) 0 0/18px 18px,
+  linear-gradient(315deg,rgba(39,255,88,.025) 25%,transparent 25%) 0 0/18px 18px,#010503}
+#qhModeGate{background:
+  radial-gradient(circle at 18% 0%,rgba(39,255,88,.12),transparent 30%),
+  linear-gradient(180deg,#020905,#010302)!important}
+.qhModeBox{background:linear-gradient(180deg,#07120a,#020604)!important;border:1px solid var(--qh-neon)!important;color:#fff!important;
+  box-shadow:0 0 28px rgba(39,255,88,.24),inset 0 0 24px rgba(39,255,88,.035)!important;border-radius:0!important;
+  clip-path:polygon(2% 0,98% 0,100% 8%,100% 92%,98% 100%,2% 100%,0 92%,0 8%)}
+.qhModeTitle{background:linear-gradient(90deg,#073912,#0b791f,#073912)!important;border-bottom:1px solid var(--qh-neon)!important;color:#fff!important;
+  text-shadow:0 0 12px rgba(39,255,88,.75)!important}
+.qhModeSub,.qhModeFoot{color:#99c9a3!important}
+.qhModeChoice{background:linear-gradient(180deg,#08150c,#020704)!important;border:1px solid #1fd94a!important;color:#fff!important;
+  box-shadow:inset 0 0 14px rgba(39,255,88,.04),0 0 12px rgba(39,255,88,.08)!important;border-radius:0!important}
+.qhModeChoice:hover{background:linear-gradient(180deg,#0d2513,#041007)!important;box-shadow:0 0 18px rgba(39,255,88,.22)!important}
+.qhModeChoice b{color:var(--qh-neon)!important;text-shadow:0 0 10px rgba(39,255,88,.5)!important}
+.qhModeChoice span{color:#a8cdb0!important}
+
+body[data-ui-mode="full"],body[data-ui-mode="simple"]{
+  --bg:#010503!important;--panel:#061109!important;--panel2:#08180d!important;--line:#1edc4a!important;--head:#0c4f20!important;
+  --text:#f4fff6!important;--muted:#91b99a!important;--ok:#27ff58!important;--accent:#17d947!important;
+}
+body[data-ui-mode="full"] .screen,body[data-ui-mode="simple"] .screen,
+body[data-ui-mode="full"] .qhDashboardScreen,body[data-ui-mode="simple"] .qhDashboardScreen{
+  background:
+    linear-gradient(135deg,rgba(39,255,88,.018) 25%,transparent 25%) 0 0/16px 16px,
+    #010503!important;color:#fff!important
+}
+body[data-ui-mode] .screenHeader,body[data-ui-mode] .groupHead,body[data-ui-mode] .tabs,body[data-ui-mode] .controlbar,
+body[data-ui-mode] .editorInfo,body[data-ui-mode] .editToolbar{
+  background:linear-gradient(180deg,#07150b,#020704)!important;border-color:#178834!important;color:#fff!important;box-shadow:none!important
+}
+body[data-ui-mode] button,body[data-ui-mode] .tab{
+  background:linear-gradient(180deg,#0b1b0e,#030805)!important;border:1px solid #1b9f39!important;color:#eaffee!important;
+  box-shadow:inset 0 0 8px rgba(39,255,88,.035)!important;border-radius:2px!important
+}
+body[data-ui-mode] button.primary,body[data-ui-mode] button.good,body[data-ui-mode] .tab.active{
+  background:linear-gradient(180deg,#19f64c,#0aaa31)!important;color:#001704!important;border-color:#40ff69!important;
+  box-shadow:0 0 12px rgba(39,255,88,.22),inset 0 1px rgba(255,255,255,.22)!important
+}
+body[data-ui-mode] button.danger{background:linear-gradient(180deg,#122016,#071009)!important;color:#baffc6!important;border-color:#29833d!important}
+body[data-ui-mode] .menuCard,body[data-ui-mode] .optPanel,body[data-ui-mode] .infoCell,body[data-ui-mode] .settingTile,
+body[data-ui-mode] .livebox,body[data-ui-mode] .tuneLive{
+  background:linear-gradient(180deg,#07140a,#020704)!important;border-color:#187d32!important;color:#effff2!important;
+  box-shadow:inset 0 0 15px rgba(39,255,88,.025)!important
+}
+body[data-ui-mode] input,body[data-ui-mode] select,body[data-ui-mode] textarea{
+  background:#020804!important;color:#effff2!important;border-color:#1c7c34!important
+}
+body[data-ui-mode] .qhBrandMain{color:#fff!important;text-shadow:0 0 12px rgba(39,255,88,.18)!important}
+body[data-ui-mode] .qhGold{color:var(--qh-neon)!important}
+body[data-ui-mode] .qhSilver{color:#fff!important}
+body[data-ui-mode] .qhBrandSub span{color:#fff!important}
+body[data-ui-mode] .qhMainMenu .qhMenuRow{background:linear-gradient(180deg,#07160b,#020704)!important;border-color:#168534!important;color:#fff!important}
+body[data-ui-mode] .qhMenuText b{color:#eaffee!important} body[data-ui-mode] .qhMenuText small{color:#8eb899!important}
+body[data-ui-mode] .qhSensorCell,body[data-ui-mode] .qhSideCard,body[data-ui-mode] .qhTopBattery{
+  background:linear-gradient(180deg,#07150a,#020704)!important;border-color:#168534!important;color:#fff!important
+}
+body[data-ui-mode] .qhConnectBtn{background:linear-gradient(180deg,#27ff58,#0cae31)!important;color:#001b05!important}
+body[data-ui-mode] .mapwrap,body[data-ui-mode] .redTableWrap{background:#010503!important;border-color:#188f36!important}
+body[data-ui-mode] #mapTable th,body[data-ui-mode] #mapTable td.rowhead,
+body[data-ui-mode] .redTable th,body[data-ui-mode] .redTable .rhead{
+  background:#063a16!important;color:#eaffee!important;border-color:#168b34!important
+}
+body[data-ui-mode] #mapTable td.mapcell,body[data-ui-mode] .redCell{border-color:#2b6e3b!important}
+body[data-ui-mode] .fuelKeypad,body[data-ui-mode] #qhSimpleKeypad{
+  background:#030a05!important;border:1px solid #21da48!important;box-shadow:0 0 30px rgba(39,255,88,.2)!important;color:#fff!important
+}
+body[data-ui-mode] .fuelKeypad button,body[data-ui-mode] #qhSimpleKeypad button{background:#07140a!important;color:#fff!important;border-color:#1a8c35!important}
+body[data-ui-mode] .bottomNav{background:#020604!important;border-color:#168534!important}
+body[data-ui-mode] .bottomNav button.active{color:var(--qh-neon)!important}
+
+/* SIMPLE mode neon skin */
+#qhSimpleFuelScreen{background:
+  linear-gradient(135deg,rgba(39,255,88,.018) 25%,transparent 25%) 0 0/16px 16px,#010503!important;color:#fff!important}
+.qhSfWindow{background:#020604!important;border:1px solid var(--qh-neon)!important;box-shadow:0 0 26px rgba(39,255,88,.16)!important}
+.qhSfTitle{background:linear-gradient(90deg,#031008,#0a531c,#031008)!important;border-bottom:1px solid var(--qh-neon)!important;color:#fff!important}
+.qhSfLive,.qhSfTabs,.qhSfToolbar,.qhSfHint{background:#030a05!important;border-color:#176f2d!important;color:#9bc5a4!important}
+.qhSfStat{background:#061109!important;border-color:#187d32!important}.qhSfStat small{color:#87ad90!important}.qhSfStat b{color:#fff!important}
+#qhSimpleFuelWrap{background:#010503!important}
+#qhSimpleFuelTable th,#qhSimpleFuelTable .rowh{background:#063a16!important;color:#effff2!important;border-color:#1d8d38!important}
+#qhSimpleFuelTable td{border-color:#2b7140!important}
+#qhSimpleFuelTable td.val.active{outline-color:#29ff5a!important}
+
+/* New FULL PC layout */
+#qhFullPcScreen{display:none;position:fixed;inset:0;z-index:255000;background:
+  linear-gradient(135deg,rgba(39,255,88,.02) 25%,transparent 25%) 0 0/16px 16px,#010503;color:#fff;font-family:Segoe UI,Arial,sans-serif;overflow:hidden}
+body[data-ui-mode="full"] #qhFullPcScreen:not(.suspended){display:flex;flex-direction:column}
+#qhFullPcScreen.suspended{display:none!important}
+.qhPcHeader{height:88px;display:grid;grid-template-columns:minmax(250px,1.1fr) minmax(260px,.95fr) auto;align-items:center;border-bottom:1px solid #21df4a;
+  background:linear-gradient(180deg,#041008,#020604);box-shadow:0 3px 20px rgba(39,255,88,.08)}
+.qhPcBrand{padding:8px 18px;position:relative}.qhPcBrandMain{font-size:34px;font-style:italic;font-weight:1000;line-height:.9;letter-spacing:-1px}
+.qhPcBrandMain .q{color:var(--qh-neon);text-shadow:0 0 16px rgba(39,255,88,.42)}.qhPcBrandMain .e{color:#fff}
+.qhPcBrandSub{font-size:14px;letter-spacing:5px;font-style:italic;font-weight:800;margin-top:6px;color:#fff}
+.qhPcConn{height:100%;border-left:1px solid #0f6c28;border-right:1px solid #0f6c28;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 18px}
+.qhPcDot{width:13px;height:13px;border-radius:50%;background:#0b3817;box-shadow:0 0 0 2px #07300f}
+.qhPcConn.on .qhPcDot{background:var(--qh-neon);box-shadow:0 0 14px var(--qh-neon)}.qhPcConn b{color:var(--qh-neon);font-size:16px}.qhPcConn small{display:block;color:#b6cdbb}
+.qhPcHeaderBtns{display:flex;gap:8px;padding:0 14px}.qhPcHeaderBtns button{width:46px;height:46px!important;font-size:19px!important}
+.qhPcLive{height:190px;display:grid;grid-template-columns:repeat(3,minmax(150px,1fr));gap:14px;padding:12px 18px;background:#010503}
+.qhPcGauge{position:relative;border:2px solid #1fe44a;border-radius:50%;max-width:168px;width:100%;aspect-ratio:1;margin:auto;
+  background:radial-gradient(circle at 50% 54%,#0d1510 0 55%,#020503 56% 66%,#0b3c18 67% 70%,#1cff50 71% 72%,#020503 73% 100%);
+  box-shadow:0 0 18px rgba(39,255,88,.23),inset 0 0 16px #000}
+.qhPcGauge:before{content:"";position:absolute;left:50%;bottom:49%;width:40%;height:4px;background:#ff1f27;transform-origin:0 50%;transform:rotate(145deg);border-radius:3px;box-shadow:0 0 4px #f22}
+.qhPcGaugeTitle{position:absolute;left:0;right:0;top:43%;text-align:center;font-weight:900;font-size:18px}.qhPcGaugeValue{position:absolute;left:24%;right:24%;bottom:13%;height:30px;border-radius:12px;background:#010503;border:1px solid #183a22;text-align:center;line-height:28px;font-size:20px;font-weight:900}
+.qhPcGaugeScale{position:absolute;inset:8px;font-size:10px;color:#e9ffee}.qhPcGaugeScale span{position:absolute}.qhPcGaugeScale span:nth-child(1){left:2%;bottom:16%}.qhPcGaugeScale span:nth-child(2){left:11%;top:16%}.qhPcGaugeScale span:nth-child(3){left:47%;top:0}.qhPcGaugeScale span:nth-child(4){right:4%;top:17%}.qhPcGaugeScale span:nth-child(5){right:0;bottom:17%}
+.qhPcStrip{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:0 16px 9px}.qhPcMini{height:58px;border:1px solid #1ad642;background:#031008;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:inset 0 0 12px rgba(39,255,88,.025)}
+.qhPcMini i{font-style:normal;color:var(--qh-neon);font-size:20px}.qhPcMini small{display:block;color:#d8ffdf;font-weight:800}.qhPcMini b{font-size:17px}
+.qhPcTabs{height:45px;display:flex;gap:2px;padding:4px 14px 0;border-top:1px solid #0f6c28;border-bottom:1px solid #21d94a;background:#020704;overflow-x:auto}
+.qhPcTabs button{height:36px!important;padding:0 15px!important;white-space:nowrap!important;border-radius:0!important}.qhPcTabs button.active{background:linear-gradient(180deg,#28ff59,#10b636)!important;color:#001805!important}
+.qhPcMapHead{height:48px;display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px;padding:5px 14px;background:#020704;border-bottom:1px solid #116a2a}
+.qhPcMapHead h2{margin:0;font-size:18px;letter-spacing:1px}.qhPcMapHead select{height:34px;min-width:110px}.qhPcMapHead .unit{border:1px solid #176a2d;padding:7px 12px;background:#031008}
+#qhFullMapWrap{flex:1;min-height:0;overflow:auto;padding:0 12px 6px;background:#010503}
+#qhFullMapTable{border-collapse:collapse;width:max-content;min-width:1500px;table-layout:fixed;font-variant-numeric:tabular-nums}
+#qhFullMapTable th,#qhFullMapTable td{height:32px;min-width:48px;border:1px solid #347944;text-align:center;font-size:11px;padding:0 2px}
+#qhFullMapTable th{position:sticky;top:0;z-index:3;background:#063a16;color:#effff2}#qhFullMapTable .rh{position:sticky;left:0;z-index:2;min-width:64px;background:#063a16;color:#fff;font-weight:900}
+#qhFullMapTable td.v{font-weight:800;color:#08140b;cursor:pointer}#qhFullMapTable td.v.sel{outline:3px solid #22ff55;outline-offset:-3px}
+.qhPcActions{height:72px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 14px;background:#020704;border-top:1px solid #168d34}
+.qhPcActions button{font-size:14px!important;font-weight:900!important}
+#qhFullKeypad{position:fixed;z-index:270000;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(430px,94vw);background:#020704;border:1px solid #24eb50;box-shadow:0 0 30px rgba(39,255,88,.2);padding:8px;display:none}
+#qhFullKeypad.show{display:block}.qhFkHead{display:flex;gap:8px;align-items:center;margin-bottom:7px}.qhFkHead span{flex:1;color:#9dc5a5}.qhFkHead b{font-size:19px;color:var(--qh-neon)}
+.qhFkGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.qhFkGrid button{height:44px!important;font-size:17px!important}.qhFkGrid .wide{grid-column:span 2}
+#qhFullReturnBtn{display:none;position:fixed;z-index:300000;right:10px;top:max(10px,env(safe-area-inset-top));height:36px!important;padding:0 12px!important;background:#06200c!important;color:#caffd2!important;border:1px solid #25e950!important}
+body[data-ui-mode="full"] #qhFullPcScreen.suspended~#qhFullReturnBtn{display:block}
+body[data-ui-mode="full"] .app{background:#010503!important}
+@media(max-width:720px){
+  .qhPcHeader{height:72px;grid-template-columns:1fr auto}.qhPcBrandMain{font-size:24px}.qhPcBrandSub{font-size:9px;letter-spacing:3px}.qhPcConn{display:none}
+  .qhPcLive{height:154px;padding:8px 10px;gap:8px}.qhPcGauge{max-width:130px}.qhPcGaugeTitle{font-size:14px}.qhPcGaugeValue{font-size:16px;height:25px;line-height:23px}
+  .qhPcStrip{grid-template-columns:repeat(3,1fr);padding:0 8px 7px}.qhPcMini{height:45px}.qhPcMini b{font-size:13px}.qhPcTabs{padding-left:7px}.qhPcMapHead{padding-left:8px}
+  #qhFullMapWrap{padding-left:6px;padding-right:6px}
+}
+#qhFullPcScreen.fit #qhFullMapTable{min-width:100%;width:100%}
+#qhFullPcScreen.fit #qhFullMapTable th,#qhFullPcScreen.fit #qhFullMapTable td{min-width:0;font-size:clamp(6px,1.35vw,10px);padding:0}
+</style>
 </head>
 <body>
 
@@ -4288,6 +4428,56 @@ body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen
   </div>
 </div>
 
+
+<section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
+  <div class="qhPcHeader">
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span></div><div class="qhPcBrandSub">SERVICE RACING</div></div>
+    <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">ECU DISCONNECTED</b><small id="qhPcConnSub">QH ECU</small></div></div>
+    <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Connect ECU">⛓</button><button id="qhPcSettings" type="button" title="Settings">⚙</button></div>
+  </div>
+  <div class="qhPcLive">
+    <div class="qhPcGauge"><div class="qhPcGaugeScale"><span>0</span><span>4</span><span>8</span><span>12</span><span>16</span></div><div class="qhPcGaugeTitle">RPM</div><div class="qhPcGaugeValue" data-mirror="rpm">0</div></div>
+    <div class="qhPcGauge"><div class="qhPcGaugeScale"><span>0</span><span>20</span><span>50</span><span>80</span><span>100</span></div><div class="qhPcGaugeTitle">TPS</div><div class="qhPcGaugeValue" data-mirror="tps">0%</div></div>
+    <div class="qhPcGauge"><div class="qhPcGaugeScale"><span>10</span><span>12</span><span>15</span><span>18</span><span>20</span></div><div class="qhPcGaugeTitle">OG AFR</div><div class="qhPcGaugeValue" data-mirror="afr">0.00</div></div>
+  </div>
+  <div class="qhPcStrip">
+    <div class="qhPcMini"><i>♨</i><div><small>ECT</small><b data-mirror="ect">-- °C</b></div></div>
+    <div class="qhPcMini"><i>♨</i><div><small>IAT</small><b data-mirror="iat">-- °C</b></div></div>
+    <div class="qhPcMini"><i>◴</i><div><small>MAP</small><b data-mirror="map">-- kPa</b></div></div>
+    <div class="qhPcMini"><i>ϟ</i><div><small>IGN</small><b data-mirror="ign">--°</b></div></div>
+    <div class="qhPcMini"><i>⌁</i><div><small>INJ</small><b data-mirror="pw">0.00 ms</b></div></div>
+    <div class="qhPcMini"><i>▣</i><div><small>BATTERY</small><b data-mirror="batt">-- V</b></div></div>
+  </div>
+  <div class="qhPcTabs">
+    <button class="active" data-qh-full-tab="inj_ve">INJ MAP</button>
+    <button data-qh-full-tab="ign_degree">IGN MAP</button>
+    <button data-qh-full-tab="afr_map">AFR MONITOR</button>
+    <button data-qh-full-tab="ect_inj">E.C.T COMP</button>
+    <button data-qh-full-tab="iat_inj">I.A.T COMP</button>
+    <button data-qh-full-tab="map_inj">MAP COMP</button>
+    <button data-qh-full-tab="idle_limit">IDLE & LIMIT</button>
+    <button data-qh-full-tab="options">OPTIONS</button>
+  </div>
+  <div class="qhPcMapHead">
+    <h2>INJECTION MAP</h2><div class="unit">Unit : ms</div>
+    <select id="qhFullMapSelect"><option value="1">No.1</option><option value="2">No.2</option><option value="3">No.3</option><option value="4">No.4</option></select>
+  </div>
+  <div id="qhFullMapWrap"><table id="qhFullMapTable"></table></div>
+  <div class="qhPcActions">
+    <button id="qhPcReadAll" type="button">⇩ READ ALL</button><button id="qhPcWriteAll" type="button">⇧ WRITE ALL</button>
+    <button id="qhPcReadCurrent" type="button">▣ READ CURRENT</button><button id="qhPcWriteCurrent" type="button">➤ SEND CURRENT</button>
+  </div>
+</section>
+<button id="qhFullReturnBtn" type="button">FULL HOME</button>
+<div id="qhFullKeypad">
+  <div class="qhFkHead"><span id="qhFkCell">Select a cell</span><b id="qhFkValue">--</b></div>
+  <div class="qhFkGrid">
+    <button data-fk="1">1</button><button data-fk="2">2</button><button data-fk="3">3</button><button data-fk="clear">C</button>
+    <button data-fk="4">4</button><button data-fk="5">5</button><button data-fk="6">6</button><button data-fk="back">⌫</button>
+    <button data-fk="7">7</button><button data-fk="8">8</button><button data-fk="9">9</button><button data-fk=".">.</button>
+    <button class="wide" data-fk="0">0</button><button data-fk="close">CLOSE</button><button data-fk="apply">APPLY</button>
+  </div>
+</div>
 <section id="qhSimpleFuelScreen" aria-label="Simple Injection Map">
   <div class="qhSfWindow">
     <div class="qhSfTitle"><b>REDLEO ECU - INJECTION MAP</b><span>SIMPLE MODE · 8 TPS x 15 RPM VIEW</span><div class="spacer"></div><button id="qhSfBack" type="button">BACK</button></div>
@@ -4330,7 +4520,7 @@ body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.0</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.1</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -9534,7 +9724,12 @@ updateMapControls();
     document.body.dataset.uiMode=mode;
     document.getElementById('qhModeGate').hidden=true;
     applyCorrectedEnglish();
-    try{showScreen('dashboard')}catch(_e){}
+    if(mode==='full'){
+      try{document.getElementById('qhFullPcScreen')?.classList.remove('suspended')}catch(_e){}
+      try{window.QHFullPc?.render?.()}catch(_e){}
+    }else{
+      try{showScreen('dashboard')}catch(_e){}
+    }
     try{render()}catch(_e){}
   }
   document.getElementById('qhChooseFull')?.addEventListener('click',()=>chooseMode('full'));
@@ -9676,6 +9871,87 @@ updateMapControls();
   },500);
 
   window.QHDualMode={get mode(){return uiMode},choose:chooseMode,openSimpleFuel,renderSimpleFuel};
+})();
+</script>
+
+<script id="qhFullPcNeonScript">
+(function(){
+  'use strict';
+  let fkCell=null,fkBuffer='',fit=false;
+  const screen=document.getElementById('qhFullPcScreen');
+  const table=document.getElementById('qhFullMapTable');
+  function fuelValue(r,c){const v=Number(state?.inject?.[r]?.[c]);return Number.isFinite(v)?v:0}
+  function render(){
+    if(!table||typeof state==='undefined'||typeof RPMS==='undefined'||typeof TPS_ROWS==='undefined')return;
+    let h='<thead><tr><th class="rh">TPS %</th>';
+    for(let c=0;c<RPMS.length;c++)h+='<th>'+RPMS[c]+'</th>';
+    h+='</tr></thead><tbody>';
+    for(let r=0;r<TPS_ROWS.length;r++){
+      const label=String(TPS_ROWS[r]).toUpperCase()==='IDLE'?'IDLE':TPS_ROWS[r]+'%';
+      h+='<tr><td class="rh">'+label+'</td>';
+      for(let c=0;c<RPMS.length;c++){
+        const v=fuelValue(r,c),col=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#8cff46',sel=fkCell&&fkCell.r===r&&fkCell.c===c?' sel':'';
+        h+='<td class="v'+sel+'" data-r="'+r+'" data-c="'+c+'" style="background:'+col+'">'+v.toFixed(2)+'</td>';
+      }
+      h+='</tr>';
+    }
+    h+='</tbody>';table.innerHTML=h;
+    table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>openKey(Number(td.dataset.r),Number(td.dataset.c))));
+    const ms=document.getElementById('qhFullMapSelect');if(ms)ms.value=String(state.activeMap||1);
+    syncConn();
+  }
+  function syncConn(){
+    const on=!!state?.ecuConnected,box=document.getElementById('qhPcConn'),txt=document.getElementById('qhPcConnText');
+    box?.classList.toggle('on',on);if(txt)txt.textContent=on?'ECU CONNECTED':'ECU DISCONNECTED';
+  }
+  function openKey(r,c){
+    fkCell={r,c};fkBuffer=String(fuelValue(r,c).toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
+    document.getElementById('qhFkCell').textContent=(String(TPS_ROWS[r]).toUpperCase()==='IDLE'?'IDLE':TPS_ROWS[r]+'%')+' · '+RPMS[c]+' RPM';
+    document.getElementById('qhFkValue').textContent=fkBuffer+' ms';
+    document.getElementById('qhFullKeypad').classList.add('show');render();
+  }
+  function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+' ms'}
+  document.querySelectorAll('#qhFullKeypad [data-fk]').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.fk;
+    if(k==='close'){document.getElementById('qhFullKeypad').classList.remove('show');return}
+    if(k==='apply'){
+      if(fkCell){
+        const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
+        const v=Math.max(0,Math.min(Number(fkBuffer||0),max));
+        state.inject[fkCell.r][fkCell.c]=Number(v.toFixed(3));
+        try{state.mapBanks[state.activeMap-1].inject=state.inject}catch(_e){}
+        try{saveSoon()}catch(_e){}
+        try{render()}catch(_e){}
+      }
+      document.getElementById('qhFullKeypad').classList.remove('show');return;
+    }
+    if(k==='clear')fkBuffer='';
+    else if(k==='back')fkBuffer=fkBuffer.slice(0,-1);
+    else if(k==='.'){if(!fkBuffer.includes('.'))fkBuffer=fkBuffer?fkBuffer+'.':'0.';}
+    else if(/^\d$/.test(k)&&fkBuffer.length<8)fkBuffer+=k;
+    redrawKey();
+  }));
+  function trigger(selector){const b=document.querySelector(selector);if(b&&!b.disabled)b.click()}
+  document.getElementById('qhPcConnect')?.addEventListener('click',()=>{if(state.ecuConnected)document.getElementById('disconnectEcuBtn')?.click();else document.getElementById('connectEcuBtn')?.click()});
+  document.getElementById('qhPcSettings')?.addEventListener('click',()=>{screen.classList.add('suspended');showScreen('settings')});
+  document.getElementById('qhPcReadCurrent')?.addEventListener('click',()=>{state.tab='inject';trigger('#readMapBtn');setTimeout(render,350)});
+  document.getElementById('qhPcWriteCurrent')?.addEventListener('click',()=>{state.tab='inject';trigger('#writeMapBtn')});
+  document.getElementById('qhPcReadAll')?.addEventListener('click',()=>trigger('[data-ecucmd="READ_ALL"]'));
+  document.getElementById('qhPcWriteAll')?.addEventListener('click',()=>trigger('[data-ecucmd="SEND_ALL"]'));
+  document.getElementById('qhFullMapSelect')?.addEventListener('change',e=>{
+    const main=document.getElementById('mapSelect');if(main){main.value=String(e.target.value);main.dispatchEvent(new Event('change',{bubbles:true}));}
+    setTimeout(render,80);
+  });
+  document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>{
+    const id=b.dataset.qhFullTab;if(id==='inj_ve'){render();return}
+    screen.classList.add('suspended');
+    if(id==='options'){showScreen('ecu');return}
+    const card=document.querySelector('[data-feature="'+id+'"]');if(card)card.click();else showScreen('maps');
+  }));
+  document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{try{showScreen('dashboard')}catch(_e){};screen.classList.remove('suspended');render()});
+  document.addEventListener('keydown',e=>{if(e.key==='F11'&&document.body.dataset.uiMode==='full'){e.preventDefault();fit=!fit;screen.classList.toggle('fit',fit)}});
+  setInterval(()=>{if(document.body.dataset.uiMode==='full'&&!screen.classList.contains('suspended')){syncConn();render()}},900);
+  window.QHFullPc={render,show:()=>{screen.classList.remove('suspended');render()},hide:()=>screen.classList.add('suspended')};
 })();
 </script>
 </body>
