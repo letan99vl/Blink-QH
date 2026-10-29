@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.6';
-  document.title = 'QH ECU · v1.1.6';
+  window.BLINK_PB_VERSION = 'QH-1.1.7';
+  document.title = 'QH ECU · v1.1.7';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4936,6 +4936,102 @@ html body[data-ui-mode] #qhFullKeypad [data-fk="apply"]{
   border-color:#4dff7a!important;
 }
 </style>
+
+<style id="qhMapInteract117">
+/* Blink REDLEO style: two-corner selection stays separate from live RPM cursor. */
+#qhFullPcScreen .qhPcMapTools,#qhSimpleFuelScreen .qhSfMapTools{
+  display:flex;align-items:center;flex-wrap:wrap;gap:5px;
+  padding:5px 10px;background:#020b05;border-bottom:1px solid #157333;
+  min-height:38px;flex:none;color:#c8f8d4;
+}
+#qhFullPcScreen .qhPcMapTools button,#qhSimpleFuelScreen .qhSfMapTools button{
+  min-height:30px!important;height:30px!important;padding:0 10px!important;
+  font-size:11px!important;font-weight:900!important;white-space:nowrap;
+  background:linear-gradient(180deg,#0c2a13,#041209)!important;
+  border:1px solid #239b45!important;color:#e5ffe9!important;
+}
+#qhFullPcScreen .qhPcMapTools button[aria-pressed="true"],
+#qhSimpleFuelScreen .qhSfMapTools button[aria-pressed="true"]{
+  border-color:#3bff67!important;color:#041708!important;
+  background:linear-gradient(180deg,#37ff65,#0fae36)!important;
+}
+#qhFullPcScreen .qhMapSelectionInfo,#qhSimpleFuelScreen .qhMapSelectionInfo{
+  flex:1;min-width:160px;font-size:10px;color:#9accaa;font-weight:750;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+#qhFullMapTable td.v.qhSelectedCell,#qhSimpleFuelTable td.val.qhSelectedCell{
+  box-shadow:inset 0 0 0 2px #22ef56,inset 0 0 8px #0026009c!important;
+}
+#qhFullMapTable td.v.qhCornerCell,#qhSimpleFuelTable td.val.qhCornerCell{
+  box-shadow:inset 0 0 0 3px #9bffb7,inset 0 0 12px #0b6b24!important;
+}
+#qhFullMapTable td.v.qhLiveCursor,#qhSimpleFuelTable td.val.qhLiveCursor{
+  outline:3px solid #ff4359!important;outline-offset:-3px!important;
+  z-index:1;position:relative;
+}
+#qhFullMapTable td.v.qhMeasuredAfrBadge,#qhSimpleFuelTable td.val.qhMeasuredAfrBadge{
+  position:relative;padding-top:3px!important;padding-bottom:12px!important;
+  vertical-align:top!important;
+}
+#qhFullMapTable td.v[data-afr-corner]::after,
+#qhSimpleFuelTable td.val[data-afr-corner]::after{
+  content:attr(data-afr-corner);
+  position:absolute;bottom:1px;right:1px;z-index:2;
+  font-size:8px;line-height:10px;letter-spacing:0;
+  background:#051109ed;color:#e7ffed;
+  border:1px solid #259f43;border-radius:3px;
+  padding:0 2px;white-space:nowrap;pointer-events:none;
+  box-sizing:border-box;max-width:calc(100% - 2px);
+}
+#qhFullMapTable td.v[data-afr-band="red"]::after,#qhSimpleFuelTable td.val[data-afr-band="red"]::after{
+  color:#ff7180;border-color:#ff6170;
+}
+#qhFullMapTable td.v[data-afr-band="green"]::after,#qhSimpleFuelTable td.val[data-afr-band="green"]::after{
+  color:#42ff82;border-color:#27d967;
+}
+#qhFullMapTable td.v[data-afr-band="yellow"]::after,#qhSimpleFuelTable td.val[data-afr-band="yellow"]::after{
+  color:#ffe05b;border-color:#f6c34c;
+}
+#qhFullKeypad,#qhSimpleKeypad{z-index:350000!important}
+@media(max-width:620px){
+ #qhFullPcScreen .qhPcMapTools,#qhSimpleFuelScreen .qhSfMapTools{gap:3px;padding:4px 6px}
+ #qhFullPcScreen .qhPcMapTools button,#qhSimpleFuelScreen .qhSfMapTools button{font-size:9px!important;padding:0 6px!important}
+ #qhFullPcScreen .qhMapSelectionInfo,#qhSimpleFuelScreen .qhMapSelectionInfo{flex-basis:100%;font-size:9px}
+}
+</style>
+
+<style id="qhMapFloatPad117">
+#qhFullPcScreen,#qhSimpleFuelScreen{position:fixed}
+#qhFullSelectionPad,#qhSimpleSelectionPad{
+ position:absolute;z-index:280000;display:none;
+ flex-direction:column;gap:3px;padding:3px;
+ background:#021107f5;border:1px solid #21ce4e;border-radius:8px;
+ box-shadow:0 7px 25px #000b,0 0 12px #1aff532e;
+ pointer-events:auto;
+}
+#qhFullSelectionPad.shown,#qhSimpleSelectionPad.shown{display:flex}
+#qhFullSelectionPad button,#qhSimpleSelectionPad button{
+ width:39px;height:38px!important;min-height:38px!important;
+ padding:0!important;text-align:center;font-size:23px!important;font-weight:950!important;
+ border-radius:5px!important;border:1px solid #218f3e!important;
+ color:#b7ffca!important;background:#08220e!important;
+}
+#qhFullSelectionPad button:first-child,#qhSimpleSelectionPad button:first-child{
+ background:linear-gradient(180deg,#35ff67,#0aaa30)!important;
+ border-color:#57ff80!important;color:#012006!important;
+}
+#qhPcStep,#qhSfStep{
+ min-width:70px;height:30px;padding:0 5px!important;color:#d8ffe2!important;
+ border:1px solid #218f45!important;border-radius:5px;background:#081e0e!important;
+ font-weight:800;font-size:11px;
+}
+#qhFullMapTable td.v,#qhSimpleFuelTable td.val{touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none}
+#qhFullKeypad.show,#qhSimpleKeypad.show{z-index:360000!important}
+@media(max-width:650px){
+ #qhFullSelectionPad button,#qhSimpleSelectionPad button{width:34px;height:34px!important;min-height:34px!important;font-size:19px!important}
+ #qhPcStep,#qhSfStep{min-width:57px;font-size:9px}
+}
+</style>
 </head>
 <body>
 
@@ -4985,7 +5081,20 @@ html body[data-ui-mode] #qhFullKeypad [data-fk="apply"]{
     <h2>INJECTION MAP</h2><div class="unit">Unit : ms</div>
     <select id="qhFullMapSelect"><option value="1">No.1</option><option value="2">No.2</option><option value="3">No.3</option><option value="4">No.4</option></select>
   </div>
+  <div class="qhPcMapTools" id="qhPcMapTools">
+    <button id="qhPcKeyboard" type="button" title="Chọn một hoặc hai góc, rồi mở bàn phím">⌨ KEYBOARD</button>
+    <button id="qhPcClearSelection" type="button" title="Bỏ vùng chọn hiện tại">✕ CLEAR</button>
+    <select id="qhPcStep" aria-label="Adjustment step" title="Bước điều chỉnh vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
+    <button id="qhPcLiveFollow" type="button" aria-pressed="true">◎ LIVE ON</button>
+    <button id="qhPcAfrOverlay" type="button" aria-pressed="false" title="Hiển thị AFR thực tế đã đo ở góc từng ô phun">AFR OFF</button>
+    <span class="qhMapSelectionInfo" id="qhPcSelectionInfo">Tap first corner, then opposite corner</span>
+  </div>
   <div id="qhFullMapWrap"><table id="qhFullMapTable"></table></div>
+  <div id="qhFullSelectionPad" class="qhNewSelectionPad" aria-label="Adjust selected cells">
+    <button id="qhPcSaveArrow" type="button" title="Gửi map hiện tại lên ECU" aria-label="Send current map">↓</button>
+    <button id="qhPcPlus" type="button" title="Tăng vùng chọn" aria-label="Increase selection">＋</button>
+    <button id="qhPcMinus" type="button" title="Giảm vùng chọn" aria-label="Decrease selection">−</button>
+  </div>
 
   <div id="qhFullOptionsPanel" style="display:none;flex:1;min-height:0;overflow:auto;padding:12px 14px;background:#010503">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px" id="qhFullOptionsGrid"></div>
@@ -5024,7 +5133,20 @@ html body[data-ui-mode] #qhFullKeypad [data-fk="apply"]{
       <button id="qhSfWrite" class="primary" type="button">WRITE CURRENT</button>
       <button id="qhSfZoom" type="button">LANDSCAPE</button>
     </div>
+    <div class="qhSfMapTools">
+      <button id="qhSfKeyboard" type="button" title="Chạm chọn ô hoặc hai góc rồi mở bàn phím">⌨ KEYBOARD</button>
+      <button id="qhSfClearSelection" type="button">✕ CLEAR</button>
+      <select id="qhSfStep" aria-label="Adjustment step" title="Bước tăng giảm vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
+      <button id="qhSfLiveFollow" type="button" aria-pressed="true">◎ LIVE ON</button>
+      <button id="qhSfAfrOverlay" type="button" aria-pressed="false" title="AFR thực đo: góc ô, không ghi vào map phun">AFR OFF</button>
+      <span class="qhMapSelectionInfo" id="qhSfSelectionInfo">Tap two corners to select a range</span>
+    </div>
     <div id="qhSimpleFuelWrap"><table id="qhSimpleFuelTable"></table></div>
+    <div id="qhSimpleSelectionPad" class="qhNewSelectionPad" aria-label="Adjust selected fuel cells">
+      <button id="qhSfSaveArrow" type="button" title="Ghi map phun lên ECU">↓</button>
+      <button id="qhSfPlus" type="button" title="Tăng vùng chọn">＋</button>
+      <button id="qhSfMinus" type="button" title="Giảm vùng chọn">−</button>
+    </div>
     <div class="qhSfHint">Display rule: every visible RPM column controls two ECU columns; every paired TPS row controls two ECU rows. READ never changes unmatched hidden partner cells. Editing a SIMPLE cell synchronizes only its assigned ECU group.</div>
   </div>
 </section>
@@ -5046,7 +5168,7 @@ html body[data-ui-mode] #qhFullKeypad [data-fk="apply"]{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.6</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.7</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -9784,6 +9906,12 @@ window.QHFullFeatureBridge={
     const f=featureForProfile(id);
     return f?featureData(f,bank):null;
   },
+  getLiveCells(id){
+    if(id==='inj_ve'){const cur=currentCell();return cur?[{r:cur.r,c:cur.c}]:[];}
+    const f=featureForProfile(id);
+    const live=f?redLiveCursorForFeature(f):null;
+    return Array.isArray(live?.cells)?live.cells:[];
+  },
   saveFeature(){saveFeatureStore();},
   prepareFeatureWrite(id){
     const f=featureForProfile(id);
@@ -10252,10 +10380,127 @@ updateMapControls();
   })();
 </script>
 
+
+<script id="qhMapUxSharedScript">
+(function(){
+'use strict';
+// Blink-Redleo Auto Tuner AFR corner semantics (source INJ VE / MAP DA BU):
+// latest measured AFR + sample count for this particular TPS/RPM source cell.
+// Strictly visual; never substitute AFR into fuel or ECU write matrices.
+const storageKey='qhMapAfrOverlayEnabledV1';
+let afrOn=false;
+try{afrOn=localStorage.getItem(storageKey)==='1'}catch(_e){}
+function badge(r,c){
+  const samples=Number(state?.counts?.[r]?.[c]);
+  const raw=state?.measured?.[r]?.[c];
+  const afr=raw==null||raw===''?NaN:Number(raw);
+  if(!(samples>0&&Number.isFinite(samples)&&Number.isFinite(afr)&&afr>0))return null;
+  const tps=TPS_ROWS?.[r],rpm=RPMS?.[c];
+  return {text:afr.toFixed(2),band:afr<12?'red':afr<=14?'green':'yellow',
+    source:(String(tps).toUpperCase()==='IDLE'?'IDLE':tps+'%')+' / '+rpm+' RPM',r,c};
+}
+function badgeForGroup(rows,cols,mainR,mainC){
+  // A SIMPLE cell can represent up to four source cells. Never fake an average
+  // from last-sample values; prefer the representative main cell, then a real
+  // sample from its partners. The tooltip names the actual sampled source cell.
+  let b=badge(mainR,mainC);
+  if(b)return b;
+  for(const r of rows)for(const c of cols){b=badge(r,c);if(b)return b}
+  return null;
+}
+function setAfr(v){
+  afrOn=!!v;
+  try{localStorage.setItem(storageKey,afrOn?'1':'0')}catch(_e){}
+  window.dispatchEvent(new Event('qhAfrOverlayChange'));
+}
+function selectTap(s,r,c){
+  if(!s)return 'invalid';
+  const b=bounds(s);
+  const inside=s.active&&r>=b.r0&&r<=b.r1&&c>=b.c0&&c<=b.c1;
+  if(inside||!s.active||!s.pending||r<s.ar||c<s.ac){
+    s.active=true;s.ar=r;s.ac=c;s.fr=r;s.fc=c;s.pending=true;
+    return 'corner1';
+  }
+  s.fr=r;s.fc=c;s.pending=false;
+  return 'range';
+}
+function bounds(s){
+  return {r0:Math.min(s.ar,s.fr),r1:Math.max(s.ar,s.fr),
+          c0:Math.min(s.ac,s.fc),c1:Math.max(s.ac,s.fc)};
+}
+function includes(s,r,c){
+  if(!s?.active)return false;
+  const b=bounds(s);
+  return r>=b.r0&&r<=b.r1&&c>=b.c0&&c<=b.c1;
+}
+function clearSelection(s){s.active=false;s.pending=false}
+function makeSelection(){return {active:false,pending:false,ar:0,ac:0,fr:0,fc:0}}
+function closest(arr,value,ignoreLastIdle=false){
+  if(!Array.isArray(arr)||!arr.length||!Number.isFinite(value))return -1;
+  const stop=ignoreLastIdle&&String(arr.at(-1)).toUpperCase()==='IDLE'?arr.length-1:arr.length;
+  let best=-1,distance=Infinity;
+  for(let i=0;i<stop;i++){
+    const num=Number(arr[i]);if(!Number.isFinite(num))continue;
+    const delta=Math.abs(num-value);
+    if(delta<distance){distance=delta;best=i}
+  }
+  return best;
+}
+function liveCell(){
+  if(!state?.ecuConnected)return null;
+  const rpm=Number(state.live?.rpm),tps=Number(state.live?.tps);
+  if(!Number.isFinite(rpm)||!Number.isFinite(tps))return null;
+  const c=closest(RPMS,rpm);
+  let r=closest(TPS_ROWS,tps,true);
+  if(String(TPS_ROWS.at(-1)).toUpperCase()==='IDLE'&&
+    (rpm<(Number(RPMS[0])||500)/2 || tps<Math.max(.05,Math.min(...TPS_ROWS.slice(0,-1).map(Number).filter(Number.isFinite))/2))){
+      r=TPS_ROWS.length-1;
+  }
+  return r<0||c<0?null:{r,c};
+}
+function refreshBadge(td,b){
+  const value=b?.text||'',band=b?.band||'';
+  if(value){
+    if(td.dataset.afrCorner!==value)td.dataset.afrCorner=value;
+    if(td.dataset.afrBand!==band)td.dataset.afrBand=band;
+    const tooltip='Measured AFR '+value+' · '+b.source+' · stored fuel value is unchanged';
+    if(td.title!==tooltip)td.title=tooltip;
+    td.classList.add('qhMeasuredAfrBadge');
+  }else if(td.hasAttribute('data-afr-corner')){
+    td.removeAttribute('data-afr-corner');
+    td.removeAttribute('data-afr-band');
+    td.removeAttribute('title');
+    td.classList.remove('qhMeasuredAfrBadge');
+  }
+}
+
+function qhPadAnchor(screenId,tableId,padId,selection){
+  const screen=document.getElementById(screenId),table=document.getElementById(tableId),pad=document.getElementById(padId);
+  if(!screen||!table||!pad)return;
+  const b=selection.active?window.QHMapUx.bounds(selection):null;
+  const cell=b?table.querySelector('td[data-r="'+b.r0+'"][data-c="'+b.c1+'"],td[data-sr="'+b.r0+'"][data-sc="'+b.c1+'"]'):null;
+  const visible=!!cell&&screen.getClientRects().length>0&&selection.active;
+  pad.classList.toggle('shown',visible);
+  if(!visible)return;
+  const a=cell.getBoundingClientRect(),base=screen.getBoundingClientRect();
+  const width=pad.offsetWidth||50,height=pad.offsetHeight||130;
+  // Keep the three controls adjacent to the highlighted region, inside viewport.
+  const x=Math.min(Math.max(5,a.right-base.left+5),Math.max(5,base.width-width-7));
+  const y=Math.min(Math.max(8,a.top-base.top),Math.max(8,base.height-height-8));
+  pad.style.left=Math.round(x)+'px';pad.style.top=Math.round(y)+'px';
+}
+
+window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},positionPad:qhPadAnchor,
+  badge,badgeForGroup,refreshBadge,makeSelection,selectTap,bounds,includes,clearSelection,
+  liveCell,closest};
+})();
+</script>
 <script id="qhDualModeScript">
 (function(){
   'use strict';
   let uiMode=null, sfCell=null, sfBuffer='', sfLandscape=false;
+  const simpleSelection=window.QHMapUx.makeSelection();
+  let simpleFollow=true,simpleManualUntil=0,simpleCursorKey='';
   const rowGroups=[[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12],[13]];
   const colGroups=Array.from({length:15},(_,i)=>[i*2,i*2+1]);
 
@@ -10334,8 +10579,65 @@ updateMapControls();
     const r=simpleMainRow(sr),c=simpleMainCol(sc),v=Number(state.inject?.[r]?.[c]);
     return Number.isFinite(v)?v:0;
   }
+  function simpleSelectedBounds(){
+    return simpleSelection.active?window.QHMapUx.bounds(simpleSelection):null;
+  }
+  function updateSimpleSelectionVisual(){
+    const ux=window.QHMapUx,t=document.getElementById('qhSimpleFuelTable');
+    const b=simpleSelectedBounds();
+    t?.querySelectorAll('td.val').forEach(td=>{
+      const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
+      const selected=!!b&&sr>=b.r0&&sr<=b.r1&&sc>=b.c0&&sc<=b.c1;
+      td.classList.toggle('qhSelectedCell',selected);
+      td.classList.toggle('qhCornerCell',selected&&simpleSelection.pending&&sr===simpleSelection.ar&&sc===simpleSelection.ac);
+    });
+    const info=document.getElementById('qhSfSelectionInfo');
+    if(info)info.textContent=!b?'Tap first corner, then opposite corner':
+      simpleSelection.pending?
+        'Corner 1: '+simpleLabelRow(simpleSelection.ar)+' / '+simpleLabelCol(simpleSelection.ac)+' RPM · tap opposite corner':
+        'Selected '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' visible cells · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' groups';
+    requestAnimationFrame(()=>window.QHMapUx.positionPad('qhSimpleFuelScreen','qhSimpleFuelTable','qhSimpleSelectionPad',simpleSelection));
+  }
+  function simpleCellFromEcu(r,c){
+    const sr=rowGroups.findIndex(g=>g.includes(r));
+    const sc=colGroups.findIndex(g=>g.includes(c));
+    return sr<0||sc<0?null:{sr,sc};
+  }
+  function updateSimpleCursor(){
+    const t=document.getElementById('qhSimpleFuelTable');
+    if(!t)return;
+    const cur=simpleFollow?window.QHMapUx.liveCell():null;
+    const pos=cur?simpleCellFromEcu(cur.r,cur.c):null;
+    const key=pos?pos.sr+':'+pos.sc:'';
+    t.querySelectorAll('td.val.qhLiveCursor').forEach(td=>td.classList.remove('qhLiveCursor'));
+    if(!pos){simpleCursorKey='';return}
+    const td=t.querySelector('td.val[data-sr="'+pos.sr+'"][data-sc="'+pos.sc+'"]');
+    if(!td)return;
+    td.classList.add('qhLiveCursor');
+    if(key!==simpleCursorKey&&Date.now()>simpleManualUntil){
+      const wrap=document.getElementById('qhSimpleFuelWrap');
+      if(wrap){
+        const left=td.offsetLeft, right=left+td.offsetWidth;
+        if(left<wrap.scrollLeft+75)wrap.scrollLeft=Math.max(0,left-75);
+        else if(right>wrap.scrollLeft+wrap.clientWidth-8)wrap.scrollLeft=right-wrap.clientWidth+8;
+      }
+    }
+    simpleCursorKey=key;
+  }
+  function updateSimpleAfrBadges(){
+    const ux=window.QHMapUx,t=document.getElementById('qhSimpleFuelTable');
+    const enabled=ux.showAfr;
+    const btn=document.getElementById('qhSfAfrOverlay');
+    if(btn){btn.textContent=enabled?'AFR ON':'AFR OFF';btn.setAttribute('aria-pressed',String(enabled))}
+    if(!t)return;
+    t.querySelectorAll('td.val').forEach(td=>{
+      const r=Number(td.dataset.sr),c=Number(td.dataset.sc);
+      const b=enabled?ux.badgeForGroup(rowGroups[r],colGroups[c],simpleMainRow(r),simpleMainCol(c)):null;
+      ux.refreshBadge(td,b);
+    });
+  }
   function renderSimpleFuel(){
-    const t=document.getElementById('qhSimpleFuelTable');if(!t||!window.state&&typeof state==='undefined')return;
+    const t=document.getElementById('qhSimpleFuelTable');if(!t||typeof state==='undefined')return;
     let h='<thead><tr><th class="rowh">TPS / RPM</th>';
     for(let sc=0;sc<15;sc++)h+='<th>'+simpleLabelCol(sc)+'</th>';
     h+='</tr></thead><tbody>';
@@ -10343,40 +10645,64 @@ updateMapControls();
       h+='<tr><td class="rowh">'+simpleLabelRow(sr)+'</td>';
       for(let sc=0;sc<15;sc++){
         const v=simpleValue(sr,sc),color=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#fff';
-        const active=sfCell&&sfCell.sr===sr&&sfCell.sc===sc?' active':'';
-        h+='<td class="val'+active+'" data-sr="'+sr+'" data-sc="'+sc+'" style="background:'+color+'">'+v.toFixed(2)+'</td>';
+        h+='<td class="val" data-sr="'+sr+'" data-sc="'+sc+'" style="background:'+color+'">'+v.toFixed(2)+'</td>';
       }
       h+='</tr>';
     }
     h+='</tbody>';t.innerHTML=h;
     t.querySelectorAll('td.val').forEach(td=>td.addEventListener('click',()=>{
-      openSimpleKeypad(Number(td.dataset.sr),Number(td.dataset.sc));
+      const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
+      simpleManualUntil=Date.now()+3500;
+      window.QHMapUx.selectTap(simpleSelection,sr,sc);
+      updateSimpleSelectionVisual();
     }));
     const sel=document.getElementById('qhSfMap');if(sel)sel.value=String(state.activeMap||1);
+    updateSimpleSelectionVisual();updateSimpleAfrBadges();updateSimpleCursor();
   }
-
-  function syncPartnerGroup(sr,sc,value){
-    const v=Math.max(0,Math.min(Number(value)||0,typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100));
-    for(const r of rowGroups[sr])for(const c of colGroups[sc])state.inject[r][c]=Number(v.toFixed(3));
-    try{state.mapBanks[state.activeMap-1].inject=state.inject}catch(_e){}
-    try{saveSoon()}catch(_e){}
-    try{render()}catch(_e){}
+  function applySimpleSelection(value){
+    const b=simpleSelectedBounds();if(!b)return;
+    const raw=Number(value);if(!Number.isFinite(raw))return;
+    const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
+    const v=Number(Math.max(0,Math.min(raw,max)).toFixed(3));
+    // SIMPLE edits are local only. Expand every selected visible cell into
+    // exactly its source TPS x RPM group, without touching other ECU cells.
+    for(let sr=b.r0;sr<=b.r1;sr++)for(let sc=b.c0;sc<=b.c1;sc++){
+      for(const r of rowGroups[sr])for(const c of colGroups[sc])state.inject[r][c]=v;
+    }
+    try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon();render()}catch(_e){}
     renderSimpleFuel();
   }
-
-  function openSimpleKeypad(sr,sc){
+  function bumpSimpleSelected(sign){
+    const b=simpleSelectedBounds();if(!b)return;
+    const step=Number(document.getElementById('qhSfStep')?.value)||.1;
+    const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
+    const updates=new Map();
+    for(let sr=b.r0;sr<=b.r1;sr++)for(let sc=b.c0;sc<=b.c1;sc++){
+      const v=Number(Math.max(0,Math.min(simpleValue(sr,sc)+sign*step,max)).toFixed(3));
+      for(const r of rowGroups[sr])for(const c of colGroups[sc])updates.set(r+':'+c,{r,c,v});
+    }
+    for(const {r,c,v} of updates.values())state.inject[r][c]=v;
+    try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon();render()}catch(_e){}
+    renderSimpleFuel();
+  }
+  function openSimpleKeypad(){
+    const b=simpleSelectedBounds();
+    if(!b){
+      window.setEcuTaskStatus?.('offline','Select a cell (or two corners) before opening the keyboard.',2500);
+      return;
+    }
+    const sr=simpleSelection.fr,sc=simpleSelection.fc;
     sfCell={sr,sc};sfBuffer=String(simpleValue(sr,sc).toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
-    document.getElementById('qhSkCell').textContent=simpleLabelRow(sr)+' · '+simpleLabelCol(sc)+' RPM';
+    document.getElementById('qhSkCell').textContent=simpleLabelRow(sr)+' · '+simpleLabelCol(sc)+' RPM · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' cells';
     document.getElementById('qhSkValue').textContent=sfBuffer+' ms';
     document.getElementById('qhSimpleKeypad').classList.add('show');
-    renderSimpleFuel();
   }
   function redrawSk(){document.getElementById('qhSkValue').textContent=(sfBuffer||'0')+' ms'}
   document.querySelectorAll('#qhSimpleKeypad [data-sk]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.sk;
     if(k==='close'){document.getElementById('qhSimpleKeypad').classList.remove('show');return}
     if(k==='apply'){
-      if(sfCell)syncPartnerGroup(sfCell.sr,sfCell.sc,Number(sfBuffer||0));
+      if(sfCell)applySimpleSelection(Number(sfBuffer||0));
       document.getElementById('qhSimpleKeypad').classList.remove('show');return;
     }
     if(k==='clear')sfBuffer='';
@@ -10398,9 +10724,34 @@ updateMapControls();
   function closeSimpleFuel(){
     document.getElementById('qhSimpleFuelScreen').classList.remove('active');
     document.getElementById('qhSimpleKeypad').classList.remove('show');
-    sfCell=null;
+    sfCell=null;window.QHMapUx.clearSelection(simpleSelection);simpleCursorKey='';
   }
   document.getElementById('qhSfBack')?.addEventListener('click',closeSimpleFuel);
+  document.getElementById('qhSfKeyboard')?.addEventListener('click',openSimpleKeypad);
+  document.getElementById('qhSfPlus')?.addEventListener('click',()=>bumpSimpleSelected(1));
+  document.getElementById('qhSfMinus')?.addEventListener('click',()=>bumpSimpleSelected(-1));
+  document.getElementById('qhSfSaveArrow')?.addEventListener('click',()=>{
+    document.getElementById('qhSfWrite')?.click();
+  });
+  document.getElementById('qhSfClearSelection')?.addEventListener('click',()=>{
+    window.QHMapUx.clearSelection(simpleSelection);
+    document.getElementById('qhSimpleKeypad')?.classList.remove('show');
+    sfCell=null;updateSimpleSelectionVisual();
+  });
+  document.getElementById('qhSfAfrOverlay')?.addEventListener('click',()=>window.QHMapUx.toggleAfr());
+  document.getElementById('qhSfLiveFollow')?.addEventListener('click',()=>{
+    simpleFollow=!simpleFollow;simpleCursorKey='';
+    const btn=document.getElementById('qhSfLiveFollow');
+    btn.textContent=simpleFollow?'◎ LIVE ON':'◎ LIVE OFF';
+    btn.setAttribute('aria-pressed',String(simpleFollow));
+    updateSimpleCursor();
+  });
+  document.getElementById('qhSimpleFuelWrap')?.addEventListener('pointerdown',()=>{simpleManualUntil=Date.now()+3500},{passive:true});
+  document.getElementById('qhSimpleFuelWrap')?.addEventListener('wheel',()=>{simpleManualUntil=Date.now()+3500},{passive:true});
+  document.getElementById('qhSimpleFuelWrap')?.addEventListener('scroll',()=>{
+    if(simpleSelection.active)window.QHMapUx.positionPad('qhSimpleFuelScreen','qhSimpleFuelTable','qhSimpleSelectionPad',simpleSelection);
+  },{passive:true});
+  window.addEventListener('qhAfrOverlayChange',updateSimpleAfrBadges);
 
   document.addEventListener('click',e=>{
     if(uiMode!=='simple')return;
@@ -10416,20 +10767,46 @@ updateMapControls();
   }));
 
   document.getElementById('qhSfMap')?.addEventListener('change',e=>{
+    window.QHMapUx.clearSelection(simpleSelection);
+    document.getElementById('qhSimpleKeypad')?.classList.remove('show');
+    sfCell=null;simpleCursorKey='';
     const v=String(e.target.value);
     const main=document.getElementById('mapSelect');
     if(main){main.value=v;main.dispatchEvent(new Event('change',{bubbles:true}));}
     setTimeout(renderSimpleFuel,80);
   });
-  document.getElementById('qhSfRead')?.addEventListener('click',()=>{
-    const b=document.getElementById('readMapBtn');if(b&&!b.disabled)b.click();
-    else document.querySelector('[data-ecucmd="READ_CURRENT"]')?.click();
-    setTimeout(renderSimpleFuel,300);
-  });
-  document.getElementById('qhSfWrite')?.addEventListener('click',()=>{
-    const b=document.getElementById('writeMapBtn');if(b&&!b.disabled)b.click();
-    else document.querySelector('[data-ecucmd="SEND_CURRENT"]')?.click();
-  });
+  // Directly use the exact Blink-Redleo transport API, not hidden legacy
+  // QH button handlers that can point to the wrong tab/screen.
+  let simpleIoBusy=false;
+  async function simpleFuelIo(direction){
+    if(simpleIoBusy)return;
+    const read=direction==='read',label=read?'READ CURRENT':'SEND CURRENT';
+    const a=document.getElementById('qhSfRead'),b=document.getElementById('qhSfWrite');
+    const oldA=a?.textContent,oldB=b?.textContent;
+    if(a)a.disabled=true;if(b)b.disabled=true;
+    if(read&&a)a.textContent='⟳ READING...';
+    if(!read&&b)b.textContent='⟳ SENDING...';
+    simpleIoBusy=true;
+    window.setEcuTaskStatus?.('loading',(read?'⟳ ĐANG ĐỌC':'⟳ ĐANG GHI')+' INJECTION MAP No.'+state.activeMap);
+    try{
+      if(!state.ecuConnected)throw new Error('ECU not connected');
+      const api=window.BlinkRealProtocol;
+      if(!api)throw new Error('Blink-Redleo protocol not ready');
+      const result=read?await api.readCurrentFuelBank(state.activeMap,true)
+                       :await api.writeCurrentFuelAndVerify(state.activeMap);
+      if(result===false)throw new Error(label+' did not complete');
+      renderSimpleFuel();
+      window.setEcuTaskStatus?.('success',(read?'✓ ĐÃ ĐỌC':'✓ ĐÃ GỬI')+' INJECTION MAP No.'+state.activeMap,3000);
+    }catch(e){
+      window.setEcuTaskStatus?.('error',label+' failed: '+String(e?.message||e),7000);
+    }finally{
+      simpleIoBusy=false;
+      if(a){a.disabled=false;a.textContent=oldA;}
+      if(b){b.disabled=false;b.textContent=oldB;}
+    }
+  }
+  document.getElementById('qhSfRead')?.addEventListener('click',()=>void simpleFuelIo('read'));
+  document.getElementById('qhSfWrite')?.addEventListener('click',()=>void simpleFuelIo('write'));
   document.getElementById('qhSfReadAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="READ_ALL"]')?.click());
   document.getElementById('qhSfWriteAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="SEND_ALL"]')?.click());
   document.getElementById('qhSfZoom')?.addEventListener('click',()=>{
@@ -10455,7 +10832,9 @@ updateMapControls();
 
   // Keep SIMPLE view synchronized after a read, map switch, or protocol update.
   setInterval(()=>{
-    if(uiMode==='simple'&&document.getElementById('qhSimpleFuelScreen')?.classList.contains('active'))renderSimpleFuel();
+    if(uiMode==='simple'&&document.getElementById('qhSimpleFuelScreen')?.classList.contains('active')){
+      renderSimpleFuel();
+    }
   },500);
 
   window.QHDualMode={get mode(){return uiMode},choose:chooseMode,openSimpleFuel,renderSimpleFuel};
@@ -10466,6 +10845,8 @@ updateMapControls();
 (function(){
   'use strict';
   let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',activeFeature=null;
+  const fullSelection=window.QHMapUx.makeSelection();
+  let fullFollow=true,fullManualUntil=0,fullLastCursor='';
   const fb=()=>window.QHFullFeatureBridge||null;
   const backendTab=()=>activeTab==='options'&&fb()?.usesOptionsTable?.()?'ate_options':activeTab;
   const screen=document.getElementById('qhFullPcScreen');
@@ -10496,6 +10877,63 @@ updateMapControls();
   function fuelValue(r,c){
     const v=Number(state?.inject?.[r]?.[c]);
     return Number.isFinite(v)?v:0;
+  }
+
+  function fullBounds(){return fullSelection.active?window.QHMapUx.bounds(fullSelection):null}
+  function clearFullSelection(){
+    window.QHMapUx.clearSelection(fullSelection);
+    fkCell=null;
+    document.getElementById('qhFullKeypad')?.classList.remove('show');
+    updateFullSelectionVisual();
+  }
+  function selectFullCell(r,c){
+    fullManualUntil=Date.now()+3500;
+    window.QHMapUx.selectTap(fullSelection,r,c);
+    fkCell={r,c};updateFullSelectionVisual();
+  }
+  function updateFullSelectionVisual(){
+    const ux=window.QHMapUx,b=fullBounds();
+    table?.querySelectorAll('td.v').forEach(td=>{
+      const r=Number(td.dataset.r),c=Number(td.dataset.c);
+      const yes=!!b&&r>=b.r0&&r<=b.r1&&c>=b.c0&&c<=b.c1;
+      td.classList.toggle('qhSelectedCell',yes);
+      td.classList.toggle('qhCornerCell',yes&&fullSelection.pending&&r===fullSelection.ar&&c===fullSelection.ac);
+    });
+    const info=document.getElementById('qhPcSelectionInfo');
+    const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(backendTab()));
+    const label=(r,c)=>String((activeTab==='inj_ve'?TPS_ROWS[r]:f?.y?.[r])??('R'+(r+1)))+' / '+String((activeTab==='inj_ve'?RPMS[c]:f?.x?.[c])??('C'+(c+1)));
+    if(info)info.textContent=!b?'Tap first corner, then opposite corner':
+      fullSelection.pending?'Corner 1: '+label(fullSelection.ar,fullSelection.ac)+' · tap opposite corner':
+      'Selected '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' cells';
+    requestAnimationFrame(()=>ux.positionPad('qhFullPcScreen','qhFullMapTable','qhFullSelectionPad',fullSelection));
+  }
+  function updateFullCursor(){
+    if(!table)return;
+    const cells=fullFollow&&state?.ecuConnected?(fb()?.getLiveCells(backendTab())||[]):[];
+    const key=cells.map(p=>p.r+':'+p.c).join(',');
+    table.querySelectorAll('td.v.qhLiveCursor').forEach(td=>td.classList.remove('qhLiveCursor'));
+    let first=null;
+    for(const {r,c} of cells){
+      const td=table.querySelector('td.v[data-r="'+r+'"][data-c="'+c+'"]');
+      if(td){td.classList.add('qhLiveCursor');if(!first)first=td;}
+    }
+    if(first&&key!==fullLastCursor&&Date.now()>fullManualUntil){
+      const wrap=document.getElementById('qhFullMapWrap');
+      if(wrap){
+        const left=first.offsetLeft,right=left+first.offsetWidth;
+        if(left<wrap.scrollLeft+75)wrap.scrollLeft=Math.max(0,left-75);
+        else if(right>wrap.scrollLeft+wrap.clientWidth-8)wrap.scrollLeft=right-wrap.clientWidth+8;
+      }
+    }
+    fullLastCursor=key;
+  }
+  function updateFullAfrBadges(){
+    const ux=window.QHMapUx,enabled=ux.showAfr,btn=document.getElementById('qhPcAfrOverlay');
+    if(btn){btn.textContent=enabled?'AFR ON':'AFR OFF';btn.setAttribute('aria-pressed',String(enabled))}
+    table?.querySelectorAll('td.v').forEach(td=>{
+      const b=enabled&&activeTab==='inj_ve'?ux.badge(Number(td.dataset.r),Number(td.dataset.c)):null;
+      ux.refreshBadge(td,b);
+    });
   }
   function fullValue(f,d,r,c){
     const raw=d?.[r]?.[c];
@@ -10531,7 +10969,8 @@ updateMapControls();
       h+='</tr>';
     }
     h+='</tbody>';table.innerHTML=h;
-    table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>openKey(Number(td.dataset.r),Number(td.dataset.c))));
+    table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>selectFullCell(Number(td.dataset.r),Number(td.dataset.c))));
+    updateFullSelectionVisual();updateFullAfrBadges();updateFullCursor();
   }
   function featureCellColor(id,v){
     if(v===null)return '#10331a';
@@ -10573,7 +11012,8 @@ updateMapControls();
       h+='</tr>';
     }
     h+='</tbody>';table.innerHTML=h;
-    table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>openKey(Number(td.dataset.r),Number(td.dataset.c))));
+    table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>selectFullCell(Number(td.dataset.r),Number(td.dataset.c))));
+    updateFullSelectionVisual();updateFullAfrBadges();updateFullCursor();
   }
   function renderOptionsInline(){
     activeFeature=null;
@@ -10614,40 +11054,59 @@ updateMapControls();
     if(activeTab==='inj_ve')return 'ms';
     return (activeFeature||profileFeature(backendTab()))?.unit||'';
   }
-  function openKey(r,c){
-    if(activeTab==='options')return;
-    fkCell={r,c};
-    const d=currentData(),v=Number(d?.[r]?.[c]);
+  function openKey(){
+    const b=fullBounds();
+    if(!b){window.setEcuTaskStatus?.('offline','Select a cell or two corners before opening keyboard.',2500);return;}
+    const r=fullSelection.fr,c=fullSelection.fc;fkCell={r,c};
+    const d=currentData(),raw=d?.[r]?.[c],v=raw==null?0:Number(raw);
     fkBuffer=String((Number.isFinite(v)?v:0).toFixed(3)).replace(/0+$/,'').replace(/\.$/,'');
     const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(backendTab()));
     const y=activeTab==='inj_ve'?TPS_ROWS[r]:(f?.y?.[r]??('R'+(r+1)));
     const x=activeTab==='inj_ve'?RPMS[c]:(f?.x?.[c]??('C'+(c+1)));
-    document.getElementById('qhFkCell').textContent=String(y)+(typeof y==='number'&&activeTab==='inj_ve'?'%':'')+' · '+String(x)+(activeTab==='inj_ve'?' RPM':'');
+    document.getElementById('qhFkCell').textContent=String(y)+(typeof y==='number'&&activeTab==='inj_ve'?'%':'')+' · '+String(x)+(activeTab==='inj_ve'?' RPM':'')+' · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' cells';
     document.getElementById('qhFkValue').textContent=fkBuffer+(currentUnit()?' '+currentUnit():'');
-    document.getElementById('qhFullKeypad').classList.add('show');render();
+    document.getElementById('qhFullKeypad').classList.add('show');
+  }
+  function applyFullSelection(value){
+    const b=fullBounds(),data=currentData();
+    if(!b||!data||!Number.isFinite(Number(value)))return false;
+    const isFuel=activeTab==='inj_ve',max=isFuel?(typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100):Infinity;
+    const v=Number(Math.max(isFuel?0:-Infinity,Math.min(Number(value),max)).toFixed(4));
+    for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++){
+      if(!Array.isArray(data[r])||c>=data[r].length)continue;
+      if(!isFuel&&activeTab==='afr_map'){
+        const meta=window.blinkEcuAfrMeta?.[state.activeMap]||window.blinkV11AfrMeta?.[state.activeMap];
+        if(meta?.enabled?.[r]?.[c]===false)continue;
+      }
+      data[r][c]=v;
+    }
+    try{if(isFuel){state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}else fb()?.saveFeature()}catch(_e){}
+    render();return true;
+  }
+  function bumpFullSelection(sign){
+    const b=fullBounds(),data=currentData();
+    if(!b||!data)return;
+    const step=Number(document.getElementById('qhPcStep')?.value)||.1;
+    const isFuel=activeTab==='inj_ve',max=isFuel?(typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100):Infinity;
+    const min=isFuel?0:-Infinity;let changed=false;
+    for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++){
+      if(!Array.isArray(data[r])||c>=data[r].length)continue;
+      if(!isFuel&&activeTab==='afr_map'){
+        const meta=window.blinkEcuAfrMeta?.[state.activeMap]||window.blinkV11AfrMeta?.[state.activeMap];
+        if(meta?.enabled?.[r]?.[c]===false)continue;
+      }
+      const before=Number(data[r][c]);if(!Number.isFinite(before))continue;
+      data[r][c]=Number(Math.max(min,Math.min(before+sign*step,max)).toFixed(4));changed=true;
+    }
+    if(changed){try{if(isFuel){state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}else fb()?.saveFeature()}catch(_e){}render();}
   }
   function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+(currentUnit()?' '+currentUnit():'')}
   document.querySelectorAll('#qhFullKeypad [data-fk]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.fk;
     if(k==='close'){document.getElementById('qhFullKeypad').classList.remove('show');return}
     if(k==='apply'){
-      if(fkCell){
-        const v=Number(fkBuffer||0);
-        if(Number.isFinite(v)){
-          if(activeTab==='inj_ve'){
-            const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
-            state.inject[fkCell.r][fkCell.c]=Number(Math.max(0,Math.min(v,max)).toFixed(3));
-            try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}catch(_e){}
-          }else{
-            const f=activeFeature||profileFeature(backendTab()),d=f?dataForFeature(f):null;
-            if(d?.[fkCell.r]){
-              d[fkCell.r][fkCell.c]=Number(v.toFixed(4));
-              try{fb()?.saveFeature()}catch(_e){}
-            }
-          }
-        }
-      }
-      document.getElementById('qhFullKeypad').classList.remove('show');render();return;
+      if(fkCell)applyFullSelection(Number(fkBuffer||0));
+      document.getElementById('qhFullKeypad').classList.remove('show');return;
     }
     if(k==='clear')fkBuffer='';
     else if(k==='back')fkBuffer=fkBuffer.slice(0,-1);
@@ -10732,6 +11191,24 @@ updateMapControls();
       return result;
     });
   }
+  document.getElementById('qhPcKeyboard')?.addEventListener('click',openKey);
+  document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
+  document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
+  document.getElementById('qhPcMinus')?.addEventListener('click',()=>bumpFullSelection(-1));
+  document.getElementById('qhPcSaveArrow')?.addEventListener('click',()=>document.getElementById('qhPcWriteCurrent')?.click());
+  document.getElementById('qhPcLiveFollow')?.addEventListener('click',()=>{
+    fullFollow=!fullFollow;fullLastCursor='';
+    const btn=document.getElementById('qhPcLiveFollow');
+    btn.textContent=fullFollow?'◎ LIVE ON':'◎ LIVE OFF';
+    btn.setAttribute('aria-pressed',String(fullFollow));updateFullCursor();
+  });
+  document.getElementById('qhPcAfrOverlay')?.addEventListener('click',()=>window.QHMapUx.toggleAfr());
+  window.addEventListener('qhAfrOverlayChange',updateFullAfrBadges);
+  wrap?.addEventListener('pointerdown',()=>{fullManualUntil=Date.now()+3500},{passive:true});
+  wrap?.addEventListener('wheel',()=>{fullManualUntil=Date.now()+3500},{passive:true});
+  wrap?.addEventListener('scroll',()=>{
+    if(fullSelection.active)window.QHMapUx.positionPad('qhFullPcScreen','qhFullMapTable','qhFullSelectionPad',fullSelection);
+  },{passive:true});
   document.getElementById('qhPcConnect')?.addEventListener('click',()=>{if(state.ecuConnected)document.getElementById('disconnectEcuBtn')?.click();else document.getElementById('connectEcuBtn')?.click()});
   document.getElementById('qhPcSettings')?.addEventListener('click',()=>{activeTab='options';fkCell=null;render()});
   document.getElementById('qhPcReadCurrent')?.addEventListener('click',readCurrent);
@@ -10740,7 +11217,7 @@ updateMapControls();
     const n=fb()?.selectBank(Number(e.target.value));
     if(n==null)throw new Error('ECU bank bridge is not available.');
     e.target.value=String(n);
-    fkCell=null;render();
+    clearFullSelection();fullLastCursor='';render();
   });
   let fullTabReadToken=0;
   async function readFeatureOnTabOpen(id,token){
@@ -10754,8 +11231,8 @@ updateMapControls();
     },{auto:true});
   }
   document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>{
-    activeTab=b.dataset.qhFullTab;fkCell=null;activeFeature=null;
-    document.getElementById('qhFullKeypad').classList.remove('show');
+    activeTab=b.dataset.qhFullTab;activeFeature=null;
+    clearFullSelection();fullLastCursor='';
     render();
     const id=activeTab,token=++fullTabReadToken;
     // Match Blink REDLEO editor's lazy read policy without repeatedly
@@ -10766,7 +11243,7 @@ updateMapControls();
   }));
   document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{screen.classList.remove('suspended');render()});
   document.addEventListener('keydown',e=>{if(e.key==='F11'&&document.body.dataset.uiMode==='full'){e.preventDefault();fit=!fit;screen.classList.toggle('fit',fit)}});
-  setInterval(()=>{if(document.body.dataset.uiMode==='full'&&!screen.classList.contains('suspended')){syncConn();}},500);
+  setInterval(()=>{if(document.body.dataset.uiMode==='full'&&!screen.classList.contains('suspended')){syncConn();updateFullCursor();if(activeTab==='inj_ve')updateFullAfrBadges();}},500);
   window.QHFullPc={render,show:()=>{screen.classList.remove('suspended');render()},hide:()=>screen.classList.add('suspended'),get activeTab(){return activeTab}};
 })();
 </script>
