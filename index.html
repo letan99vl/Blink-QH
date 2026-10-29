@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.1';
-  document.title = 'QH ECU · v1.1.1';
+  window.BLINK_PB_VERSION = 'QH-1.1.2';
+  document.title = 'QH ECU · v1.1.2';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4463,6 +4463,10 @@ body[data-ui-mode="full"] .app{background:#010503!important}
     <select id="qhFullMapSelect"><option value="1">No.1</option><option value="2">No.2</option><option value="3">No.3</option><option value="4">No.4</option></select>
   </div>
   <div id="qhFullMapWrap"><table id="qhFullMapTable"></table></div>
+
+  <div id="qhFullOptionsPanel" style="display:none;flex:1;min-height:0;overflow:auto;padding:12px 14px;background:#010503">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px" id="qhFullOptionsGrid"></div>
+  </div>
   <div class="qhPcActions">
     <button id="qhPcReadAll" type="button">⇩ READ ALL</button><button id="qhPcWriteAll" type="button">⇧ WRITE ALL</button>
     <button id="qhPcReadCurrent" type="button">▣ READ CURRENT</button><button id="qhPcWriteCurrent" type="button">➤ SEND CURRENT</button>
@@ -4520,7 +4524,7 @@ body[data-ui-mode="full"] .app{background:#010503!important}
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.1</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.2</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -9877,12 +9881,55 @@ updateMapControls();
 <script id="qhFullPcNeonScript">
 (function(){
   'use strict';
-  let fkCell=null,fkBuffer='',fit=false;
+  let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',activeFeature=null;
   const screen=document.getElementById('qhFullPcScreen');
   const table=document.getElementById('qhFullMapTable');
-  function fuelValue(r,c){const v=Number(state?.inject?.[r]?.[c]);return Number.isFinite(v)?v:0}
-  function render(){
-    if(!table||typeof state==='undefined'||typeof RPMS==='undefined'||typeof TPS_ROWS==='undefined')return;
+  const wrap=document.getElementById('qhFullMapWrap');
+  const optionsPanel=document.getElementById('qhFullOptionsPanel');
+  const titleEl=screen?.querySelector('.qhPcMapHead h2');
+  const unitEl=screen?.querySelector('.qhPcMapHead .unit');
+
+  const tabMeta={
+    inj_ve:{title:'INJECTION MAP',unit:'ms'},
+    ign_degree:{title:'IGNITION MAP',unit:'°'},
+    afr_map:{title:'AIR-FUEL RATIO',unit:'AFR'},
+    ect_inj:{title:'ECT FUEL COMPENSATION',unit:'%'},
+    iat_inj:{title:'IAT FUEL COMPENSATION',unit:'±ms'},
+    map_inj:{title:'MAP FUEL COMPENSATION',unit:'%'},
+    idle_limit:{title:'IDLE & LIMIT',unit:''},
+    options:{title:'ECU OPTIONS',unit:''}
+  };
+
+  function profileFeature(id){
+    try{return typeof featureForProfile==='function'?featureForProfile(id):null}catch(_e){return null}
+  }
+  function dataForFeature(f){
+    if(!f)return null;
+    try{return typeof featureData==='function'?featureData(f,state.activeMap):null}catch(_e){return null}
+  }
+  function fuelValue(r,c){
+    const v=Number(state?.inject?.[r]?.[c]);
+    return Number.isFinite(v)?v:0;
+  }
+  function fullValue(f,d,r,c){
+    const v=Number(d?.[r]?.[c]);
+    return Number.isFinite(v)?v:0;
+  }
+  function setHeader(){
+    const m=tabMeta[activeTab]||{title:String(activeTab||'MAP').toUpperCase(),unit:''};
+    if(titleEl)titleEl.textContent=m.title;
+    if(unitEl)unitEl.textContent='Unit : '+(m.unit||'—');
+    document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.classList.toggle('active',b.dataset.qhFullTab===activeTab));
+  }
+  function setBankControl(){
+    const sel=document.getElementById('qhFullMapSelect');
+    if(!sel)return;
+    const banked=activeTab==='inj_ve'||!!activeFeature?.banked;
+    sel.style.display=banked?'':'none';
+    sel.value=String(state.activeMap||1);
+  }
+  function renderFuel(){
+    activeFeature=null;
     let h='<thead><tr><th class="rh">TPS %</th>';
     for(let c=0;c<RPMS.length;c++)h+='<th>'+RPMS[c]+'</th>';
     h+='</tr></thead><tbody>';
@@ -9897,61 +9944,177 @@ updateMapControls();
     }
     h+='</tbody>';table.innerHTML=h;
     table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>openKey(Number(td.dataset.r),Number(td.dataset.c))));
-    const ms=document.getElementById('qhFullMapSelect');if(ms)ms.value=String(state.activeMap||1);
-    syncConn();
+  }
+  function featureCellColor(id,v){
+    if(id==='afr_map'){
+      if(v<12)return '#ff4848';
+      if(v<=14)return '#32ef5b';
+      return '#ffd13d';
+    }
+    if(id==='ign_degree')return '#b5ff68';
+    if(id==='ect_inj'||id==='iat_inj'||id==='map_inj')return '#86f65e';
+    return '#8cff55';
+  }
+  function renderFeatureInline(id){
+    const f=profileFeature(id);
+    activeFeature=f;
+    if(!f){
+      table.innerHTML='<tbody><tr><td style="padding:28px;color:#b9ffc6;background:#061109">This table is not available for the current ECU profile.</td></tr></tbody>';
+      return;
+    }
+    const d=dataForFeature(f);
+    const x=Array.isArray(f.x)?f.x:[];
+    const y=Array.isArray(f.y)?f.y:[];
+    let h='<thead><tr><th class="rh">'+(f.rows>1?'Y / X':'X')+'</th>';
+    for(let c=0;c<f.cols;c++)h+='<th>'+(x[c]??('C'+(c+1)))+'</th>';
+    h+='</tr></thead><tbody>';
+    for(let r=0;r<f.rows;r++){
+      h+='<tr><td class="rh">'+(y[r]??('R'+(r+1)))+'</td>';
+      for(let c=0;c<f.cols;c++){
+        const v=fullValue(f,d,r,c),sel=fkCell&&fkCell.r===r&&fkCell.c===c?' sel':'';
+        let display=(Math.round(v*1000)/1000).toString();
+        if(id==='afr_map'){
+          try{
+            const meta=window.blinkEcuAfrMeta?.[state.activeMap]||window.blinkV11AfrMeta?.[state.activeMap];
+            if(meta?.enabled?.[r]?.[c]===false)display='-';
+          }catch(_e){}
+        }
+        h+='<td class="v'+sel+'" data-r="'+r+'" data-c="'+c+'" style="background:'+featureCellColor(id,v)+'">'+display+'</td>';
+      }
+      h+='</tr>';
+    }
+    h+='</tbody>';table.innerHTML=h;
+    table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>openKey(Number(td.dataset.r),Number(td.dataset.c))));
+  }
+  function renderOptionsInline(){
+    activeFeature=null;
+    const grid=document.getElementById('qhFullOptionsGrid');if(!grid)return;
+    const specs=[
+      ['idleCold','Idle Speed (Cold)','RPM'],['idleHot','Idle Speed (Hot)','RPM'],
+      ['returnCold','Idle Return Injection (Cold)','RPM'],['returnHot','Idle Return Injection (Hot)','RPM'],
+      ['maxSpeed','Maximum Engine Speed','RPM'],['accelPct','Acceleration Enrichment','%'],
+      ['idleSensitivity','Idle Entry / Exit Sensitivity',''],['idleMinCold','Minimum Idle Injection (Cold)','ms'],
+      ['idleMinHot','Minimum Idle Injection (Hot)','ms'],['idleIgnReg','Idle Ignition Auto Regulation','°'],
+      ['idleInjReg','Idle Injection Auto Regulation','ms'],['coldStartInj','Cold-Start Fuel Increase',''],
+      ['coldStartDelay','Cold-Start Fuel Delay','s'],['fanTemp','Cooling Fan ON Temperature','°C'],
+      ['tpsMinEcu','TPS Minimum Voltage','V'],['tpsMaxEcu','TPS Maximum Voltage','V']
+    ];
+    grid.innerHTML=specs.map(([key,label,unit])=>'<label style="display:block;border:1px solid #187d32;background:#061109;padding:10px"><span style="display:block;color:#9bc5a4;font-size:11px;margin-bottom:5px">'+label+'</span><input data-qh-full-opt="'+key+'" value="'+(optionStore?.[key]??'')+'" style="width:100%;height:36px"><small style="color:#69a777">'+unit+'</small></label>').join('');
+    grid.querySelectorAll('[data-qh-full-opt]').forEach(inp=>inp.addEventListener('change',()=>{
+      try{optionStore[inp.dataset.qhFullOpt]=inp.value;localStorage.setItem('blinkRedleoOptionsV6',JSON.stringify(optionStore))}catch(_e){}
+    }));
+  }
+  function render(){
+    if(!table||typeof state==='undefined')return;
+    setHeader();setBankControl();syncConn();
+    if(activeTab==='options'){
+      wrap.style.display='none';optionsPanel.style.display='block';renderOptionsInline();return;
+    }
+    wrap.style.display='block';optionsPanel.style.display='none';
+    if(activeTab==='inj_ve')renderFuel(); else renderFeatureInline(activeTab);
   }
   function syncConn(){
     const on=!!state?.ecuConnected,box=document.getElementById('qhPcConn'),txt=document.getElementById('qhPcConnText');
     box?.classList.toggle('on',on);if(txt)txt.textContent=on?'ECU CONNECTED':'ECU DISCONNECTED';
   }
+  function currentData(){
+    if(activeTab==='inj_ve')return state.inject;
+    const f=activeFeature||profileFeature(activeTab);return f?dataForFeature(f):null;
+  }
+  function currentUnit(){
+    if(activeTab==='inj_ve')return 'ms';
+    return (activeFeature||profileFeature(activeTab))?.unit||'';
+  }
   function openKey(r,c){
-    fkCell={r,c};fkBuffer=String(fuelValue(r,c).toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
-    document.getElementById('qhFkCell').textContent=(String(TPS_ROWS[r]).toUpperCase()==='IDLE'?'IDLE':TPS_ROWS[r]+'%')+' · '+RPMS[c]+' RPM';
-    document.getElementById('qhFkValue').textContent=fkBuffer+' ms';
+    if(activeTab==='options')return;
+    fkCell={r,c};
+    const d=currentData(),v=Number(d?.[r]?.[c]);
+    fkBuffer=String((Number.isFinite(v)?v:0).toFixed(3)).replace(/0+$/,'').replace(/\.$/,'');
+    const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(activeTab));
+    const y=activeTab==='inj_ve'?TPS_ROWS[r]:(f?.y?.[r]??('R'+(r+1)));
+    const x=activeTab==='inj_ve'?RPMS[c]:(f?.x?.[c]??('C'+(c+1)));
+    document.getElementById('qhFkCell').textContent=String(y)+(typeof y==='number'&&activeTab==='inj_ve'?'%':'')+' · '+String(x)+(activeTab==='inj_ve'?' RPM':'');
+    document.getElementById('qhFkValue').textContent=fkBuffer+(currentUnit()?' '+currentUnit():'');
     document.getElementById('qhFullKeypad').classList.add('show');render();
   }
-  function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+' ms'}
+  function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+(currentUnit()?' '+currentUnit():'')}
   document.querySelectorAll('#qhFullKeypad [data-fk]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.fk;
     if(k==='close'){document.getElementById('qhFullKeypad').classList.remove('show');return}
     if(k==='apply'){
       if(fkCell){
-        const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
-        const v=Math.max(0,Math.min(Number(fkBuffer||0),max));
-        state.inject[fkCell.r][fkCell.c]=Number(v.toFixed(3));
-        try{state.mapBanks[state.activeMap-1].inject=state.inject}catch(_e){}
-        try{saveSoon()}catch(_e){}
-        try{render()}catch(_e){}
+        const v=Number(fkBuffer||0);
+        if(Number.isFinite(v)){
+          if(activeTab==='inj_ve'){
+            const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
+            state.inject[fkCell.r][fkCell.c]=Number(Math.max(0,Math.min(v,max)).toFixed(3));
+            try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}catch(_e){}
+          }else{
+            const f=activeFeature||profileFeature(activeTab),d=f?dataForFeature(f):null;
+            if(d?.[fkCell.r]){d[fkCell.r][fkCell.c]=Number(v.toFixed(4));try{saveFeatureStore()}catch(_e){}}
+          }
+        }
       }
-      document.getElementById('qhFullKeypad').classList.remove('show');return;
+      document.getElementById('qhFullKeypad').classList.remove('show');render();return;
     }
     if(k==='clear')fkBuffer='';
     else if(k==='back')fkBuffer=fkBuffer.slice(0,-1);
     else if(k==='.'){if(!fkBuffer.includes('.'))fkBuffer=fkBuffer?fkBuffer+'.':'0.';}
-    else if(/^\d$/.test(k)&&fkBuffer.length<8)fkBuffer+=k;
+    else if(/^\d$/.test(k)&&fkBuffer.length<10)fkBuffer+=k;
     redrawKey();
   }));
   function trigger(selector){const b=document.querySelector(selector);if(b&&!b.disabled)b.click()}
+  async function readCurrent(){
+    try{
+      const api=window.BlinkRealProtocol;if(!api)throw new Error('ECU protocol is not ready.');
+      if(activeTab==='inj_ve')await api.readCurrentFuelBank(state.activeMap,true);
+      else if(activeTab==='options')await api.readA2SensorPageReal(true);
+      else await api.readFeaturePageReal(activeTab,state.activeMap,true);
+      render();
+    }catch(e){try{showEcuNotice('error','READ CURRENT',String(e?.message||e),0)}catch(_e){}}
+  }
+  function syncHiddenRedTableForWrite(){
+    if(activeTab==='inj_ve'||activeTab==='options')return;
+    const f=activeFeature||profileFeature(activeTab),d=f?dataForFeature(f):null;
+    if(!f||!d)return;
+    currentFeature=f;
+    const src=document.getElementById('redSourceName');if(src)src.textContent=f.source;
+    const hidden=document.getElementById('redFeatureTable');if(!hidden)return;
+    let h='<tbody>';
+    for(let r=0;r<f.rows;r++){h+='<tr>';for(let c=0;c<f.cols;c++){const v=Number(d[r][c]);h+='<td data-rr="'+r+'" data-rc="'+c+'" data-value="'+(Number.isFinite(v)?v:0)+'">'+(Number.isFinite(v)?v:0)+'</td>';}h+='</tr>'}
+    h+='</tbody>';hidden.innerHTML=h;
+  }
+  async function writeCurrent(){
+    try{
+      const api=window.BlinkRealProtocol;if(!api)throw new Error('ECU protocol is not ready.');
+      if(activeTab==='inj_ve')await api.writeCurrentFuelAndVerify(state.activeMap);
+      else if(activeTab==='options')await api.writeOptionsReal();
+      else{
+        syncHiddenRedTableForWrite();
+        await api.writeFeatureReal(activeTab);
+      }
+      render();
+    }catch(e){try{showEcuNotice('error','SEND CURRENT',String(e?.message||e),0)}catch(_e){}}
+  }
   document.getElementById('qhPcConnect')?.addEventListener('click',()=>{if(state.ecuConnected)document.getElementById('disconnectEcuBtn')?.click();else document.getElementById('connectEcuBtn')?.click()});
-  document.getElementById('qhPcSettings')?.addEventListener('click',()=>{screen.classList.add('suspended');showScreen('settings')});
-  document.getElementById('qhPcReadCurrent')?.addEventListener('click',()=>{state.tab='inject';trigger('#readMapBtn');setTimeout(render,350)});
-  document.getElementById('qhPcWriteCurrent')?.addEventListener('click',()=>{state.tab='inject';trigger('#writeMapBtn')});
+  document.getElementById('qhPcSettings')?.addEventListener('click',()=>{activeTab='options';fkCell=null;render()});
+  document.getElementById('qhPcReadCurrent')?.addEventListener('click',readCurrent);
+  document.getElementById('qhPcWriteCurrent')?.addEventListener('click',writeCurrent);
   document.getElementById('qhPcReadAll')?.addEventListener('click',()=>trigger('[data-ecucmd="READ_ALL"]'));
   document.getElementById('qhPcWriteAll')?.addEventListener('click',()=>trigger('[data-ecucmd="SEND_ALL"]'));
   document.getElementById('qhFullMapSelect')?.addEventListener('change',e=>{
     const main=document.getElementById('mapSelect');if(main){main.value=String(e.target.value);main.dispatchEvent(new Event('change',{bubbles:true}));}
-    setTimeout(render,80);
+    fkCell=null;setTimeout(render,80);
   });
   document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>{
-    const id=b.dataset.qhFullTab;if(id==='inj_ve'){render();return}
-    screen.classList.add('suspended');
-    if(id==='options'){showScreen('ecu');return}
-    const card=document.querySelector('[data-feature="'+id+'"]');if(card)card.click();else showScreen('maps');
+    activeTab=b.dataset.qhFullTab;fkCell=null;activeFeature=null;
+    document.getElementById('qhFullKeypad').classList.remove('show');
+    render();
   }));
-  document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{try{showScreen('dashboard')}catch(_e){};screen.classList.remove('suspended');render()});
+  document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{screen.classList.remove('suspended');render()});
   document.addEventListener('keydown',e=>{if(e.key==='F11'&&document.body.dataset.uiMode==='full'){e.preventDefault();fit=!fit;screen.classList.toggle('fit',fit)}});
-  setInterval(()=>{if(document.body.dataset.uiMode==='full'&&!screen.classList.contains('suspended')){syncConn();render()}},900);
-  window.QHFullPc={render,show:()=>{screen.classList.remove('suspended');render()},hide:()=>screen.classList.add('suspended')};
+  setInterval(()=>{if(document.body.dataset.uiMode==='full'&&!screen.classList.contains('suspended')){syncConn();}},500);
+  window.QHFullPc={render,show:()=>{screen.classList.remove('suspended');render()},hide:()=>screen.classList.add('suspended'),get activeTab(){return activeTab}};
 })();
 </script>
 </body>
