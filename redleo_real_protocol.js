@@ -1320,10 +1320,39 @@ async function handshakeReal(){
     throw new Error('Không nhận diện được ECU. 5A: '+String(firstErr&&firstErr.message||firstErr)+' · legacy 69: '+String(e&&e.message||e));
   }
 }
+// QH 1.1.11: fast LIVE is an *attempted* 50 ms request cadence, not a
+// guarantee of 20 completed ECU samples/second. Real throughput is constrained
+// by ECU UART + BLE round-trip. Skip while busy: never queue 0x69 requests.
+const LIVE_POLL_FAST_MS=50;
+const LIVE_POLL_SAFE_MS=180;
+let livePollMs=LIVE_POLL_FAST_MS,liveInFlight=false;
+let liveFailures=0,liveSlowReplyStreak=0,liveSampleCount=0,liveBusySkips=0;
+let liveLastReplyAt=0,liveActualIntervalMs=0,liveReplyMs=0,liveLastError='';
 let v8LiveSlot=0;
+function getLivePollStats(){
+  return {targetMs:livePollMs,fastTargetMs:LIVE_POLL_FAST_MS,
+    safeTargetMs:LIVE_POLL_SAFE_MS,liveInFlight,successes:liveSampleCount,
+    busySkips:liveBusySkips,consecutiveErrors:liveFailures,
+    lastReplyMs:Math.round(liveReplyMs),
+    lastSampleSpacingMs:Math.round(liveActualIntervalMs),
+    lastError:liveLastError};
+}
+function changeLivePollMs(ms,reason){
+  if(livePollMs===ms)return;
+  livePollMs=ms;
+  if(liveRunning){
+    if(liveTimer)clearInterval(liveTimer);
+    liveTimer=setInterval(()=>{void liveOnce();},livePollMs);
+  }
+  log('QH LIVE 0x69 poll target',livePollMs+' ms',reason||'');
+}
 async function liveOnce(){
-  if(otaPaused || (typeof window.blinkOtaTransferActive==='function' && window.blinkOtaTransferActive()))return;
-  if(!cmdChar()||busy||document.hidden)return;
+  if(!liveRunning||otaPaused||(typeof window.blinkOtaTransferActive==='function'&&window.blinkOtaTransferActive()))return;
+  if(!cmdChar()||document.hidden||manualMapIoDepth>0)return;
+  // Critical single-flight guard: no overlapping reads and no BLE mutex waiters.
+  if(busy||liveInFlight){liveBusySkips++;return;}
+  liveInFlight=true;
+  const t0=performance.now();
   try{
     const mapNo=clamp((typeof state!=='undefined'&&state.activeMap)||1,1,4);
     let arg=mapNo;
@@ -1332,15 +1361,38 @@ async function liveOnce(){
       arg=((v8LiveSlot&15)<<4)|(pageLow(mapNo)&15);
     }
     const rx=await rawExchange(req5(0x69,arg),5000);
+    if(!liveRunning||otaPaused)return;
     parseLiveReal(rx);
-  }catch(e){if(!/bận/.test(String(e.message||e)))console.warn(TAG,'live',e);}
+    const now=performance.now();
+    liveReplyMs=now-t0;
+    liveActualIntervalMs=liveLastReplyAt?now-liveLastReplyAt:0;
+    liveLastReplyAt=now;liveSampleCount++;liveFailures=0;liveLastError='';
+    // Repeatedly slow replies mean 50 ms cannot be achieved on this device.
+    // Prefer the previously stable 180 ms cadence over congesting BLE.
+    liveSlowReplyStreak=liveReplyMs>230?liveSlowReplyStreak+1:0;
+    if(livePollMs===LIVE_POLL_FAST_MS&&liveSlowReplyStreak>=10){
+      changeLivePollMs(LIVE_POLL_SAFE_MS,'10 replies slower than 230 ms');
+    }
+  }catch(e){
+    const message=String(e&&e.message||e);
+    if(!/bận/i.test(message))console.warn(TAG,'live',e);
+    if(liveRunning&&!otaPaused&&!/bận|GATT.*in progress/i.test(message)){
+      liveLastError=message.slice(0,160);
+      liveFailures++;
+      if(livePollMs===LIVE_POLL_FAST_MS&&liveFailures>=3){
+        changeLivePollMs(LIVE_POLL_SAFE_MS,'3 consecutive live errors');
+      }
+    }
+  }finally{
+    liveInFlight=false;
+  }
 }
 function startLiveLoop(){
   if(liveResumeTimer){clearTimeout(liveResumeTimer);liveResumeTimer=null;}
   if(liveRunning)return;
   liveRunning=true;
   clearInterval(liveTimer);
-  liveTimer=setInterval(()=>{liveOnce();},180);
+  liveTimer=setInterval(()=>{void liveOnce();},livePollMs);
 }
 function stopLiveLoop(){
   liveRunning=false;
@@ -1447,6 +1499,11 @@ function abortRawTransport(reason='BLE disconnected'){
   transportEpoch++;
   if(sensorWarmupTimer){clearTimeout(sensorWarmupTimer);sensorWarmupTimer=null;}
   stopLiveLoop();
+  // Each newly connected ECU session starts at the 50 ms trial target.
+  // A failing/slow session stays at the safe rate until reconnect.
+  livePollMs=LIVE_POLL_FAST_MS;liveFailures=0;liveSlowReplyStreak=0;
+  liveLastReplyAt=0;liveActualIntervalMs=0;liveReplyMs=0;
+  liveSampleCount=0;liveBusySkips=0;liveLastError='';
   for(const [id,p] of pending){
     try{clearTimeout(p.to);}catch(_e){}
     try{clearTimeout(p.stallTo);}catch(_e){}
@@ -5532,6 +5589,6 @@ function boot(){
   });
 }
 
-window.BlinkRealProtocol={rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
+window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
