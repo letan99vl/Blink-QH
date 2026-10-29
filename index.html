@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.8';
-  document.title = 'QH ECU · v1.1.8';
+  window.BLINK_PB_VERSION = 'QH-1.1.9';
+  document.title = 'QH ECU · v1.1.9';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5146,6 +5146,260 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  max-width:94%!important;z-index:560000!important
 }
 </style>
+
+<style id="qhCompactTelemetryV119">
+/* QH 1.1.9: compact uniform telemetry cards and TPS-first map sizing. */
+#qhFullPcScreen{
+ height:100dvh!important;max-height:100dvh!important;
+ box-sizing:border-box!important;
+}
+#qhFullPcScreen .qhPcHeader{
+ height:clamp(38px,6dvh,52px)!important;
+ flex:0 0 clamp(38px,6dvh,52px)!important;min-height:0!important;
+ grid-template-columns:minmax(0,1fr) minmax(150px,.75fr) auto!important
+}
+#qhFullPcScreen .qhPcBrand{padding:3px 9px!important;min-width:0!important}
+#qhFullPcScreen .qhPcBrandMain{font-size:clamp(20px,2.4vw,28px)!important;white-space:nowrap!important}
+#qhFullPcScreen .qhPcBrandSub{font-size:clamp(7px,1vw,9px)!important;letter-spacing:2px!important;margin-top:3px!important}
+#qhFullPcScreen .qhPcConn{min-width:0!important;padding:0 5px!important}
+#qhFullPcScreen .qhPcConn b{font-size:12px!important}
+#qhFullPcScreen .qhPcConn small{font-size:10px!important}
+#qhFullPcScreen .qhPcHeaderBtns{gap:4px!important;padding:0 8px!important}
+#qhFullPcScreen .qhPcHeaderBtns button{width:32px!important;height:32px!important;min-height:32px!important;font-size:16px!important}
+#qhFullPcScreen .qhPcTelemetry{
+ flex:0 0 auto!important;display:grid!important;
+ grid-template-columns:repeat(9,minmax(0,1fr))!important;
+ grid-auto-rows:40px;gap:4px!important;
+ padding:4px 7px!important;background:#010503!important;
+ box-sizing:border-box!important;min-width:0!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMini{
+ display:flex!important;min-width:0!important;height:100%!important;min-height:0!important;
+ box-sizing:border-box!important;border:1px solid #1ad642!important;
+ border-radius:2px!important;background:#031008!important;
+ padding:2px 4px!important;gap:4px!important;
+ align-items:center!important;justify-content:center!important;
+ box-shadow:inset 0 0 10px rgba(39,255,88,.035)!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMini i{
+ display:block!important;font-style:normal!important;flex:0 0 15px!important;
+ font-size:15px!important;color:#35ff65!important;text-align:center!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMini>div{
+ min-width:0!important;display:flex!important;flex-direction:column!important;
+ align-items:flex-start!important;justify-content:center!important;gap:1px!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMini small{
+ font-size:clamp(8px,0.84vw,11px)!important;font-weight:800!important;
+ line-height:1.05!important;color:#c2ffcf!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMini b{
+ font-size:clamp(11px,1.24vw,17px)!important;font-weight:950!important;
+ line-height:1.1!important;color:#fff!important;font-variant-numeric:tabular-nums!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMainStat{
+ border-color:#39ff6c!important;background:linear-gradient(180deg,#073813,#031008)!important
+}
+#qhFullPcScreen .qhPcTelemetry .qhPcMainStat b{color:#9fffaf!important}
+#qhFullPcScreen .qhPcTabs{
+ height:34px!important;flex:0 0 34px!important;min-height:0!important;
+ padding:2px 4px 0!important;gap:3px!important;
+ scrollbar-width:none!important
+}
+#qhFullPcScreen .qhPcTabs button{
+ height:30px!important;min-height:30px!important;padding:0 9px!important;
+ font-size:clamp(10px,1.2vw,12px)!important
+}
+#qhFullPcScreen .qhPcMapHead{
+ height:36px!important;flex:0 0 36px!important;min-height:0!important;
+ grid-template-columns:minmax(0,1fr) auto auto!important;
+ gap:5px!important;padding:2px 7px!important
+}
+#qhFullPcScreen .qhPcMapHead h2{
+ font-size:clamp(11px,1.6vw,15px)!important;line-height:1.1!important;
+ white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ letter-spacing:0!important
+}
+#qhFullPcScreen .qhPcMapHead .unit{
+ font-size:11px!important;padding:4px 5px!important;white-space:nowrap!important
+}
+#qhFullPcScreen .qhPcMapHead select{
+ min-width:78px!important;height:29px!important;font-size:12px!important
+}
+#qhFullPcScreen .qhPcMapTools{
+ display:flex!important;align-items:center!important;flex:0 0 35px!important;
+ flex-wrap:nowrap!important;height:35px!important;min-height:0!important;
+ overflow-x:auto!important;overflow-y:hidden!important;
+ padding:2px 5px!important;gap:4px!important;
+ -webkit-overflow-scrolling:touch!important;scrollbar-width:none!important
+}
+#qhFullPcScreen .qhPcMapTools button{
+ flex:0 0 auto!important;height:28px!important;min-height:28px!important;
+ font-size:10px!important;padding:0 7px!important
+}
+#qhFullPcScreen #qhPcStep{flex:0 0 58px!important;height:28px!important}
+#qhFullPcScreen .qhPcMapTools .qhMapSelectionInfo{
+ flex:1 0 86px!important;min-width:86px!important;
+ display:block!important;white-space:nowrap!important;overflow:hidden!important;
+ font-size:9px!important
+}
+#qhFullPcScreen #qhFullMapWrap{
+ flex:1 1 auto!important;min-height:0!important;
+ overflow:auto!important;overscroll-behavior:contain;
+ padding:0 4px 1px!important;background:#010503!important
+}
+#qhFullPcScreen #qhFullMapTable th,
+#qhFullPcScreen #qhFullMapTable td{
+ height:var(--qh-full-row-height,26px)!important;
+ min-height:0!important;max-height:none!important;
+ box-sizing:border-box!important;padding:0!important;
+ line-height:1.05!important;white-space:nowrap!important;
+ font-size:clamp(8px,1.1vw,11px)!important
+}
+#qhFullPcScreen .qhPcActions{
+ height:44px!important;flex:0 0 44px!important;min-height:0!important;
+ padding:4px 7px!important;gap:6px!important
+}
+#qhFullPcScreen .qhPcActions button{
+ height:35px!important;min-height:0!important;padding:0 5px!important;
+ font-size:12px!important
+}
+/* The shared app-owned zoom must still dedicate almost the entire view to the map. */
+#qhFullPcScreen.qhMapMagnified .qhPcTelemetry{display:none!important}
+#qhFullPcScreen.qhMapMagnified #qhFullMapTable th,
+#qhFullPcScreen.qhMapMagnified #qhFullMapTable td{
+ height:var(--qh-full-row-height,22px)!important;
+ padding:0!important;line-height:1.05!important
+}
+#qhSimpleFuelScreen #qhSimpleFuelTable th,
+#qhSimpleFuelScreen #qhSimpleFuelTable td{
+ height:var(--qh-simple-row-height,35px)!important;
+ box-sizing:border-box!important;padding:0!important;line-height:1.08!important
+}
+#qhSimpleFuelScreen.qhMapMagnified #qhSimpleFuelTable th,
+#qhSimpleFuelScreen.qhMapMagnified #qhSimpleFuelTable td{
+ height:var(--qh-simple-row-height,35px)!important;padding:0!important
+}
+#qhSimpleFuelScreen:not(.qhMapMagnified) .qhSfWindow{
+ height:calc(100dvh - 12px)!important;min-height:0!important;overflow:hidden!important
+}
+#qhSimpleFuelScreen #qhSimpleFuelWrap{min-height:0!important}
+#qhSimpleFuelScreen .qhSfStat{min-width:0!important;min-height:35px!important;padding:3px 5px!important}
+#qhSimpleFuelScreen .qhSfStat small{font-size:9px!important}
+#qhSimpleFuelScreen .qhSfStat b{font-size:clamp(12px,1.5vw,16px)!important}
+@media(max-width:1050px){
+ #qhFullPcScreen .qhPcTelemetry{grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-auto-rows:37px!important}
+}
+@media(max-width:760px){
+ #qhFullPcScreen .qhPcHeader{grid-template-columns:minmax(0,1fr) auto!important}
+ #qhFullPcScreen .qhPcConn{display:none!important}
+ #qhFullPcScreen .qhPcTelemetry{grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-auto-rows:36px!important;gap:3px!important;padding:3px 5px!important}
+ #qhFullPcScreen .qhPcTelemetry .qhPcMini i{flex-basis:13px!important;font-size:13px!important}
+ #qhFullPcScreen .qhPcTelemetry .qhPcMini small{font-size:9px!important}
+ #qhFullPcScreen .qhPcTelemetry .qhPcMini b{font-size:clamp(11px,3.6vw,16px)!important}
+ #qhFullPcScreen .qhPcMapHead .unit{display:none!important}
+ #qhFullPcScreen .qhPcMapHead{grid-template-columns:minmax(0,1fr) auto!important}
+ #qhFullPcScreen .qhPcMapHead h2{font-size:12px!important}
+ #qhFullPcScreen .qhPcTabs button{font-size:10px!important;padding:0 8px!important}
+ #qhFullPcScreen #qhFullMapTable th,#qhFullPcScreen #qhFullMapTable td{font-size:clamp(8px,2.15vw,11px)!important}
+ #qhSimpleFuelScreen .qhSfLive{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:3px!important;padding:4px!important}
+}
+@media(max-height:600px){
+ #qhFullPcScreen .qhPcHeader{height:35px!important;flex-basis:35px!important}
+ #qhFullPcScreen .qhPcBrandMain{font-size:20px!important}
+ #qhFullPcScreen .qhPcBrandSub{display:none!important}
+ #qhFullPcScreen .qhPcTelemetry{
+   grid-template-columns:repeat(9,minmax(74px,1fr))!important;
+   grid-auto-rows:32px!important;overflow-x:auto!important;overflow-y:hidden!important;
+   gap:3px!important;padding:2px 5px!important;scrollbar-width:none!important
+ }
+ #qhFullPcScreen .qhPcTelemetry .qhPcMini{padding:1px 3px!important}
+ #qhFullPcScreen .qhPcTelemetry .qhPcMini i{display:none!important}
+ #qhFullPcScreen .qhPcTabs{height:29px!important;flex-basis:29px!important;padding:1px 3px 0!important}
+ #qhFullPcScreen .qhPcTabs button{height:26px!important;min-height:26px!important}
+ #qhFullPcScreen .qhPcMapHead{height:28px!important;flex-basis:28px!important;padding:1px 5px!important}
+ #qhFullPcScreen .qhPcMapHead select{height:25px!important}
+ #qhFullPcScreen .qhPcMapTools{height:30px!important;flex-basis:30px!important}
+ #qhFullPcScreen .qhPcMapTools button{height:25px!important;min-height:25px!important}
+ #qhFullPcScreen .qhPcActions{height:35px!important;flex-basis:35px!important;padding:2px 5px!important}
+ #qhFullPcScreen .qhPcActions button{height:29px!important}
+ #qhFullPcScreen #qhFullMapTable th,#qhFullPcScreen #qhFullMapTable td{font-size:8px!important}
+ #qhSimpleFuelScreen .qhSfLive{grid-template-columns:repeat(6,minmax(78px,1fr))!important;overflow-x:auto!important}
+}
+</style>
+
+<style id="qhSimpleCompactNav119">
+/* QH 1.1.9: prevent SIMPLE multi-line buttons from stealing the TPS table height. */
+#qhSimpleFuelScreen .qhSfTitle{
+ height:34px!important;flex:0 0 34px!important;min-height:0!important;
+ gap:6px!important;padding:2px 7px!important
+}
+#qhSimpleFuelScreen .qhSfTitle b{font-size:clamp(11px,1.5vw,14px)!important;line-height:1.05!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+#qhSimpleFuelScreen .qhSfTitle button{white-space:nowrap!important;height:28px!important;flex:0 0 auto!important;padding:0 8px!important;font-size:11px!important}
+#qhSimpleFuelScreen .qhSfTabs{
+ display:flex!important;flex:0 0 33px!important;height:33px!important;min-height:0!important;
+ flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;
+ padding:2px 4px!important;gap:4px!important
+}
+#qhSimpleFuelScreen .qhSfTabs button{
+ height:28px!important;min-height:28px!important;white-space:nowrap!important;font-size:11px!important
+}
+#qhSimpleFuelScreen .qhSfToolbar{
+ display:flex!important;flex:0 0 36px!important;height:36px!important;min-height:0!important;
+ flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;
+ padding:3px 5px!important;gap:4px!important;-webkit-overflow-scrolling:touch;scrollbar-width:none!important
+}
+#qhSimpleFuelScreen .qhSfToolbar button,
+#qhSimpleFuelScreen .qhSfToolbar select{
+ height:28px!important;min-height:28px!important;flex:0 0 auto!important;
+ white-space:nowrap!important;padding:0 7px!important;font-size:10px!important
+}
+#qhSimpleFuelScreen .qhSfMapTools{
+ flex:0 0 35px!important;height:35px!important;min-height:0!important;
+ display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;
+ align-items:center!important;gap:4px!important;padding:2px 5px!important;
+ -webkit-overflow-scrolling:touch;scrollbar-width:none!important
+}
+#qhSimpleFuelScreen .qhSfMapTools button{
+ height:28px!important;min-height:28px!important;flex:0 0 auto!important;padding:0 6px!important
+}
+#qhSimpleFuelScreen .qhSfMapTools .qhMapSelectionInfo{
+ display:block!important;flex:1 0 90px!important;min-width:90px!important;
+ white-space:nowrap!important;overflow:hidden!important;font-size:9px!important
+}
+#qhSimpleFuelScreen .qhSfLive{flex:0 0 auto!important;min-height:0!important}
+#qhSimpleFuelScreen .qhSfHint{
+ flex:0 0 auto!important;max-height:34px!important;overflow:auto!important;
+ line-height:1.15!important;padding:3px 6px!important
+}
+@media(max-width:630px){
+ #qhSimpleFuelScreen .qhSfTitle span{display:none!important}
+ #qhSimpleFuelScreen .qhSfTitle b{font-size:12px!important}
+ #qhSimpleFuelScreen .qhSfTabs button{font-size:10px!important}
+}
+@media(max-height:600px){
+ #qhSimpleFuelScreen .qhSfTitle{height:30px!important;flex-basis:30px!important}
+ #qhSimpleFuelScreen .qhSfTitle span{display:none!important}
+ #qhSimpleFuelScreen .qhSfLive{
+   flex:0 0 36px!important;height:36px!important;min-height:0!important;
+   grid-template-columns:repeat(6,minmax(0,1fr))!important;
+   grid-auto-rows:32px!important;gap:3px!important;padding:2px 4px!important;
+   overflow:hidden!important
+ }
+ #qhSimpleFuelScreen .qhSfStat{height:32px!important;min-height:0!important;padding:1px 4px!important}
+ #qhSimpleFuelScreen .qhSfStat small{font-size:8px!important}
+ #qhSimpleFuelScreen .qhSfStat b{font-size:11px!important}
+ #qhSimpleFuelScreen .qhSfTabs{height:29px!important;flex-basis:29px!important}
+ #qhSimpleFuelScreen .qhSfTabs button{height:25px!important;min-height:25px!important}
+ #qhSimpleFuelScreen .qhSfToolbar{height:33px!important;flex-basis:33px!important}
+ #qhSimpleFuelScreen .qhSfToolbar button,#qhSimpleFuelScreen .qhSfToolbar select{height:27px!important;min-height:27px!important}
+ #qhSimpleFuelScreen .qhSfMapTools{height:31px!important;flex-basis:31px!important}
+ #qhSimpleFuelScreen .qhSfMapTools button{height:25px!important;min-height:25px!important}
+ #qhSimpleFuelScreen .qhSfHint{display:none!important}
+}
+</style>
 </head>
 <body>
 
@@ -5168,17 +5422,15 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU">⛓</button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
-  <div class="qhPcLive">
-    <div class="qhPcGauge"><div class="qhPcGaugeScale"><span>0</span><span>4</span><span>8</span><span>12</span><span>16</span></div><div class="qhPcGaugeTitle">RPM</div><div class="qhPcGaugeValue" data-mirror="rpm">0</div></div>
-    <div class="qhPcGauge"><div class="qhPcGaugeScale"><span>0</span><span>20</span><span>50</span><span>80</span><span>100</span></div><div class="qhPcGaugeTitle">TPS</div><div class="qhPcGaugeValue" data-mirror="tps">0%</div></div>
-    <div class="qhPcGauge"><div class="qhPcGaugeScale"><span>10</span><span>12</span><span>15</span><span>18</span><span>20</span></div><div class="qhPcGaugeTitle">OG AFR</div><div class="qhPcGaugeValue" data-mirror="afr">0.00</div></div>
-  </div>
-  <div class="qhPcStrip">
+  <div class="qhPcTelemetry" aria-label="Thông số trực tiếp QH ECU">
+    <div class="qhPcMini qhPcMainStat"><i>↻</i><div><small>RPM</small><b data-mirror="rpm">0</b></div></div>
+    <div class="qhPcMini qhPcMainStat"><i>◌</i><div><small>TPS</small><b data-mirror="tps">0%</b></div></div>
+    <div class="qhPcMini qhPcMainStat"><i>λ</i><div><small>AFR</small><b data-mirror="afr">0.00</b></div></div>
     <div class="qhPcMini"><i>♨</i><div><small>ECT</small><b data-mirror="ect">-- °C</b></div></div>
     <div class="qhPcMini"><i>♨</i><div><small>IAT</small><b data-mirror="iat">-- °C</b></div></div>
     <div class="qhPcMini"><i>◴</i><div><small>MAP</small><b data-mirror="map">-- kPa</b></div></div>
-    <div class="qhPcMini"><i>ϟ</i><div><small>IGN</small><b data-mirror="ign">--°</b></div></div>
-    <div class="qhPcMini"><i>⌁</i><div><small>INJ</small><b data-mirror="pw">0.00 ms</b></div></div>
+    <div class="qhPcMini"><i>ϟ</i><div><small>GÓC LỬA</small><b data-mirror="ign">--°</b></div></div>
+    <div class="qhPcMini"><i>⌁</i><div><small>PHUN</small><b data-mirror="pw">0.00 ms</b></div></div>
     <div class="qhPcMini"><i>▣</i><div><small>ẮC QUY</small><b data-mirror="batt">-- V</b></div></div>
   </div>
   <div class="qhPcTabs">
@@ -5237,25 +5489,25 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
       <div class="qhSfStat"><small>TPS</small><b data-mirror="tps">--%</b></div>
       <div class="qhSfStat"><small>AFR</small><b data-mirror="afr">--</b></div>
       <div class="qhSfStat"><small>ECT</small><b data-mirror="ect">-- °C</b></div>
-      <div class="qhSfStat"><small>IGNITION</small><b data-mirror="ign">--°</b></div>
-      <div class="qhSfStat"><small>INJECTION</small><b data-mirror="pw">0.00 ms</b></div>
+      <div class="qhSfStat"><small>GÓC LỬA</small><b data-mirror="ign">--°</b></div>
+      <div class="qhSfStat"><small>PHUN</small><b data-mirror="pw">0.00 ms</b></div>
     </div>
     <div class="qhSfTabs"><button class="active" type="button">Thời gian phun</button><button type="button" data-qh-open-feature="ign_degree">Góc đánh lửa</button><button type="button" data-qh-open-feature="afr_map">AFR của ECU</button><button type="button" data-qh-open-feature="ect_inj">Bù xăng ECT</button><button type="button" data-qh-open-feature="iat_inj">Bù xăng IAT</button><button type="button" data-qh-open-feature="map_inj">Bù xăng MAP</button></div>
     <div class="qhSfToolbar">
-      <select id="qhSfMap"><option value="1">MAP No.1</option><option value="2">MAP No.2</option><option value="3">MAP No.3</option><option value="4">MAP No.4</option></select>
+      <select id="qhSfMap"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
+      <button id="qhSfZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
       <button id="qhSfReadAll" type="button">ĐỌC TẤT CẢ</button>
       <button id="qhSfWriteAll" type="button">GHI TẤT CẢ</button>
       <button id="qhSfRead" class="primary" type="button">ĐỌC HIỆN TẠI</button>
       <button id="qhSfWrite" class="primary" type="button">GHI HIỆN TẠI</button>
-      <button id="qhSfZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
     </div>
     <div class="qhSfMapTools">
-      <button id="qhSfKeyboard" type="button" title="Chạm chọn ô hoặc hai góc rồi mở bàn phím">⌨ KEYBOARD</button>
-      <button id="qhSfClearSelection" type="button">✕ CLEAR</button>
+      <button id="qhSfKeyboard" type="button" title="Chạm chọn ô hoặc hai góc rồi mở bàn phím">⌨ BÀN PHÍM</button>
+      <button id="qhSfClearSelection" type="button">✕ BỎ CHỌN</button>
       <select id="qhSfStep" aria-label="Adjustment step" title="Bước tăng giảm vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
-      <button id="qhSfLiveFollow" type="button" aria-pressed="true">◎ LIVE ON</button>
-      <button id="qhSfAfrOverlay" type="button" aria-pressed="false" title="AFR thực đo: góc ô, không ghi vào map phun">AFR OFF</button>
-      <span class="qhMapSelectionInfo" id="qhSfSelectionInfo">Tap two corners to select a range</span>
+      <button id="qhSfLiveFollow" type="button" aria-pressed="true">◎ LIVE: BẬT</button>
+      <button id="qhSfAfrOverlay" type="button" aria-pressed="false" title="AFR thực đo: góc ô, không ghi vào map phun">AFR ĐO: TẮT</button>
+      <span class="qhMapSelectionInfo" id="qhSfSelectionInfo">Chạm một ô hoặc hai góc để chọn vùng</span>
     </div>
     <div id="qhSimpleFuelWrap"><table id="qhSimpleFuelTable"></table></div>
     <div id="qhSimpleSelectionPad" class="qhNewSelectionPad" aria-label="Adjust selected fuel cells">
@@ -5285,7 +5537,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.8</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.9</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -10907,7 +11159,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
                        :await api.writeCurrentFuelAndVerify(state.activeMap);
       if(result===false)throw new Error(label+' chưa hoàn tất');
       renderSimpleFuel();
-      window.setEcuTaskStatus?.('success',(read?'✓ ĐÃ ĐỌC':'✓ ĐÃ GỬI')+' INJECTION MAP No.'+state.activeMap,3000);
+      window.setEcuTaskStatus?.('success',(read?'✓ ĐÃ ĐỌC':'✓ ĐÃ GỬI')+' BẢN ĐỒ PHUN '+state.activeMap,3000);
     }catch(e){
       window.setEcuTaskStatus?.('error',label+' thất bại: '+String(e?.message||e),7000);
     }finally{
@@ -10994,7 +11246,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     const info=document.getElementById('qhPcSelectionInfo');
     const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(backendTab()));
     const label=(r,c)=>String((activeTab==='inj_ve'?TPS_ROWS[r]:f?.y?.[r])??('R'+(r+1)))+' / '+String((activeTab==='inj_ve'?RPMS[c]:f?.x?.[c])??('C'+(c+1)));
-    if(info)info.textContent=!b?'Tap first corner, then opposite corner':
+    if(info)info.textContent=!b?'Chạm ô đầu, sau đó chạm góc đối diện':
       fullSelection.pending?'Góc 1: '+label(fullSelection.ar,fullSelection.ac)+' · chạm góc đối diện':
       'Đã chọn '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' ô';
     requestAnimationFrame(()=>ux.positionPad('qhFullPcScreen','qhFullMapTable','qhFullSelectionPad',fullSelection));
@@ -11021,7 +11273,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }
   function updateFullAfrBadges(){
     const ux=window.QHMapUx,enabled=ux.showAfr,btn=document.getElementById('qhPcAfrOverlay');
-    if(btn){btn.textContent=enabled?'AFR ON':'AFR OFF';btn.setAttribute('aria-pressed',String(enabled))}
+    if(btn){btn.textContent=enabled?'AFR ĐO: BẬT':'AFR ĐO: TẮT';btn.setAttribute('aria-pressed',String(enabled))}
     table?.querySelectorAll('td.v').forEach(td=>{
       const b=enabled&&activeTab==='inj_ve'?ux.badge(Number(td.dataset.r),Number(td.dataset.c)):null;
       ux.refreshBadge(td,b);
@@ -11418,6 +11670,63 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
  window.addEventListener('pagehide',()=>exit());
  button('full',false);button('simple',false);
  window.QHOrientation={enter,exit,toggle,refresh,get active(){return active}};
+})();
+</script>
+
+<script id="qhMapRowsAutofit119">
+/* Show all TPS labels (including IDLE where present) when the viewport allows.
+ * Use the rendered map's actual number of rows, never a hardcoded ECU map size.
+ * Entirely a visual sizing aid: no map cell values or ECU protocol are modified. */
+(function(){
+ 'use strict';
+ const specs=[
+   {mode:'full',screen:'qhFullPcScreen',wrap:'qhFullMapWrap',table:'qhFullMapTable',variable:'--qh-full-row-height',min:12,max:32},
+   {mode:'simple',screen:'qhSimpleFuelScreen',wrap:'qhSimpleFuelWrap',table:'qhSimpleFuelTable',variable:'--qh-simple-row-height',min:17,max:42}
+ ];
+ let pending=false;
+ function fit(spec){
+   const screen=document.getElementById(spec.screen);
+   const wrap=document.getElementById(spec.wrap);
+   const table=document.getElementById(spec.table);
+   if(!screen||!wrap||!table||wrap.clientHeight<=0||wrap.offsetWidth<=0)return;
+   const head=table.tHead?.rows.length||0;
+   const body=Array.from(table.tBodies).reduce((n,group)=>n+group.rows.length,0);
+   const count=head+body;
+   if(count<2)return;
+   const style=window.getComputedStyle(wrap);
+   const pad=(parseFloat(style.paddingTop)||0)+(parseFloat(style.paddingBottom)||0);
+   const space=Math.max(0,wrap.clientHeight-pad-2);
+   const px=Math.max(spec.min,Math.min(spec.max,Math.floor(space/count)));
+   const value=px+'px';
+   if(screen.style.getPropertyValue(spec.variable)!==value){
+     screen.style.setProperty(spec.variable,value);
+   }
+   screen.dataset.qhVisibleTpsRows=String(body);
+ }
+ function fitAll(){pending=false;specs.forEach(fit)}
+ function schedule(){
+   if(pending)return;
+   pending=true;
+   requestAnimationFrame(fitAll);
+ }
+ specs.forEach(spec=>{
+   const wrap=document.getElementById(spec.wrap);
+   const table=document.getElementById(spec.table);
+   const screen=document.getElementById(spec.screen);
+   if(typeof ResizeObserver!=='undefined'&&wrap)new ResizeObserver(schedule).observe(wrap);
+   if(typeof MutationObserver!=='undefined'&&table)new MutationObserver(schedule).observe(table,{childList:true});
+   if(typeof MutationObserver!=='undefined'&&screen)new MutationObserver(schedule).observe(screen,{attributes:true,attributeFilter:['class']});
+ });
+ window.addEventListener('resize',schedule,{passive:true});
+ window.visualViewport?.addEventListener('resize',schedule,{passive:true});
+ document.getElementById('qhChooseFull')?.addEventListener('click',schedule);
+ document.getElementById('qhChooseSimple')?.addEventListener('click',schedule);
+ document.getElementById('qhPcZoom')?.addEventListener('click',schedule);
+ document.getElementById('qhPcZoomExit')?.addEventListener('click',schedule);
+ document.getElementById('qhSfZoom')?.addEventListener('click',schedule);
+ document.getElementById('qhSfZoomExit')?.addEventListener('click',schedule);
+ setTimeout(schedule,50);
+ window.QHMapRowFit={refresh:schedule,fitAll};
 })();
 </script>
 </body>
