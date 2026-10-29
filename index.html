@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.14';
-  document.title = 'QH ECU · v1.1.14';
+  window.BLINK_PB_VERSION = 'QH-1.1.15';
+  document.title = 'QH ECU · v1.1.15';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5627,7 +5627,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.14</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.15</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5658,6 +5658,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
   <div class="qhPcTabs">
     <button class="active" data-qh-full-tab="inj_ve">THỜI GIAN PHUN</button>
     <button data-qh-full-tab="ign_degree">GÓC ĐÁNH LỬA</button>
+    <button data-qh-full-tab="ign_time" type="button">IGN TIME · DWELL BOBIN</button>
     <button data-qh-full-tab="afr_map">AFR ECU</button>
     <button data-qh-full-tab="ect_inj">BÙ XĂNG ECT</button>
     <button data-qh-full-tab="iat_inj">BÙ XĂNG IAT</button>
@@ -5779,7 +5780,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.14</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.15</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11635,6 +11636,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   const tabMeta={
     inj_ve:{title:'BẢN ĐỒ PHUN XĂNG',unit:'ms'},
     ign_degree:{title:'GÓC ĐÁNH LỬA',unit:'°'},
+    ign_time:{title:'THỜI GIAN TÍCH ĐIỆN BOBIN (IGN TIME)',unit:'ms'},
     afr_map:{title:'TỶ LỆ HÒA KHÍ ECU',unit:'AFR'},
     ect_inj:{title:'BÙ XĂNG THEO ECT',unit:'%'},
     iat_inj:{title:'BÙ XĂNG THEO IAT',unit:'±ms'},
@@ -11785,11 +11787,11 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     const d=dataForFeature(f);
     const x=Array.isArray(f.x)?f.x:[];
     const y=Array.isArray(f.y)?f.y:[];
-    let h='<thead><tr><th class="rh">'+(f.rows>1?'Y / X':'X')+'</th>';
+    let h='<thead><tr><th class="rh">'+(id==='ign_time'?'RPM':(f.rows>1?'Y / X':'X'))+'</th>';
     for(let c=0;c<f.cols;c++)h+='<th>'+(x[c]??('C'+(c+1)))+'</th>';
     h+='</tr></thead><tbody>';
     for(let r=0;r<f.rows;r++){
-      h+='<tr><td class="rh">'+(y[r]??('R'+(r+1)))+'</td>';
+      h+='<tr><td class="rh">'+(id==='ign_time'?'TIME':(y[r]??('R'+(r+1))))+'</td>';
       for(let c=0;c<f.cols;c++){
         const v=fullValue(f,d,r,c),sel=fkCell&&fkCell.r===r&&fkCell.c===c?' sel':'';
         let display=v===null?'--':(Math.round(v*1000)/1000).toString();
