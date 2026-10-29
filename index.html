@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.10';
-  document.title = 'QH ECU · v1.1.10';
+  window.BLINK_PB_VERSION = 'QH-1.1.11';
+  document.title = 'QH ECU · v1.1.11';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5452,7 +5452,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <button id="qhPcKeyboard" type="button" title="Chọn một hoặc hai góc, rồi mở bàn phím">⌨ BÀN PHÍM</button>
     <button id="qhPcClearSelection" type="button" title="Bỏ vùng chọn hiện tại">✕ BỎ CHỌN</button>
     <select id="qhPcStep" aria-label="Adjustment step" title="Bước điều chỉnh vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
-    <button id="qhPcLiveFollow" type="button" aria-pressed="true">◎ LIVE: BẬT</button>
+    <button id="qhPcLiveFollow" type="button" aria-pressed="true" title="Bật: tự cuộn theo con trỏ. Tắt: con trỏ vẫn chạy, không tự cuộn.">◎ TỰ CUỘN: BẬT</button>
     <button id="qhPcAfrOverlay" type="button" aria-pressed="false" title="Hiển thị AFR thực tế đã đo ở góc từng ô phun">AFR ĐO: TẮT</button>
     <span class="qhMapSelectionInfo" id="qhPcSelectionInfo">Chạm ô đầu, sau đó chạm góc đối diện</span>
   </div>
@@ -5505,7 +5505,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
       <button id="qhSfKeyboard" type="button" title="Chạm chọn ô hoặc hai góc rồi mở bàn phím">⌨ BÀN PHÍM</button>
       <button id="qhSfClearSelection" type="button">✕ BỎ CHỌN</button>
       <select id="qhSfStep" aria-label="Adjustment step" title="Bước tăng giảm vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
-      <button id="qhSfLiveFollow" type="button" aria-pressed="true">◎ LIVE: BẬT</button>
+      <button id="qhSfLiveFollow" type="button" aria-pressed="true" title="Bật: tự cuộn theo con trỏ. Tắt: con trỏ vẫn chạy, không tự cuộn.">◎ TỰ CUỘN: BẬT</button>
       <button id="qhSfAfrOverlay" type="button" aria-pressed="false" title="AFR thực đo: góc ô, không ghi vào map phun">AFR ĐO: TẮT</button>
       <span class="qhMapSelectionInfo" id="qhSfSelectionInfo">Chạm một ô hoặc hai góc để chọn vùng</span>
     </div>
@@ -5537,7 +5537,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.10</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.11</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -10972,7 +10972,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     const t=document.getElementById('qhSimpleFuelTable'),screen=document.getElementById('qhSimpleFuelScreen');
     if(!t)return;
     const showing=uiMode==='simple'&&screen?.classList.contains('active');
-    const cur=showing&&simpleFollow?window.QHMapUx.liveCell():null;
+    const cur=showing?window.QHMapUx.liveCell():null;
     const pos=cur?simpleCellFromEcu(cur.r,cur.c):null;
     const key=pos?pos.sr+':'+pos.sc:'';
     // No DOM class toggles for repeated samples within the same ECU cell.
@@ -10983,7 +10983,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     const td=t.querySelector('td.val[data-sr="'+pos.sr+'"][data-sc="'+pos.sc+'"]');
     if(!td){simpleCursorKey='';return}
     td.classList.add('qhLiveCursor');simpleLiveTd=td;
-    if(key!==simpleCursorKey&&Date.now()>simpleManualUntil){
+    if(simpleFollow&&key!==simpleCursorKey&&Date.now()>simpleManualUntil){
       const wrap=document.getElementById('qhSimpleFuelWrap');
       if(wrap){
         const left=td.offsetLeft,right=left+td.offsetWidth;
@@ -11113,7 +11113,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   document.getElementById('qhSfLiveFollow')?.addEventListener('click',()=>{
     simpleFollow=!simpleFollow;simpleCursorKey='';
     const btn=document.getElementById('qhSfLiveFollow');
-    btn.textContent=simpleFollow?'◎ LIVE: BẬT':'◎ LIVE: TẮT';
+    btn.textContent=simpleFollow?'◎ TỰ CUỘN: BẬT':'◎ TỰ CUỘN: TẮT';
     btn.setAttribute('aria-pressed',String(simpleFollow));
     updateSimpleCursor();
   });
@@ -11278,7 +11278,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }
   function updateFullCursor(){
     if(!table||document.body.dataset.uiMode!=='full'||screen.classList.contains('suspended'))return;
-    const cells=fullFollow&&state?.ecuConnected?(fb()?.getLiveCells(backendTab())||[]):[];
+    const cells=state?.ecuConnected?(fb()?.getLiveCells(backendTab())||[]):[];
     const key=cells.map(p=>p.r+':'+p.c).join(',');
     // Cache live elements; the old 500ms loop removed/re-added the same classes
     // even when the ECU was still inside the identical RPM/TPS cell.
@@ -11291,7 +11291,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
       const td=table.querySelector('td.v[data-r="'+r+'"][data-c="'+c+'"]');
       if(td){td.classList.add('qhLiveCursor');fullLiveEls.push(td);if(!first)first=td;}
     }
-    if(first&&key!==fullLastCursor&&Date.now()>fullManualUntil){
+    if(fullFollow&&first&&key!==fullLastCursor&&Date.now()>fullManualUntil){
       const wrap=document.getElementById('qhFullMapWrap');
       if(wrap){
         const left=first.offsetLeft,right=left+first.offsetWidth;
@@ -11573,7 +11573,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   document.getElementById('qhPcLiveFollow')?.addEventListener('click',()=>{
     fullFollow=!fullFollow;fullLastCursor='';
     const btn=document.getElementById('qhPcLiveFollow');
-    btn.textContent=fullFollow?'◎ LIVE: BẬT':'◎ LIVE: TẮT';
+    btn.textContent=fullFollow?'◎ TỰ CUỘN: BẬT':'◎ TỰ CUỘN: TẮT';
     btn.setAttribute('aria-pressed',String(fullFollow));updateFullCursor();
   });
   document.getElementById('qhPcAfrOverlay')?.addEventListener('click',()=>window.QHMapUx.toggleAfr());
@@ -11804,7 +11804,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)signal();});
   window.QHFastCursor={signal,
-    stats(){return {signals,frames,lastUiDelayMs:Number(lastUiDelayMs.toFixed(1)),ecuLivePollUnchangedMs:180};}};
+    stats(){return {signals,frames,lastUiDelayMs:Number(lastUiDelayMs.toFixed(1)),ecuLivePoll:window.BlinkRealProtocol?.getLivePollStats?.()||null};}};
 })();
 </script>
 </body>
