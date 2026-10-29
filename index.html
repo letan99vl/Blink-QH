@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.17';
-  document.title = 'QH ECU · v1.1.17';
+  window.BLINK_PB_VERSION = 'QH-1.1.18';
+  document.title = 'QH ECU · v1.1.18';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5707,12 +5707,62 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  transform:rotate(-90deg)!important;
 }
 </style>
+
+<style id="qhBackfireFullV118">
+#qhFullPcScreen .qhPcMapTools #qhBfOpen{
+ display:none!important;flex:0 0 auto!important;
+ height:26px!important;min-height:26px!important;
+ border:1px solid #cc8b42!important;background:#1c1409!important;
+ color:#ffdfaa!important;font-weight:900!important;white-space:nowrap!important;
+}
+#qhFullPcScreen.qhIgnTab .qhPcMapTools #qhBfOpen{display:inline-flex!important;align-items:center!important}
+#qhFullPcScreen #qhBfOpen.qhBfActive{
+ background:#fb8b16!important;color:#180d00!important;border-color:#ffd18a!important;
+ box-shadow:0 0 9px #fc7e22b8!important
+}
+#qhFullPcScreen #qhBfOpen.qhBfWarn{
+ background:#4b2708!important;color:#ffbf8a!important;border-color:#f97316!important
+}
+#qhBfOverlay[hidden]{display:none!important}
+#qhBfOverlay{
+ position:fixed!important;inset:0!important;z-index:700000!important;
+ background:#000d!important;display:flex!important;align-items:center!important;
+ justify-content:center!important;padding:12px!important;box-sizing:border-box!important;
+}
+#qhBfPanel{
+ width:min(510px,96vw)!important;max-height:min(93dvh,740px)!important;
+ overflow:auto!important;overscroll-behavior:contain!important;border:1px solid #f69e40!important;
+ border-radius:10px!important;background:#07170d!important;
+ box-shadow:0 20px 70px #000b,0 0 20px #ff892c44!important;
+ padding:14px!important;font:12px/1.45 Arial,sans-serif!important;color:#e3ffe9!important;
+}
+#qhBfPanel h3{font-size:18px!important;line-height:1.2!important;margin:0!important;color:#ffcf8a!important}
+#qhBfPanel .bfHead{display:flex;align-items:center;justify-content:space-between;gap:8px!important}
+#qhBfPanel .bfHead button{min-height:34px!important}
+#qhBfPanel .bfExplain{margin:8px 0!important;color:#b6dbc1!important;font-size:12px!important}
+#qhBfPanel .bfWarn{color:#ffba98!important;border:1px solid #8a4528!important;
+ background:#2c160b!important;padding:7px 8px!important;margin:8px 0!important}
+#qhBfPanel #qhBfStatus{border:1px solid #256b3f!important;background:#091f11!important;
+ color:#d2f8dd!important;min-height:45px!important;padding:9px!important;
+ margin:8px 0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important}
+#qhBfPanel .bfRow{display:flex;align-items:center;gap:6px!important;margin:7px 0!important;flex-wrap:wrap!important}
+#qhBfPanel select{background:#07120a!important;color:#fff!important;border:1px solid #3d934e!important;
+ padding:7px!important;flex:1 1 170px!important;min-height:37px!important;font-size:12px!important}
+#qhBfPanel .bfActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px!important}
+#qhBfPanel .bfActions button{border:1px solid #348f50!important;border-radius:5px!important;
+ min-height:40px!important;font-size:12px!important;padding:5px!important;
+ color:#e8ffef!important;background:#174029!important;font-weight:800!important}
+#qhBfPanel .bfActions #qhBfStart{background:#964115!important;border-color:#e67b2e!important}
+#qhBfPanel .bfActions #qhBfRestore{background:#146f35!important;border-color:#4df17a!important}
+#qhBfPanel .bfActions button:disabled{opacity:.38!important;cursor:not-allowed!important}
+#qhBfPanel .bfFoot{margin-top:10px!important;color:#9abca4!important;font-size:10px!important}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.17</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.18</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5772,6 +5822,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <select id="qhPcStep" aria-label="Adjustment step" title="Bước điều chỉnh vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
     <button id="qhPcLiveFollow" type="button" aria-pressed="true" title="Bật: tự cuộn theo con trỏ. Tắt: con trỏ vẫn chạy, không tự cuộn.">◎ TỰ CUỘN: BẬT</button>
     <button id="qhPcAfrOverlay" type="button" aria-pressed="false" title="Hiển thị AFR thực tế đã đo ở góc từng ô phun">AFR ĐO: TẮT</button>
+    <button id="qhBfOpen" type="button" aria-label="Trạng thái Backfire và sao lưu MAP">🔥 BACKFIRE: CHƯA SOI</button>
     <span class="qhMapSelectionInfo" id="qhPcSelectionInfo">Chạm ô đầu, sau đó chạm góc đối diện</span>
   </div>
   <div id="qhFullMapWrap"><table id="qhFullMapTable"></table></div>
@@ -5803,6 +5854,31 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <button id="qhPcReadCurrent" type="button">▣ ĐỌC HIỆN TẠI</button><button id="qhPcWriteCurrent" type="button">➤ GHI HIỆN TẠI</button>
   </div>
   <button id="qhPcZoomExit" type="button" aria-label="Thu nhỏ bản đồ về dọc">↙ THU NHỎ DỌC</button>
+
+  <div id="qhBfOverlay" hidden>
+    <div id="qhBfPanel" role="dialog" aria-modal="true" aria-labelledby="qhBfTitle">
+      <div class="bfHead"><h3 id="qhBfTitle">BACKFIRE GA THÒNG</h3><button id="qhBfClose" type="button">✕ ĐÓNG</button></div>
+      <p class="bfExplain">Phạm vi cố định: toàn bộ 14 TPS (100% đến IDLE) tại hai cột 5.500 / 6.000 RPM (28 ô). Chỉ áp dụng MAP đánh lửa đang chọn, không đổi các MAP khác.</p>
+      <div class="bfWarn">Chỉ thao tác khi đã tắt động cơ, không dùng trên đường công cộng. Góc đánh lửa âm ở TPS lớn có thể gây quá nhiệt, hỏng bộ xả và động cơ. Các mức ECU không mã hóa được sẽ bị khóa.</div>
+      <div class="bfRow">
+        <label for="qhBfLevel">Cấp độ:</label>
+        <select id="qhBfLevel">
+          <option value="1">LV1 · −19°</option><option value="2">LV2 · −21°</option><option value="3">LV3 · −23°</option>
+        </select>
+        <b>RPM MAX 6.000</b>
+      </div>
+      <div id="qhBfStatus" role="status" aria-live="polite">Chưa kiểm tra dữ liệu từ ECU.</div>
+      <div class="bfActions">
+        <button id="qhBfCheck" type="button">◎ SOI ECU</button>
+        <button id="qhBfStart" type="button">🔥 BẮT ĐẦU BACKFIRE</button>
+        <button id="qhBfRestore" type="button">↩ DÙNG MAP GỐC</button>
+        <button id="qhBfExport" type="button">↓ XUẤT BACKUP JSON</button>
+        <button id="qhBfImport" type="button">↑ NHẬP BACKUP JSON</button>
+      </div>
+      <input id="qhBfImportFile" type="file" accept=".json,application/json" hidden>
+      <div class="bfFoot">QH lưu bản gốc riêng theo ECU + MAP trong dữ liệu ứng dụng, không nằm trong tệp APK/IPA. Xuất backup JSON để khôi phục nếu cài lại app hoặc bị xóa dữ liệu. Trạng thái ON chỉ sáng khi đã đọc lại đủ cả bảng lửa và giới hạn RPM.</div>
+    </div>
+  </div>
 </section>
 <button id="qhFullReturnBtn" type="button">TRANG CHỦ ĐẦY ĐỦ</button>
 <div id="qhFullKeypad">
@@ -5870,7 +5946,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.17</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.18</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -12035,6 +12111,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     if(!table||typeof state==='undefined')return;
     const fuel=activeTab==='inj_ve',oneHand=fuel&&fuelDensity>=2;
     screen.classList.toggle('qhFuelTab',fuel);
+    screen.classList.toggle('qhIgnTab',activeTab==='ign_degree');
     screen.classList.toggle('qhOneHandFuel',oneHand);
     screen.classList.toggle('qhOptionsTab',activeTab==='options');
     const sparseFeature=activeTab!=='inj_ve'&&activeTab!=='options'?
@@ -12133,7 +12210,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }));
   let fullIoBusy=false;
   async function fullIoFeedback(kind,id,action,{auto=false}={}){
-    if(fullIoBusy){
+    if(fullIoBusy||window.QHBackfire?.busy){
       if(!auto)window.setEcuTaskStatus?.('loading','ECU đang xử lý lệnh trước đó. Vui lòng đợi kết quả.');
       return false;
     }
@@ -12302,6 +12379,368 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     show:()=>{screen.classList.remove('suspended');render()},
     hide:()=>{window.QHOrientation?.exit('full');screen.classList.add('suspended')},
     get activeTab(){return activeTab}};
+})();
+</script>
+
+
+<script id="qhBackfireControllerV118">
+(function(){
+'use strict';
+const el=id=>document.getElementById(id);
+const panel=el('qhBfOverlay'),open=el('qhBfOpen');
+const capLabel=level=>['','-19','-21','-23'][level]||'?';
+const rpms=[5500,6000];
+const BACKUP_PREFIX='qhBackfireSnapshotV1:';
+let busy=false,tone='unknown',lastAutoKey='',lastSeenConnection=false,autoFailCount=0;
+function api(){return window.BlinkRealProtocol}
+function bridge(){return window.QHFullFeatureBridge}
+function fmtStatus(kind,msg){
+ tone=kind;
+ const stateText=kind==='active'?'ON':kind==='restored'?'MAP GỐC':
+   kind==='suspect'?'NGHI BACKFIRE':kind==='partial'?'CHƯA RÕ':kind==='busy'?'ĐANG XỬ LÝ':
+   kind==='unsupported'?'KHÔNG HỖ TRỢ':kind==='off'?'OFF':'CHƯA SOI';
+ if(open){
+   open.textContent='🔥 BACKFIRE: '+stateText;
+   open.classList.toggle('qhBfActive',kind==='active');
+   open.classList.toggle('qhBfWarn',kind==='partial'||kind==='suspect');
+ }
+ const status=el('qhBfStatus');
+ if(status&&msg)status.textContent=msg;
+ refreshButtons();
+}
+function identity(){
+ const h=api()?.handshake,p=api()?.profile;
+ if(!h||!p||!h.ident||!Number.isFinite(Number(h.ecuId)))
+   throw new Error('Chưa có ID/định danh ECU đầy đủ từ handshake 0x5A.');
+ return [String(p.key),String(h.ident).trim(),String(h.firmware||'').trim(),
+   Number(h.ecuId),String(h.date||''),String(state.ecuVariant||'')].join('|');
+}
+function context(){
+ const a=api(),b=bridge(),c=a?.backfireCapabilities?.();
+ if(!state.ecuConnected||state.ecuPhase!=='live'||!a||!b)
+   throw new Error('Chưa kết nối ECU ở trạng thái LIVE.');
+ if(!c?.supported)throw new Error('Đời ECU '+(c?.profile||'UNKNOWN')+
+   ' chưa hỗ trợ ghi Backfire an toàn. V11/Ultra Pro2 không mã hóa được góc −19°.');
+ const bank=Number(state.activeMap);
+ if(!Number.isInteger(bank)||bank<1||bank>4)throw new Error('MAP No. chưa hợp lệ.');
+ const feature=b.getFeature('ign_degree');
+ if(!feature||feature.rows!==14||feature.cols!==30||!Array.isArray(feature.x))
+   throw new Error('MAP đánh lửa chưa xác định đủ trục 14 × 30.');
+ const indices=rpms.map(x=>feature.x.findIndex(r=>Number(r)===x));
+ if(indices.some(i=>i<0)||indices[0]===indices[1])
+   throw new Error('MAP ECU không có đủ hai breakpoint RPM chính xác 5500 và 6000. Không tự đoán cột.');
+ if(!Array.isArray(feature.y)||feature.y.length!==14||Number(feature.y[0])<95)
+   throw new Error('Trục TPS ECU không đủ 14 hàng từ mức tải cao. Không ghi nhầm.');
+ return {a,b,c,bank,indices,device:identity(),feature};
+}
+function storageKey(ctx){return BACKUP_PREFIX+ctx.device+':MAP'+ctx.bank}
+function validateBackup(ctx,record){
+ if(!record||record.format!=='QH-BACKFIRE-BACKUP-V1'||record.device!==ctx.device||
+    record.bank!==ctx.bank||!Array.isArray(record.originalIgn)||record.originalIgn.length!==14||
+    record.originalIgn.some(r=>!Array.isArray(r)||r.length!==30||
+      r.some(v=>v==null||!Number.isFinite(Number(v))))||
+    !Array.isArray(record.indices)||record.indices.length!==2||
+    record.indices.some((v,i)=>v!==ctx.indices[i])||
+    !Number.isInteger(record.originalLimit)||record.originalLimit<500||
+    record.originalLimit>30000)
+   throw new Error('Backup không hợp lệ hoặc không thuộc đúng ECU/MAP/RPM đang chọn.');
+ return record;
+}
+function readBackup(ctx){
+ let raw=null;
+ try{raw=localStorage.getItem(storageKey(ctx))}catch(e){throw Error('Không truy cập được bộ nhớ app: '+e.message)}
+ if(!raw)return null;
+ let record;
+ try{record=JSON.parse(raw)}catch(_e){throw Error('Backup lưu trong app bị hỏng. Hãy nhập bản JSON đã xuất.')}
+ return validateBackup(ctx,record);
+}
+function saveBackup(ctx,b){
+ validateBackup(ctx,b);
+ try{localStorage.setItem(storageKey(ctx),JSON.stringify(b))}
+ catch(e){throw Error('Không lưu được bản gốc vào ứng dụng. Không cho phép ghi ECU: '+e.message)}
+}
+function same(a,b,tol=.21){return Number.isFinite(Number(a))&&Number.isFinite(Number(b))&&Math.abs(Number(a)-Number(b))<=tol}
+function readyToWrite(){
+ if(!state.ecuConnected||state.ecuPhase!=='live')throw Error('ECU phải đang kết nối LIVE.');
+ const rpm=Number(state.live?.rpm);
+ const t=performance.now()-Number(state.live?.auxAt);
+ if(!Number.isFinite(rpm)||!Number.isFinite(t)||t<0||t>4500)
+   throw Error('Chưa có bản tin RPM LIVE đủ mới để xác nhận động cơ đã dừng.');
+ if(rpm>100)throw Error('Động cơ đang quay '+Math.round(rpm)+' RPM. Hãy TẮT MÁY trước khi ghi/khôi phục.');
+ if(state.recording||state.threeRun?.active||state.ecuWriteQueued||
+    api()?.otaPaused||api()?.manualIoActive)
+   throw Error('Đang ghi/chạy bản đồ hoặc OTA. Dừng tác vụ trước khi Backfire.');
+}
+function matrixCopy(m){
+ if(!Array.isArray(m)||m.length!==14||m.some(r=>!Array.isArray(r)||r.length!==30||
+    r.some(v=>v==null||!Number.isFinite(Number(v)))))
+   throw Error('Dữ liệu IGN degree chưa đủ 420 ô hợp lệ; không được ghi ECU.');
+ return m.map(r=>r.map(Number));
+}
+async function readSnapshot(ctx){
+ if(Number(state.activeMap)!==ctx.bank||identity()!==ctx.device)
+   throw Error('ECU/MAP thay đổi trong lúc thao tác. Đã hủy giao dịch.');
+ const result=await ctx.a.readFeaturePageReal('ign_degree',ctx.bank,false);
+ const m=matrixCopy(result?.matrix||ctx.b.getData('ign_degree',ctx.bank));
+ const limiter=await ctx.a.backfireReadLimiter(ctx.bank,false);
+ return {m,rpm:Number(limiter.rpm)};
+}
+function levelFor(ctx,number){
+ const lvl=ctx.c.levels?.find(x=>x.level===Number(number));
+ if(!lvl?.available||!Number.isFinite(lvl.actual))
+   throw Error('LV'+number+' ('+capLabel(Number(number))+
+     '°) không biểu diễn được chính xác trên '+ctx.c.profile+
+     '. ECU khác hệ số nên không ghi giá trị giả.');
+ return lvl;
+}
+function regionMatch(ctx,m,value){
+ return m.every(row=>ctx.indices.every(c=>same(row[c],value)));
+}
+function outsideMatch(ctx,m,b){
+ for(let r=0;r<14;r++)for(let c=0;c<30;c++){
+   if(ctx.indices.includes(c))continue;
+   if(!same(m[r][c],b.originalIgn[r][c]))return false;
+ }
+ return true;
+}
+function baseMatch(ctx,m,b){
+ return ctx.indices.every(c=>m.every((row,r)=>same(row[c],b.originalIgn[r][c])));
+}
+function statusFrom(ctx,snap,b){
+ const identified=(ctx.c.levels||[]).find(x=>x.available&&regionMatch(ctx,snap.m,x.actual));
+ if(b){
+   if(snap.rpm===6000&&identified&&identified.level===b.level&&outsideMatch(ctx,snap.m,b))
+     return {tone:'active',msg:'BACKFIRE ĐANG BẬT · MAP '+ctx.bank+
+       ' · LV'+identified.level+' ('+identified.actual+'° thực tế) · 28 ô · giới hạn 6000 RPM. Đã xác minh từ ECU.'};
+   if(snap.rpm===b.originalLimit&&baseMatch(ctx,snap.m,b)&&outsideMatch(ctx,snap.m,b))
+     return {tone:'restored',msg:'ĐANG DÙNG MAP GỐC · MAP '+ctx.bank+
+       ' · giới hạn '+snap.rpm+' RPM. Có backup để chuyển lại.'};
+   return {tone:'partial',msg:'ECU/MAP có dữ liệu khác bản Backfire và bản gốc đã lưu. Không tự kết luận ON/OFF. Không ghi đè nếu chưa kiểm tra backup.'};
+ }
+ if(snap.rpm===6000&&identified)
+   return {tone:'suspect',msg:'Phát hiện 28 ô giống LV'+identified.level+
+     ' và giới hạn 6000 RPM nhưng KHÔNG có backup gốc trên thiết bị. Không thể khôi phục tự động.'};
+ return {tone:'off',msg:'Chưa thấy dấu hiệu Backfire đồng thời ở 28 ô và giới hạn 6000 RPM của MAP '+ctx.bank+'.'};
+}
+function lockUi(on){
+ const ids=['qhPcReadCurrent','qhPcWriteCurrent','qhPcReadCurrentTop','qhPcWriteCurrentTop','qhFullMapSelect'];
+ document.querySelectorAll('#qhFullPcScreen .qhPcTabs button').forEach(x=>{
+   if(on){x.dataset.qhBfDisabled=String(x.disabled);x.disabled=true}
+   else if(x.dataset.qhBfDisabled!==undefined){x.disabled=x.dataset.qhBfDisabled==='true';delete x.dataset.qhBfDisabled}
+ });
+ ids.forEach(id=>{
+   const x=el(id);if(!x)return;
+   if(on){x.dataset.qhBfDisabled=String(x.disabled);x.disabled=true}
+   else if(x.dataset.qhBfDisabled!==undefined){x.disabled=x.dataset.qhBfDisabled==='true';delete x.dataset.qhBfDisabled}
+ });
+}
+async function transaction(action){
+ if(busy)return false;
+ if(window.QHFullPc?.isBusy?.())throw Error('Đang có lệnh ECU khác.');
+ busy=true;lockUi(true);fmtStatus('busy','Đang thực hiện '+action+'; không ngắt BLE hoặc tắt ứng dụng.');
+ try{return await action()}
+ finally{busy=false;lockUi(false);refreshButtons();window.QHFullPc?.render?.()}
+}
+function refreshButtons(){
+ const connected=!!state.ecuConnected&&state.ecuPhase==='live';
+ const selected=window.QHFullPc?.activeTab==='ign_degree';
+ const possible=!!api()?.backfireCapabilities?.()?.supported;
+ if(open)open.disabled=!selected;
+ for(const id of ['qhBfStart','qhBfRestore','qhBfCheck','qhBfExport','qhBfImport']){
+   const btn=el(id);if(!btn)continue;
+   btn.disabled=busy||!connected||!possible;
+ }
+ if(el('qhBfStart')){
+   const lvl=api()?.backfireCapabilities?.()?.levels?.find(x=>x.level===Number(el('qhBfLevel')?.value));
+   el('qhBfStart').disabled=busy||!connected||!possible||!lvl?.available||tone==='active'||tone==='partial'||tone==='suspect';
+ }
+ if(el('qhBfRestore')){
+   let valid=false;
+   try{if(connected&&possible)valid=!!readBackup(context())}catch(_e){}
+   el('qhBfRestore').disabled=busy||!valid;
+ }
+ if(el('qhBfExport')){
+   let valid=false;
+   try{if(connected&&possible)valid=!!readBackup(context())}catch(_e){}
+   el('qhBfExport').disabled=busy||!valid;
+ }
+}
+async function check({auto=false}={}){
+ if(busy)return;
+ if(!auto)fmtStatus('busy','Đọc lại MAP lửa và giới hạn tua trực tiếp từ ECU...');
+ try{
+   return await transaction(async()=>{
+     const ctx=context(),snap=await readSnapshot(ctx),b=readBackup(ctx);
+     const st=statusFrom(ctx,snap,b);fmtStatus(st.tone,st.msg);return st;
+   });
+ }catch(e){
+   fmtStatus('unknown','KHÔNG KIỂM TRA ĐƯỢC: '+String(e?.message||e));
+   if(!auto)window.setEcuTaskStatus?.('error','BACKFIRE: '+String(e?.message||e),6000);
+   return null;
+ }
+}
+async function writeIgn(ctx,m){
+ const data=ctx.b.getData('ign_degree',ctx.bank);
+ matrixCopy(data);
+ for(let r=0;r<14;r++)for(let c=0;c<30;c++)data[r][c]=m[r][c];
+ ctx.b.saveFeature();
+ if(!ctx.b.prepareFeatureWrite('ign_degree'))throw Error('Chưa dựng được bảng ghi lửa ECU.');
+ await ctx.a.writeFeatureReal('ign_degree');
+}
+async function restoreCore(ctx,b,{quiet=false}={}){
+ const snap=await readSnapshot(ctx);
+ if(!outsideMatch(ctx,snap.m,b))
+   throw Error('380+ ô ngoài vùng Backfire đã khác backup. Chặn khôi phục để tránh đè bản tune khác.');
+ const level=ctx.c.levels?.find(x=>x.level===b.level);
+ for(let r=0;r<14;r++)for(const c of ctx.indices){
+   const cur=snap.m[r][c],original=b.originalIgn[r][c];
+   if(!same(cur,original)&&!(level?.available&&same(cur,level.actual)))
+     throw Error('Ô '+r+':'+c+' đã bị thay đổi thủ công, không thể khôi phục tự động.');
+ }
+ if(snap.rpm!==6000&&snap.rpm!==b.originalLimit)
+   throw Error('RPM MAX đã bị thay đổi ngoài Backfire. Không ghi đè giá trị mới '+snap.rpm+'.');
+ if(!baseMatch(ctx,snap.m,b)){
+   const target=snap.m.map(r=>r.slice());
+   for(let r=0;r<14;r++)for(const c of ctx.indices)target[r][c]=b.originalIgn[r][c];
+   await writeIgn(ctx,target);
+ }
+ if(snap.rpm!==b.originalLimit)
+   await ctx.a.backfireWriteLimiter(ctx.bank,b.originalLimit,snap.rpm);
+ const verified=await readSnapshot(ctx);
+ if(verified.rpm!==b.originalLimit||!baseMatch(ctx,verified.m,b)||!outsideMatch(ctx,verified.m,b))
+   throw Error('ECU chưa xác minh đủ 28 ô lửa gốc + RPM gốc.');
+ b.state='restored';b.restoredAt=Date.now();saveBackup(ctx,b);
+ if(!quiet)fmtStatus('restored','ĐÃ KHÔI PHỤC MAP '+ctx.bank+
+   ' · 28 ô lửa gốc và '+verified.rpm+' RPM · ECU READBACK OK.');
+ return true;
+}
+async function start(){
+ if(busy)return;
+ try{
+   readyToWrite();
+   const ctx=context(),lvl=levelFor(ctx,Number(el('qhBfLevel').value));
+   const msg='GHI BACKFIRE vào MAP '+ctx.bank+
+     ': toàn bộ TPS 100%→IDLE, hai RPM 5500/6000, 28 ô = '+
+     lvl.actual+'° (LV'+lvl.level+'); RPM MAX 6000.\n'+
+     'CHỈ KHI ĐỘNG CƠ ĐÃ DỪNG. Góc lửa âm ở tải lớn có thể gây hỏng động cơ và bộ xả.\n'+
+     'Bạn đã sao lưu MAP ECU ngoài thiết bị chưa?';
+   if(!window.confirm(msg))return;
+   await transaction(async()=>{
+     readyToWrite();
+     const base=await readSnapshot(ctx);
+     const existing=readBackup(ctx);
+     if(existing&&existing.state!=='restored')
+       throw Error('Đang có backup chưa khôi phục của MAP này. Hãy SOI ECU/DÙNG MAP GỐC trước khi ghi đè.');
+     const signature=statusFrom(ctx,base,null);
+     if(signature.tone==='suspect')throw Error('ECU có dấu hiệu Backfire nhưng không có bản gốc. Không ghi đè.');
+     if(base.rpm<6000)throw Error('Giới hạn tua gốc '+base.rpm+' nhỏ hơn 6000; không tự nâng giới hạn.');
+     const b={
+       format:'QH-BACKFIRE-BACKUP-V1',device:ctx.device,bank:ctx.bank,indices:ctx.indices.slice(),
+       rpmAxes:[5500,6000],originalIgn:base.m,originalLimit:base.rpm,
+       level:lvl.level,actual:lvl.actual,state:'pending',createdAt:Date.now()
+     };
+     saveBackup(ctx,b); // Baseline must survive before ANY ECU write.
+     try{
+       const changed=base.m.map(r=>r.slice());
+       for(let r=0;r<14;r++)for(const c of ctx.indices)changed[r][c]=lvl.actual;
+       await writeIgn(ctx,changed);
+       await ctx.a.backfireWriteLimiter(ctx.bank,6000,base.rpm);
+       const verified=await readSnapshot(ctx);
+       if(verified.rpm!==6000||!regionMatch(ctx,verified.m,lvl.actual)||
+          !outsideMatch(ctx,verified.m,b))throw Error('ECU đọc lại không khớp 28 ô hoặc RPM 6000.');
+       b.state='active';b.appliedAt=Date.now();saveBackup(ctx,b);
+       fmtStatus('active','ĐÃ BẬT BACKFIRE · MAP '+ctx.bank+' · LV'+lvl.level+
+         ' = '+lvl.actual+'° thực tế · 28 ô · RPM 6000. ECU READBACK OK.');
+       window.setEcuTaskStatus?.('success','BACKFIRE MAP '+ctx.bank+' · ECU VERIFY OK',5000);
+     }catch(e){
+       b.state='needs_restore';saveBackup(ctx,b);
+       try{await restoreCore(ctx,b,{quiet:true});fmtStatus('restored','GHI BACKFIRE lỗi, đã tự hoàn nguyên và đọc lại MAP/RPM gốc. '+String(e?.message||e));}
+       catch(rollbackError){fmtStatus('partial','CẢNH BÁO: Có thể đã ghi một phần ECU. Backup vẫn còn. Không chạy máy! Dùng DÙNG MAP GỐC khi ECU kết nối ổn định. '+String(rollbackError?.message||rollbackError));}
+       throw e;
+     }
+   });
+ }catch(e){window.setEcuTaskStatus?.('error','BACKFIRE KHÔNG THỂ BẬT: '+String(e?.message||e),9000);
+   if(tone!=='partial'&&tone!=='restored')fmtStatus('unknown','BẬT BACKFIRE THẤT BẠI: '+String(e?.message||e));}
+}
+async function restore(){
+ if(busy)return;
+ try{
+   readyToWrite();const ctx=context(),b=readBackup(ctx);
+   if(!b)throw Error('Thiếu backup gốc của đúng ECU / MAP. Hãy nhập backup JSON.');
+   if(!window.confirm('Khôi phục 28 ô lửa gốc và giới hạn RPM '+b.originalLimit+
+     ' cho MAP '+ctx.bank+' từ bản sao lưu? Động cơ phải đang dừng.'))return;
+   await transaction(async()=>{
+     readyToWrite();
+     await restoreCore(ctx,b);
+     window.setEcuTaskStatus?.('success','ĐÃ DÙNG MAP GỐC · RPM '+b.originalLimit,4500);
+   });
+ }catch(e){
+   fmtStatus('partial','KHÔI PHỤC CHƯA XÁC MINH: '+String(e?.message||e)+
+     '. Backup vẫn giữ nguyên trong ứng dụng. Không chạy động cơ khi trạng thái chưa rõ.');
+   window.setEcuTaskStatus?.('error','DÙNG MAP GỐC LỖI: '+String(e?.message||e),9000);
+ }
+}
+function downloadBackup(){
+ try{
+   const ctx=context(),b=readBackup(ctx);
+   if(!b)throw Error('Chưa có bản gốc để xuất.');
+   const blob=new Blob([JSON.stringify(b,null,2)],{type:'application/json'});
+   const url=URL.createObjectURL(blob),anchor=document.createElement('a');
+   anchor.href=url;anchor.download='QH_Backfire_Backup_MAP'+ctx.bank+'.json';
+   document.body.appendChild(anchor);anchor.click();anchor.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),2000);
+   el('qhBfStatus').textContent='Đã yêu cầu tải bản backup MAP '+ctx.bank+'. Hãy lưu tệp ở nơi an toàn.';
+ }catch(e){fmtStatus('partial','XUẤT BACKUP LỖI: '+String(e?.message||e))}
+}
+async function importBackup(file){
+ if(!file)return;
+ try{
+   const ctx=context(),text=await file.text();
+   if(text.length>200000)throw Error('Tệp backup quá lớn.');
+   const parsed=validateBackup(ctx,JSON.parse(text));
+   const existing=readBackup(ctx);
+   if(existing&&existing.state!=='restored')
+     throw Error('Đã có backup đang dùng/chưa khôi phục. Không cho nhập đè.');
+   saveBackup(ctx,parsed);
+   fmtStatus('unknown','ĐÃ NHẬP BACKUP ĐÚNG ECU/MAP. Hãy bấm SOI ECU để xác định trạng thái thực.');
+   await check();
+ }catch(e){fmtStatus('partial','NHẬP BACKUP LỖI: '+String(e?.message||e))}
+ finally{el('qhBfImportFile').value='';}
+}
+el('qhBfOpen')?.addEventListener('click',()=>{
+ if(busy)return;
+ panel.hidden=false;refreshButtons();
+});
+el('qhBfClose')?.addEventListener('click',()=>{if(!busy)panel.hidden=true});
+el('qhBfOverlay')?.addEventListener('click',e=>{if(e.target===panel&&!busy)panel.hidden=true});
+el('qhBfLevel')?.addEventListener('change',refreshButtons);
+el('qhBfCheck')?.addEventListener('click',()=>void check());
+el('qhBfStart')?.addEventListener('click',()=>void start());
+el('qhBfRestore')?.addEventListener('click',()=>void restore());
+el('qhBfExport')?.addEventListener('click',downloadBackup);
+el('qhBfImport')?.addEventListener('click',()=>el('qhBfImportFile')?.click());
+el('qhBfImportFile')?.addEventListener('change',e=>void importBackup(e.target.files?.[0]));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden&&!busy){panel.hidden=true;e.stopPropagation()}},true);
+// Exactly one automatic read-only check for every connected ECU and selected
+// MAP. No background ECU write is ever initiated by timer or app launch.
+setInterval(()=>{
+ const connected=!!state.ecuConnected&&state.ecuPhase==='live';
+ if(!connected){
+   if(lastSeenConnection)fmtStatus('unknown','Đã ngắt ECU. Trạng thái cũ không được coi là còn hiệu lực.');
+   lastSeenConnection=false;lastAutoKey='';autoFailCount=0;refreshButtons();return;
+ }
+ lastSeenConnection=true;refreshButtons();
+ if(document.body.dataset.uiMode!=='full'||busy||api()?.isBusy)return;
+ const rpm=Number(state.live?.rpm),age=performance.now()-Number(state.live?.auxAt);
+ if(!Number.isFinite(rpm)||rpm>100||!Number.isFinite(age)||age<0||age>4500)return;
+ let key;try{key=identity()+'|'+state.activeMap}catch(_e){return}
+ if(key!==lastAutoKey){
+   lastAutoKey=key;autoFailCount++;
+   if(autoFailCount<=8)void check({auto:true});
+ }
+},1700);
+window.QHBackfire={get busy(){return busy},check,start,restore};
+fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc chờ tự kiểm tra.');
 })();
 </script>
 
