@@ -12431,8 +12431,9 @@ function context(){
  const indices=rpms.map(x=>feature.x.findIndex(r=>Number(r)===x));
  if(indices.some(i=>i<0)||indices[0]===indices[1])
    throw new Error('MAP ECU không có đủ hai breakpoint RPM chính xác 5500 và 6000. Không tự đoán cột.');
- if(!Array.isArray(feature.y)||feature.y.length!==14||Number(feature.y[0])<95)
-   throw new Error('Trục TPS ECU không đủ 14 hàng từ mức tải cao. Không ghi nhầm.');
+ if(!Array.isArray(feature.y)||feature.y.length!==14||
+    !Number.isFinite(Number(feature.y[0]))||Math.abs(Number(feature.y[0])-100)>.5)
+   throw new Error('Trục TPS ECU không đủ 14 hàng tới đúng 100% TPS. Không tự đoán hàng.');
  return {a,b,c,bank,indices,device:identity(),feature};
 }
 function storageKey(ctx){return BACKUP_PREFIX+ctx.device+':MAP'+ctx.bank}
