@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.2';
-  document.title = 'QH ECU · v1.1.2';
+  window.BLINK_PB_VERSION = 'QH-1.1.3';
+  document.title = 'QH ECU · v1.1.3';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4524,7 +4524,7 @@ body[data-ui-mode="full"] .app{background:#010503!important}
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.2</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.3</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -9251,6 +9251,68 @@ window.addEventListener('orientationchange',()=>setTimeout(()=>requestAnimationF
 try{window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(updateRedSelectionPad))}catch(_e){}
 
 document.getElementById('mapLiveCursorToggle')?.addEventListener('click',()=>window.setLiveAutoFollowEnabled?.(!(window.isLiveAutoFollowEnabled?.())));
+
+/* QH FULL PC bridge: the REDLEO controller owns featureStore and
+ * featureForProfile in this IIFE. The separate FULL renderer must never
+ * attempt to resolve those private functions as globals.
+ * Keep all ECU wire operations in BlinkRealProtocol. */
+window.QHFullFeatureBridge={
+  getFeature(id){return featureForProfile(id)||null;},
+  getData(id,bank=state.activeMap){
+    const f=featureForProfile(id);
+    return f?featureData(f,bank):null;
+  },
+  saveFeature(){saveFeatureStore();},
+  prepareFeatureWrite(id){
+    const f=featureForProfile(id);
+    if(!f||f.editor==='fuel')return null;
+    currentFeature=f;
+    const src=document.getElementById('redSourceName');
+    if(src)src.textContent=f.source;
+    const bank=document.getElementById('redBankSelect');
+    if(bank)bank.value=String(state.activeMap);
+    // Existing Blink-Redleo writes obtain the current values from this table
+    // for several ECU families. Render the real source table before writing.
+    renderFeature();
+    return f;
+  },
+  selectBank(n){
+    selectMapBank(n,false);
+    syncBanks();
+    return state.activeMap;
+  },
+  usesOptionsTable(){
+    return state.ecuProfile==='MODERN_V10'||state.ecuProfile==='MODERN_V11';
+  },
+  getOptionValue(key){
+    const el=document.querySelector('[data-ecuopt="'+key+'"]');
+    return el?(el.value??''):(optionStore[key]??'');
+  },
+  setOptionValue(key,val){
+    const v=String(val);
+    const el=document.querySelector('[data-ecuopt="'+key+'"]');
+    if(el)el.value=v;
+    optionStore[key]=v;
+    localStorage.setItem('blinkRedleoOptionsV6',JSON.stringify(optionStore));
+  },
+  async readOptions(){
+    const api=window.BlinkRealProtocol;
+    if(!api)throw new Error('ECU protocol is not ready');
+    if(this.usesOptionsTable())return api.readFeaturePageReal('ate_options',state.activeMap,true);
+    return api.readA2SensorPageReal(true);
+  },
+  async writeOptions(){
+    const api=window.BlinkRealProtocol;
+    if(!api)throw new Error('ECU protocol is not ready');
+    if(this.usesOptionsTable()){
+      this.prepareFeatureWrite('ate_options');
+      return api.writeFeatureReal('ate_options');
+    }
+    // For V9.x keep original A2 bit/byte preservation and readback.
+    return api.writeOptionsReal();
+  }
+};
+
 syncLiveCursorButtons();
 loadOptions();syncBanks();setInterval(syncMirrors,120);syncMirrors();showScreen('dashboard');
 })();
@@ -9882,6 +9944,8 @@ updateMapControls();
 (function(){
   'use strict';
   let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',activeFeature=null;
+  const fb=()=>window.QHFullFeatureBridge||null;
+  const backendTab=()=>activeTab==='options'&&fb()?.usesOptionsTable?.()?'ate_options':activeTab;
   const screen=document.getElementById('qhFullPcScreen');
   const table=document.getElementById('qhFullMapTable');
   const wrap=document.getElementById('qhFullMapWrap');
@@ -9901,19 +9965,21 @@ updateMapControls();
   };
 
   function profileFeature(id){
-    try{return typeof featureForProfile==='function'?featureForProfile(id):null}catch(_e){return null}
+    try{return fb()?.getFeature(id)||null}catch(_e){return null}
   }
   function dataForFeature(f){
     if(!f)return null;
-    try{return typeof featureData==='function'?featureData(f,state.activeMap):null}catch(_e){return null}
+    try{return fb()?.getData(f.id,state.activeMap)||null}catch(_e){return null}
   }
   function fuelValue(r,c){
     const v=Number(state?.inject?.[r]?.[c]);
     return Number.isFinite(v)?v:0;
   }
   function fullValue(f,d,r,c){
-    const v=Number(d?.[r]?.[c]);
-    return Number.isFinite(v)?v:0;
+    const raw=d?.[r]?.[c];
+    if(raw===null||raw===undefined||raw==='')return null;
+    const v=Number(raw);
+    return Number.isFinite(v)?v:null;
   }
   function setHeader(){
     const m=tabMeta[activeTab]||{title:String(activeTab||'MAP').toUpperCase(),unit:''};
@@ -9924,7 +9990,7 @@ updateMapControls();
   function setBankControl(){
     const sel=document.getElementById('qhFullMapSelect');
     if(!sel)return;
-    const banked=activeTab==='inj_ve'||!!activeFeature?.banked;
+    const banked=activeTab==='inj_ve'||!!profileFeature(backendTab())?.banked;
     sel.style.display=banked?'':'none';
     sel.value=String(state.activeMap||1);
   }
@@ -9946,6 +10012,7 @@ updateMapControls();
     table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>openKey(Number(td.dataset.r),Number(td.dataset.c))));
   }
   function featureCellColor(id,v){
+    if(v===null)return '#10331a';
     if(id==='afr_map'){
       if(v<12)return '#ff4848';
       if(v<=14)return '#32ef5b';
@@ -9972,8 +10039,8 @@ updateMapControls();
       h+='<tr><td class="rh">'+(y[r]??('R'+(r+1)))+'</td>';
       for(let c=0;c<f.cols;c++){
         const v=fullValue(f,d,r,c),sel=fkCell&&fkCell.r===r&&fkCell.c===c?' sel':'';
-        let display=(Math.round(v*1000)/1000).toString();
-        if(id==='afr_map'){
+        let display=v===null?'--':(Math.round(v*1000)/1000).toString();
+        if(id==='afr_map'&&v!==null){
           try{
             const meta=window.blinkEcuAfrMeta?.[state.activeMap]||window.blinkV11AfrMeta?.[state.activeMap];
             if(meta?.enabled?.[r]?.[c]===false)display='-';
@@ -9999,19 +10066,19 @@ updateMapControls();
       ['coldStartDelay','Cold-Start Fuel Delay','s'],['fanTemp','Cooling Fan ON Temperature','°C'],
       ['tpsMinEcu','TPS Minimum Voltage','V'],['tpsMaxEcu','TPS Maximum Voltage','V']
     ];
-    grid.innerHTML=specs.map(([key,label,unit])=>'<label style="display:block;border:1px solid #187d32;background:#061109;padding:10px"><span style="display:block;color:#9bc5a4;font-size:11px;margin-bottom:5px">'+label+'</span><input data-qh-full-opt="'+key+'" value="'+(optionStore?.[key]??'')+'" style="width:100%;height:36px"><small style="color:#69a777">'+unit+'</small></label>').join('');
+    grid.innerHTML=specs.map(([key,label,unit])=>'<label style="display:block;border:1px solid #187d32;background:#061109;padding:10px"><span style="display:block;color:#9bc5a4;font-size:11px;margin-bottom:5px">'+label+'</span><input data-qh-full-opt="'+key+'" value="'+String(fb()?.getOptionValue(key)??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" style="width:100%;height:36px"><small style="color:#69a777">'+unit+'</small></label>').join('');
     grid.querySelectorAll('[data-qh-full-opt]').forEach(inp=>inp.addEventListener('change',()=>{
-      try{optionStore[inp.dataset.qhFullOpt]=inp.value;localStorage.setItem('blinkRedleoOptionsV6',JSON.stringify(optionStore))}catch(_e){}
+      try{fb()?.setOptionValue(inp.dataset.qhFullOpt,inp.value)}catch(_e){}
     }));
   }
   function render(){
     if(!table||typeof state==='undefined')return;
     setHeader();setBankControl();syncConn();
-    if(activeTab==='options'){
+    if(activeTab==='options'&&!fb()?.usesOptionsTable?.()){
       wrap.style.display='none';optionsPanel.style.display='block';renderOptionsInline();return;
     }
     wrap.style.display='block';optionsPanel.style.display='none';
-    if(activeTab==='inj_ve')renderFuel(); else renderFeatureInline(activeTab);
+    if(activeTab==='inj_ve')renderFuel(); else renderFeatureInline(backendTab());
   }
   function syncConn(){
     const on=!!state?.ecuConnected,box=document.getElementById('qhPcConn'),txt=document.getElementById('qhPcConnText');
@@ -10019,18 +10086,18 @@ updateMapControls();
   }
   function currentData(){
     if(activeTab==='inj_ve')return state.inject;
-    const f=activeFeature||profileFeature(activeTab);return f?dataForFeature(f):null;
+    const f=activeFeature||profileFeature(backendTab());return f?dataForFeature(f):null;
   }
   function currentUnit(){
     if(activeTab==='inj_ve')return 'ms';
-    return (activeFeature||profileFeature(activeTab))?.unit||'';
+    return (activeFeature||profileFeature(backendTab()))?.unit||'';
   }
   function openKey(r,c){
     if(activeTab==='options')return;
     fkCell={r,c};
     const d=currentData(),v=Number(d?.[r]?.[c]);
     fkBuffer=String((Number.isFinite(v)?v:0).toFixed(3)).replace(/0+$/,'').replace(/\.$/,'');
-    const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(activeTab));
+    const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(backendTab()));
     const y=activeTab==='inj_ve'?TPS_ROWS[r]:(f?.y?.[r]??('R'+(r+1)));
     const x=activeTab==='inj_ve'?RPMS[c]:(f?.x?.[c]??('C'+(c+1)));
     document.getElementById('qhFkCell').textContent=String(y)+(typeof y==='number'&&activeTab==='inj_ve'?'%':'')+' · '+String(x)+(activeTab==='inj_ve'?' RPM':'');
@@ -10050,8 +10117,11 @@ updateMapControls();
             state.inject[fkCell.r][fkCell.c]=Number(Math.max(0,Math.min(v,max)).toFixed(3));
             try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}catch(_e){}
           }else{
-            const f=activeFeature||profileFeature(activeTab),d=f?dataForFeature(f):null;
-            if(d?.[fkCell.r]){d[fkCell.r][fkCell.c]=Number(v.toFixed(4));try{saveFeatureStore()}catch(_e){}}
+            const f=activeFeature||profileFeature(backendTab()),d=f?dataForFeature(f):null;
+            if(d?.[fkCell.r]){
+              d[fkCell.r][fkCell.c]=Number(v.toFixed(4));
+              try{fb()?.saveFeature()}catch(_e){}
+            }
           }
         }
       }
@@ -10068,30 +10138,26 @@ updateMapControls();
     try{
       const api=window.BlinkRealProtocol;if(!api)throw new Error('ECU protocol is not ready.');
       if(activeTab==='inj_ve')await api.readCurrentFuelBank(state.activeMap,true);
-      else if(activeTab==='options')await api.readA2SensorPageReal(true);
-      else await api.readFeaturePageReal(activeTab,state.activeMap,true);
+      else if(activeTab==='options')await fb()?.readOptions();
+      else await api.readFeaturePageReal(backendTab(),state.activeMap,true);
       render();
     }catch(e){try{showEcuNotice('error','READ CURRENT',String(e?.message||e),0)}catch(_e){}}
   }
   function syncHiddenRedTableForWrite(){
     if(activeTab==='inj_ve'||activeTab==='options')return;
-    const f=activeFeature||profileFeature(activeTab),d=f?dataForFeature(f):null;
-    if(!f||!d)return;
-    currentFeature=f;
-    const src=document.getElementById('redSourceName');if(src)src.textContent=f.source;
-    const hidden=document.getElementById('redFeatureTable');if(!hidden)return;
-    let h='<tbody>';
-    for(let r=0;r<f.rows;r++){h+='<tr>';for(let c=0;c<f.cols;c++){const v=Number(d[r][c]);h+='<td data-rr="'+r+'" data-rc="'+c+'" data-value="'+(Number.isFinite(v)?v:0)+'">'+(Number.isFinite(v)?v:0)+'</td>';}h+='</tr>'}
-    h+='</tbody>';hidden.innerHTML=h;
+    // Blink-Redleo's verified encoder uses its own redFeatureTable DOM.
+    // Rebuild it with controller-owned feature metadata and exact values.
+    if(!fb()?.prepareFeatureWrite(backendTab()))
+      throw new Error('This ECU map is not available for writing.');
   }
   async function writeCurrent(){
     try{
       const api=window.BlinkRealProtocol;if(!api)throw new Error('ECU protocol is not ready.');
       if(activeTab==='inj_ve')await api.writeCurrentFuelAndVerify(state.activeMap);
-      else if(activeTab==='options')await api.writeOptionsReal();
+      else if(activeTab==='options')await fb()?.writeOptions();
       else{
         syncHiddenRedTableForWrite();
-        await api.writeFeatureReal(activeTab);
+        await api.writeFeatureReal(backendTab());
       }
       render();
     }catch(e){try{showEcuNotice('error','SEND CURRENT',String(e?.message||e),0)}catch(_e){}}
@@ -10103,13 +10169,36 @@ updateMapControls();
   document.getElementById('qhPcReadAll')?.addEventListener('click',()=>trigger('[data-ecucmd="READ_ALL"]'));
   document.getElementById('qhPcWriteAll')?.addEventListener('click',()=>trigger('[data-ecucmd="SEND_ALL"]'));
   document.getElementById('qhFullMapSelect')?.addEventListener('change',e=>{
-    const main=document.getElementById('mapSelect');if(main){main.value=String(e.target.value);main.dispatchEvent(new Event('change',{bubbles:true}));}
-    fkCell=null;setTimeout(render,80);
+    const n=fb()?.selectBank(Number(e.target.value));
+    if(n==null)throw new Error('ECU bank bridge is not available.');
+    e.target.value=String(n);
+    fkCell=null;render();
   });
+  let fullTabReadToken=0;
+  async function readFeatureOnTabOpen(id,token){
+    if(id==='inj_ve'||!state.ecuConnected||state.ecuPhase!=='live')return;
+    try{
+      const api=window.BlinkRealProtocol;
+      if(!api)throw new Error('REDLEO protocol not ready');
+      if(id==='options')await fb()?.readOptions();
+      else await api.readFeaturePageReal(id,state.activeMap,true);
+      if(token===fullTabReadToken&&activeTab===id)render();
+    }catch(e){
+      if(token===fullTabReadToken&&activeTab===id){
+        try{showEcuNotice('error','READ '+id.toUpperCase(),String(e?.message||e),0)}catch(_e){}
+      }
+    }
+  }
   document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>{
     activeTab=b.dataset.qhFullTab;fkCell=null;activeFeature=null;
     document.getElementById('qhFullKeypad').classList.remove('show');
     render();
+    const id=activeTab,token=++fullTabReadToken;
+    // Match Blink REDLEO editor's lazy read policy without repeatedly
+    // re-reading fuel or sending a write simply by changing tabs.
+    setTimeout(()=>{
+      if(token===fullTabReadToken&&activeTab===id)void readFeatureOnTabOpen(id,token);
+    },160);
   }));
   document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{screen.classList.remove('suspended');render()});
   document.addEventListener('keydown',e=>{if(e.key==='F11'&&document.body.dataset.uiMode==='full'){e.preventDefault();fit=!fit;screen.classList.toggle('fit',fit)}});
