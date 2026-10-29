@@ -2981,19 +2981,18 @@ async function readA2SensorPageReal(showUi=true){
     publishProfileAxisFallback('ECU V9 · AXIS CỐ ĐỊNH');
   }
 
-  // TPS sensor voltage calibration is not the same thing as TPS map breakpoints.
-  // V11 voltage Min/Max lives in ATE Options; never reinterpret TPS breakpoint bytes as volts.
-  if(typeof state!=='undefined'&&C.options){
-    if(Number.isFinite(C.options.tpsMinEcu))state.cal.tpsMin=C.options.tpsMinEcu;
-    if(Number.isFinite(C.options.tpsMaxEcu))state.cal.tpsMax=C.options.tpsMaxEcu;
-    try{window.resetBlinkTpsTrend?.();}catch(_e){}
-    try{syncControls();}catch(_e){}
-  }else if(typeof state!=='undefined'&&v11&&C.ateOptions&&C.ateOptions[0]){
-    const lo=Number(C.ateOptions[0][0]),hi=Number(C.ateOptions[0][1]);
-    if(Number.isFinite(lo)&&Number.isFinite(hi)&&hi>lo+.1){
-      state.cal.tpsMin=lo;state.cal.tpsMax=hi;
-      try{window.resetBlinkTpsTrend?.();}catch(_e){}
-      try{syncControls();saveSoon();}catch(_e){}
+  // QH 1.1.12: original Blink Redleo manual TPS compatibility.
+  // Verified ECU Options A2 TPS Min/Max must be routed through one identity-safe
+  // hook, NOT assigned directly to state.cal while manual TPS is active.
+  // V10/Ultra/V11 have different A2 layouts: ecuTpsPairFromA2 is the exact
+  // source-specific detector; never treat TPS map breakpoint bytes as volts.
+  if(typeof state!=='undefined'){
+    const pair=ecuTpsPairFromA2(C);
+    if(pair){
+      const applied=window.QHManualTps?.onEcuPair?.(pair.min,pair.max,'OPTIONS A2 ECU');
+      if(applied===false)log('QH TPS Options read: manual calibration retained or backup blocked');
+    }else{
+      log('QH TPS Options: no verified Min/Max for this ECU profile; leave calibration unchanged');
     }
   }
 
