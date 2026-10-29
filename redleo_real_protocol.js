@@ -5610,6 +5610,64 @@ function qhBackfireCapabilities(){
   return {profile:ecuProfile?.label||'UNKNOWN',supported:!!spec,
     limiterKind:spec?.kind||null,levels};
 }
+
+/* Raw-preserving 28-cell ignition patch. On-wire IGN rows are reversed:
+   wireIndex = (13 - visibleRow) * 30 + col. All 392 other bytes are unchanged.
+   This bypasses the all-420 values re-encoding path and reads back page 3x. */
+async function qhBackfireWriteIgnPatch(bank,patches){
+  const spec=qhBackfireLimiterSpec();
+  if(!spec)throw new Error('ECU không hỗ trợ sửa IGN Backfire an toàn.');
+  requireProfile('mainWrite','Ghi 28 ô Backfire IGN');
+  bank=normalizeBankForProfile(bank);
+  if(!Array.isArray(patches)||patches.length!==28)
+    throw new Error('Backfire phải ghi đúng 28 ô (14 TPS x 2 RPM).');
+  const seen=new Set(),cols=new Set();
+  for(const x of patches){
+    if(!Number.isInteger(x.r)||x.r<0||x.r>=14||
+       !Number.isInteger(x.c)||x.c<0||x.c>=30||
+       !Number.isInteger(x.expectedRaw)||x.expectedRaw<0||x.expectedRaw>255||
+       !Number.isInteger(x.writeRaw)||x.writeRaw<0||x.writeRaw>255)
+      throw new Error('Backfire patch có địa chỉ hoặc byte không hợp lệ.');
+    const key=x.r+':'+x.c;
+    if(seen.has(key))throw new Error('Backfire patch trùng ô: '+key);
+    seen.add(key);cols.add(x.c);
+  }
+  if(cols.size!==2||Array.from({length:14},(_,r)=>r)
+     .some(r=>Array.from(cols).some(c=>!seen.has(r+':'+c))))
+    throw new Error('Backfire patch phải đủ hai cột ở toàn bộ 14 hàng TPS.');
+  const axes=window.getBlinkEcuAxes?.();
+  const selected=Array.from(cols).map(c=>Number(axes?.rpm?.[c])).sort((a,b)=>a-b);
+  if(selected[0]!==5500||selected[1]!==6000)
+    throw new Error('Hai cột của patch không khớp RPM 5500 và 6000 ECU.');
+  const pg=page(3,bank);
+  await readFeaturePageReal('ign_degree',bank,false);
+  const baseline=requireCachedPageAtLeast(pg,420,'QH BACKFIRE IGN');
+  const payload=baseline.slice(0,420);
+  for(const x of patches){
+    const off=(13-x.r)*30+x.c;
+    if(baseline[off]!==x.expectedRaw)
+      throw new Error('MAP lửa đã thay đổi tại TPS hàng '+x.r+' RPM '+axes.rpm[x.c]+
+        '. Hủy ghi do byte gốc không còn khớp.');
+    payload[off]=x.writeRaw;
+  }
+  const resumeLive=liveRunning;
+  stopLiveLoop();
+  try{
+    await waitForEcuIdle(16000);
+    await new Promise(r=>setTimeout(r,bridgeFirmwareAtLeast(1,5)?25:120));
+    await writeWritablePrefixPage(pg,payload,baseline,'QH BACKFIRE 28 IGN BYTES MAP '+bank,'mainWrite',1);
+    const after=await readFeaturePageReal('ign_degree',bank,false);
+    if(!after.data||after.data.length<420)throw Error('Thiếu IGN readback sau ghi.');
+    for(let i=0;i<420;i++){
+      if((after.data[i]&255)!==(payload[i]&255))
+        throw Error('Backfire IGN readback khác byte '+i+'; không xác nhận thành công.');
+    }
+    return {ack:true,page:pg,changed:28,bank};
+  }finally{
+    if(resumeLive&&cmdChar()&&mapChar()&&handshakeInfo)scheduleLiveResume(380);
+  }
+}
+
 async function qhBackfireReadLimiter(bank,showUi=false){
   const spec=qhBackfireLimiterSpec();
   if(!spec)throw new Error('Backfire RPM chưa được hỗ trợ trên đời ECU này. Không ghi giới hạn tua.');
@@ -5647,6 +5705,6 @@ async function qhBackfireWriteLimiter(bank,targetRpm,expectedCurrentRpm){
   return {...after,before:before.rpm,after:after.rpm,unchanged:false};
 }
 
-window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
+window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
