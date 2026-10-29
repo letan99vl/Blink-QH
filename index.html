@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.18';
-  document.title = 'QH ECU · v1.1.18';
+  window.BLINK_PB_VERSION = 'QH-1.1.19';
+  document.title = 'QH ECU · v1.1.19';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5757,12 +5757,39 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 #qhBfPanel .bfActions button:disabled{opacity:.38!important;cursor:not-allowed!important}
 #qhBfPanel .bfFoot{margin-top:10px!important;color:#9abca4!important;font-size:10px!important}
 </style>
+
+<style id="qhSmoothDragPad119">
+/* QH 1.1.19: Redleo blue I action and 460ms hold-to-drag on the whole pad. */
+#qhFullSelectionPad,#qhSimpleSelectionPad{
+ touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;
+ -webkit-touch-callout:none!important;
+}
+#qhFullSelectionPad button,#qhSimpleSelectionPad button{
+ touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;
+ -webkit-touch-callout:none!important;cursor:pointer;
+}
+#qhFullSelectionPad #qhPcSmooth{
+ background:rgba(18,52,78,.98)!important;
+ border-color:#61b5f5!important;color:#e1f5ff!important;
+ font:italic 950 22px/1 Georgia,serif!important;
+}
+#qhFullSelectionPad.qhPadDragging,#qhSimpleSelectionPad.qhPadDragging{
+ border:2px solid #a6ffcd!important;box-shadow:0 0 19px #45f878ac!important;
+ opacity:.92;cursor:grabbing!important;
+}
+#qhFullSelectionPad.qhPadDragging button,#qhSimpleSelectionPad.qhPadDragging button{
+ cursor:grabbing!important;
+}
+@media(max-width:650px){
+ #qhFullSelectionPad #qhPcSmooth{font-size:20px!important}
+}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.18</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.19</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5830,6 +5857,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <button id="qhPcSaveArrow" type="button" title="Gửi map hiện tại lên ECU" aria-label="Send current map">↓</button>
     <button id="qhPcPlus" type="button" title="Tăng vùng chọn" aria-label="Increase selection">＋</button>
     <button id="qhPcMinus" type="button" title="Giảm vùng chọn" aria-label="Decrease selection">−</button>
+    <button id="qhPcSmooth" type="button" title="I · Nội suy bốn góc vùng đã chọn theo Blink Redleo, chưa ghi ECU" aria-label="I · Làm mượt vùng chọn theo bốn góc">I</button>
   </div>
 
 
@@ -5946,7 +5974,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.18</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.19</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11423,7 +11451,10 @@ function qhPadAnchor(screenId,tableId,padId,selection){
   if(!visible)return;
   const a=cell.getBoundingClientRect(),base=screen.getBoundingClientRect();
   const width=pad.offsetWidth||50,height=pad.offsetHeight||130;
-  // Keep the three controls adjacent to the highlighted region, inside viewport.
+  // A user-placed pad keeps its own normalized coordinates. Never move it
+  // back to the selected cell during table redraw, map scroll or auto-follow.
+  if(window.QHPadDrag?.place?.(screen,pad,padId))return;
+  // Default position: next to the selected region, inside viewport.
   const rotated=screen.classList.contains('qhSoftwareRotated');
   const localX=rotated?a.bottom-base.top+5:a.right-base.left+5;
   const localY=rotated?base.right-a.right:a.top-base.top;
@@ -11436,6 +11467,137 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   badge,badgeForGroup,refreshBadge,makeSelection,selectTap,bounds,includes,clearSelection,
   dismissPad:qhDismissPad,restorePad:qhRestorePad,
   liveCell,closest};
+})();
+</script>
+
+<script id="qhPadLongPressDrag119">
+(function(){
+'use strict';
+const IDS=[
+  {screenId:'qhFullPcScreen',padId:'qhFullSelectionPad'},
+  {screenId:'qhSimpleFuelScreen',padId:'qhSimpleSelectionPad'}
+];
+const PREFIX='qhFloatingPadLocationV119:';
+const HOLD_MS=460;
+const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+let gesture=null,suppressUntil=0,suppressPad=null;
+function mode(screen){return screen.classList.contains('qhSoftwareRotated')||
+  screen.clientWidth>screen.clientHeight?'landscape':'portrait';}
+function storageKey(screen,pad){return PREFIX+pad.id+':'+mode(screen);}
+function bounds(screen,pad){
+ return {mx:Math.max(0,screen.clientWidth-pad.offsetWidth-7),
+         my:Math.max(0,screen.clientHeight-pad.offsetHeight-8)};
+}
+function clampPlace(screen,pad,x,y){
+ const b=bounds(screen,pad);
+ x=clamp(x,Math.min(5,b.mx),b.mx);
+ y=clamp(y,Math.min(8,b.my),b.my);
+ pad.style.left=Math.round(x)+'px';
+ pad.style.top=Math.round(y)+'px';
+ return {x,y,b};
+}
+function persist(screen,pad){
+ const {mx,my}=bounds(screen,pad);
+ const x=Number.parseFloat(pad.style.left),y=Number.parseFloat(pad.style.top);
+ if(!Number.isFinite(x)||!Number.isFinite(y))return;
+ const loc={v:1,x:mx>0?clamp(x/mx,0,1):0,y:my>0?clamp(y/my,0,1):0};
+ try{localStorage.setItem(storageKey(screen,pad),JSON.stringify(loc))}catch(_e){}
+}
+function place(screen,pad,padId){
+ if(!screen||!pad||!pad.classList.contains('shown'))return false;
+ if(gesture?.dragging&&gesture.pad===pad)return true;
+ let entry=null;
+ try{entry=JSON.parse(localStorage.getItem(storageKey(screen,pad))||'null')}catch(_e){}
+ if(!entry||entry.v!==1||!Number.isFinite(entry.x)||!Number.isFinite(entry.y))return false;
+ const b=bounds(screen,pad);
+ clampPlace(screen,pad,clamp(entry.x,0,1)*b.mx,clamp(entry.y,0,1)*b.my);
+ return true;
+}
+function removeListeners(){
+ window.removeEventListener('pointermove',move,true);
+ window.removeEventListener('pointerup',end,true);
+ window.removeEventListener('pointercancel',cancel,true);
+ window.removeEventListener('blur',cancel);
+}
+function finish({cancelled=false}={}){
+ if(!gesture)return;
+ const g=gesture;
+ clearTimeout(g.timer);removeListeners();
+ if(g.dragging){
+   g.pad.classList.remove('qhPadDragging');
+   if(!cancelled)persist(g.screen,g.pad);
+   suppressPad=g.pad;suppressUntil=performance.now()+850;
+   try{g.pad.releasePointerCapture(g.id)}catch(_e){}
+ }
+ gesture=null;
+}
+function cancel(){finish({cancelled:true});}
+function activate(g){
+ if(gesture!==g||!g.pad.classList.contains('shown'))return;
+ g.dragging=true;
+ const left=Number.parseFloat(g.pad.style.left),top=Number.parseFloat(g.pad.style.top);
+ g.initialLeft=Number.isFinite(left)?left:g.pad.offsetLeft;
+ g.initialTop=Number.isFinite(top)?top:g.pad.offsetTop;
+ g.pad.classList.add('qhPadDragging');
+ try{g.pad.setPointerCapture(g.id)}catch(_e){}
+ try{navigator.vibrate?.(15)}catch(_e){}
+}
+function down(e){
+ if(gesture||!(e.target instanceof Element)||!e.target.closest('button'))return;
+ if(e.pointerType==='mouse'&&e.button!==0)return;
+ const pad=e.currentTarget,screen=pad.parentElement;
+ if(!pad.classList.contains('shown')||!screen)return;
+ const g={id:e.pointerId,pad,screen,
+   x:e.clientX,y:e.clientY,initialLeft:0,initialTop:0,
+   dragging:false,timer:0};
+ gesture=g;
+ g.timer=setTimeout(()=>activate(g),HOLD_MS);
+ window.addEventListener('pointermove',move,{capture:true,passive:false});
+ window.addEventListener('pointerup',end,true);
+ window.addEventListener('pointercancel',cancel,true);
+ window.addEventListener('blur',cancel);
+}
+function move(e){
+ const g=gesture;
+ if(!g||e.pointerId!==g.id)return;
+ const dx=e.clientX-g.x,dy=e.clientY-g.y;
+ if(!g.dragging){
+   if(Math.hypot(dx,dy)>12)finish({cancelled:true});
+   return;
+ }
+ if(e.cancelable)e.preventDefault();
+ e.stopPropagation();
+ // With software rotation, local X points down and local Y points left.
+ const rotated=g.screen.classList.contains('qhSoftwareRotated');
+ const localDx=rotated?dy:dx,localDy=rotated?-dx:dy;
+ clampPlace(g.screen,g.pad,g.initialLeft+localDx,g.initialTop+localDy);
+}
+function end(e){
+ if(!gesture||e.pointerId!==gesture.id)return;
+ const dragged=gesture.dragging;
+ if(dragged){if(e.cancelable)e.preventDefault();e.stopPropagation()}
+ finish();
+}
+function stopClick(e){
+ if(e.currentTarget===suppressPad&&performance.now()<=suppressUntil){
+   e.preventDefault();e.stopImmediatePropagation();e.stopPropagation();
+   suppressUntil=0;suppressPad=null;
+ }
+}
+for(const {screenId,padId} of IDS){
+ const screen=document.getElementById(screenId),pad=document.getElementById(padId);
+ if(!screen||!pad)continue;
+ pad.addEventListener('pointerdown',down);
+ pad.addEventListener('click',stopClick,true);
+ pad.addEventListener('contextmenu',e=>e.preventDefault());
+}
+window.addEventListener('resize',()=>{
+ for(const {screenId,padId} of IDS){
+   const screen=document.getElementById(screenId),pad=document.getElementById(padId);
+   if(screen&&pad)place(screen,pad,padId);
+ }
+},{passive:true});
+window.QHPadDrag={place};
 })();
 </script>
 <script id="qhDualModeScript">
@@ -12194,6 +12356,75 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     }
     if(changed){try{if(isFuel){state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}else fb()?.saveFeature()}catch(_e){}render();}
   }
+
+  // Blink Redleo 3.79.127 floating I: four-corner bilinear interpolation
+  // inside the selected rectangle. Four corner anchors and all cells outside
+  // remain unchanged. For one row/column this becomes linear interpolation.
+  // Only edit local QH map; never transmit to ECU on pressing I.
+  function smoothFullSelected(){
+    const notify=(kind,message)=>window.setEcuTaskStatus?.(kind,message,4000);
+    const enabled=new Set(['inj_ve','ign_degree','ign_time','ect_inj','iat_inj','map_inj']);
+    if(!enabled.has(activeTab)){notify('error','I chỉ dùng cho các MAP số liên tục; không làm mượt AFR ON/OFF, giới hạn tua hay Tùy chọn.');return false;}
+    const b=fullBounds();
+    if(!b||fullSelection.pending){notify('offline','Chọn đủ hai góc vùng cần làm mượt rồi bấm I.');return false;}
+    const dx=b.c1-b.c0,dy=b.r1-b.r0;
+    if(dx<2&&dy<2){notify('offline','Vùng phải có ít nhất 3 ô theo một chiều để nội suy bốn góc.');return false;}
+    if(fullIoBusy||window.QHBackfire?.busy||window.BlinkRealProtocol?.isBusy||
+       state.recording||state.threeRun?.active||state.ecuWriteQueued||
+       state.ecuPhase==='write1'||state.ecuPhase==='write2'){
+      notify('error','ECU/MAP đang bận. Không làm mượt khi đang đọc/ghi hoặc ghi AFR.');return false;
+    }
+    const source=currentData();
+    const rows=activeTab==='inj_ve'?TPS_ROWS.length:(activeFeature||profileFeature(backendTab()))?.rows;
+    const cols=activeTab==='inj_ve'?RPMS.length:(activeFeature||profileFeature(backendTab()))?.cols;
+    if(!Array.isArray(source)||!rows||!cols||source.length!==rows||
+       source.some(r=>!Array.isArray(r)||r.length!==cols)||
+       b.r0<0||b.c0<0||b.r1>=rows||b.c1>=cols){
+      notify('error','Map chưa có dữ liệu đúng kích thước. Hãy đọc map trước khi làm mượt.');return false;
+    }
+    const a=source.map(row=>row.slice());
+    for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++){
+      const v=a[r][c];
+      if(v===null||v===undefined||v===''||!Number.isFinite(Number(v))){
+        notify('error','Vùng chọn có ô chưa được đọc từ ECU. Không được nội suy dữ liệu trống.');return false;
+      }
+    }
+    const max=activeTab==='inj_ve'?(typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100):Infinity;
+    const min=activeTab==='inj_ve'?0:-Infinity;
+    const corner=[a[b.r0][b.c0],a[b.r0][b.c1],a[b.r1][b.c0],a[b.r1][b.c1]].map(Number);
+    if(corner.some(v=>!Number.isFinite(v)||v<min||v>max)){
+      notify('error','Bốn góc neo không có giá trị hợp lệ.');return false;
+    }
+    const [topLeft,topRight,bottomLeft,bottomRight]=corner;
+    const changes=[];
+    for(let r=b.r0;r<=b.r1;r++){
+      const y=dy?(r-b.r0)/dy:0;
+      for(let c=b.c0;c<=b.c1;c++){
+        if((r===b.r0||r===b.r1)&&(c===b.c0||c===b.c1))continue;
+        const x=dx?(c-b.c0)/dx:0;
+        const v=Number(Math.max(min,Math.min(max,
+          (1-y)*(1-x)*topLeft+(1-y)*x*topRight+
+          y*(1-x)*bottomLeft+y*x*bottomRight)).toFixed(3));
+        if(Math.abs(Number(a[r][c])-v)>.0005)changes.push({r,c,v});
+      }
+    }
+    if(!changes.length){notify('offline','Vùng này đã mượt hoặc chỉ có các ô góc neo, không có giá trị cần thay.');return false;}
+    // Commit after every validation succeeds; never write ECU implicitly.
+    for(const {r,c,v} of changes)source[r][c]=v;
+    try{
+      if(activeTab==='inj_ve'){
+        state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon();
+      }else fb()?.saveFeature();
+    }catch(e){
+      for(const {r,c} of changes)source[r][c]=a[r][c];
+      notify('error','Không lưu được bản đồ trong app: '+String(e?.message||e));return false;
+    }
+    document.getElementById('qhFullKeypad')?.classList.remove('show');
+    render();
+    notify('success','I · Đã làm mượt '+changes.length+' ô trên MAP '+state.activeMap+
+      ', giữ 4 góc và các ô ngoài vùng. CHƯA GHI ECU; bấm ↓ để ghi.');
+    return true;
+  }
   function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+(currentUnit()?' '+currentUnit():'')}
   document.querySelectorAll('#qhFullKeypad [data-fk]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.fk;
@@ -12319,6 +12550,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
   document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
   document.getElementById('qhPcMinus')?.addEventListener('click',()=>bumpFullSelection(-1));
+  document.getElementById('qhPcSmooth')?.addEventListener('click',smoothFullSelected);
   document.getElementById('qhPcSaveArrow')?.addEventListener('click',()=>{
     window.QHMapUx.dismissPad('qhFullSelectionPad');
     document.getElementById('qhPcWriteCurrent')?.click();
