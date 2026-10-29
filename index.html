@@ -11802,12 +11802,15 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
       const pad=(parseFloat(styles.paddingLeft)||0)+(parseFloat(styles.paddingRight)||0);
       const available=Math.max(10,wrap.clientWidth-pad-rowHead-2);
       const x2Visible=Math.max(1,Math.min(29,Math.floor(available/x2Width)));
+      const x3Goal=Math.min(29,x2Visible+3);
       const goal=Math.min(29,x2Visible+3*(fuelDensity-2));
       const width=Math.min(x2Width,available/goal);
       const baseFont=mobile?9:10;
-      // X3 retains X2's font. X4 reduces font only once a five-digit RPM
-      // heading no longer fits at the X2 size.
-      const font=fuelDensity===4?Math.min(baseFont,Math.max(5.5,(width-2.5)/2.85)):baseFont;
+      // X3 retains X2's font. X4 shrinks digits only if it really adds
+      // more visible RPM columns and a five-digit heading needs space.
+      // Once all 29 display columns fit, do not shrink digits unnecessarily.
+      const font=(fuelDensity===4&&goal>x3Goal)
+        ?Math.min(baseFont,Math.max(5.5,(width-2.5)/2.85)):baseFont;
       screen.style.setProperty('--qh-fuel-density-cell-width',width.toFixed(2)+'px');
       screen.style.setProperty('--qh-fuel-density-rowhead',rowHead+'px');
       screen.style.setProperty('--qh-fuel-density-font',font.toFixed(2)+'px');
