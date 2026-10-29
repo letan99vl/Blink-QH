@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.5';
-  document.title = 'QH ECU · v1.1.5';
+  window.BLINK_PB_VERSION = 'QH-1.1.6';
+  document.title = 'QH ECU · v1.1.6';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4449,6 +4449,493 @@ body[data-ui-mode] #ecuNotice{z-index:610000!important;top:max(10px,env(safe-are
   }
 }
 </style>
+
+<style id="qhUnifiedNeonV116">
+/*
+ * QH 1.1.6 - unified neon skin.
+ * Paint-only overrides for legacy gold/metal component styles; never modify
+ * ECU map state, feature availability, protocol, raw packet format, or axes.
+ * Include body[data-ui-mode] and screen IDs to outrank earlier !important
+ * rules in qhFinalTheme, qhInnerSkin, and qhPremiumCluster.
+ */
+html body[data-ui-mode]{
+  --qh-gold:#27ff58;--qh-gold2:#139f3c;--qh-gold-dim:#126a2d;
+  --qh-skin-gold:#27ff58;--qh-skin-gold2:#14732f;--qh-skin-hi:#afffc3;
+  --qh-border:#1a7934;--qh-metal:#0b2111;
+  --qh-text:#f3fff5;--qh-muted:#a4cbb0;
+  --qh-panel:#031008;--qh-panel2:#07180b;
+  color-scheme:dark;
+}
+html body[data-ui-mode] .app{
+  background:radial-gradient(ellipse at 50% 0%,rgba(22,145,53,.075),transparent 49%),#010604!important;
+}
+html body[data-ui-mode] .app::before{
+  background:repeating-linear-gradient(135deg,rgba(53,255,98,.011) 0 1px,transparent 1px 9px)!important;
+  opacity:.65!important;
+}
+html body[data-ui-mode] #dashboardScreen.qhDashboardScreen,
+html body[data-ui-mode] #mapsScreen,
+html body[data-ui-mode] #settingsScreen,
+html body[data-ui-mode] #ecuScreen,
+html body[data-ui-mode] #tuneScreen,
+html body[data-ui-mode] #idleLimitScreen,
+html body[data-ui-mode] #mapEditorScreen,
+html body[data-ui-mode] #redleoEditorScreen{
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(21,143,53,.07),transparent 45%),
+    repeating-linear-gradient(135deg,rgba(70,255,109,.010) 0 1px,transparent 1px 9px),
+    #020705!important;
+  background-size:auto!important;
+}
+
+/* HOME / logo / connection / telemetry */
+html body[data-ui-mode] #dashboardScreen .qhDashHeader{
+  background:linear-gradient(100deg,#06140a,#020604 55%,#06120a)!important;
+  border-bottom:1px solid #1fca48!important;
+  box-shadow:0 5px 22px rgba(22,233,77,.045)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhDashHeader::after{
+  background:linear-gradient(90deg,transparent,#27ff58 35%,#17b841 70%,transparent)!important;
+  box-shadow:0 0 11px rgba(39,255,88,.35)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandBlock::before{
+  background:repeating-linear-gradient(135deg,rgba(39,255,88,.05) 0 2px,transparent 2px 6px),linear-gradient(180deg,#0a2411,#020904)!important;
+  border-left-color:#1eae42!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandPlate{
+  background:linear-gradient(180deg,#0d2513,#020804 50%,#081a0c)!important;
+  border:1px solid #1b7932!important;
+  border-left-color:#2df45c!important;
+  box-shadow:inset 0 1px 0 #2dff6422,0 0 9px #12b43c22!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandPlate::after{
+  background:linear-gradient(90deg,#25f155,rgba(34,228,79,.24),transparent)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandMain .qhGold{
+  color:#27ff58!important;
+  background:linear-gradient(180deg,#baffcb 0%,#40ff6c 32%,#0cbb36 70%,#7dffa0 100%)!important;
+  -webkit-background-clip:text!important;
+  background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  text-shadow:0 1px 2px #000,0 0 9px rgba(39,255,88,.20)!important;
+  -webkit-text-stroke:0!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandMain .qhSilver{
+  color:#fff!important;
+  background:linear-gradient(180deg,#fff,#eaf6ed 45%,#a9b9ac 90%)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;
+  -webkit-text-fill-color:transparent!important;
+  -webkit-text-stroke:0!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandSub,
+html body[data-ui-mode] #dashboardScreen .qhBrandSub span{
+  color:#dcffe4!important;text-shadow:0 0 8px rgba(39,255,88,.12)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhBrandSub::before,
+html body[data-ui-mode] #dashboardScreen .qhBrandSub::after{
+  background:#29e858!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhPbLabel{
+  background:#061a0c!important;border:1px solid #1cc146!important;color:#99ffaf!important;
+  box-shadow:inset 0 1px 0 #2bff6122,0 0 8px #26e95522!important;
+  -webkit-text-fill-color:#99ffaf!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTopBattery,
+html body[data-ui-mode] #dashboardScreen .qhSideCard,
+html body[data-ui-mode] #dashboardScreen .qhSensorCell,
+html body[data-ui-mode] #dashboardScreen .qhMapSelectWrap,
+html body[data-ui-mode] #dashboardScreen .qhEcuState,
+html body[data-ui-mode] #dashboardScreen .qhMapState{
+  background:linear-gradient(180deg,#07180c,#020804)!important;
+  border:1px solid #188236!important;color:#ecfff0!important;
+  box-shadow:inset 0 0 12px #18dc3e0a!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTopBatteryIcon,
+html body[data-ui-mode] #dashboardScreen .qhTopBatteryLabel,
+html body[data-ui-mode] #dashboardScreen .qhSensorIcon{
+  color:#27f958!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTpsVoltage{
+  color:#8effaa!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhMapSelectWrap select{
+  color:#8effaa!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhStateDot{
+  background:#30573a!important;box-shadow:0 0 5px #0c6222!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhEcuState.on .qhStateDot{
+  background:#27ff58!important;box-shadow:0 0 10px #27ff58!important;
+}
+html body[data-ui-mode] #dashboardScreen #connectEcuBtn.qhConnectBtn{
+  background:linear-gradient(180deg,#2dff63,#08ac32)!important;
+  border:1px solid #65ff8b!important;
+  color:#001b07!important;
+  border-radius:8px!important;
+  box-shadow:0 0 18px #13f34933,inset 0 1px 0 #d7ffe788!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhSmallBtn{
+  background:linear-gradient(180deg,#091b0e,#020904)!important;
+  color:#eaffed!important;border-color:#209940!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhMainMenu .qhMenuRow{
+  background:linear-gradient(180deg,#06170b,#020805)!important;
+  border:1px solid #178f35!important;
+  border-radius:9px!important;
+  color:#f4fff5!important;
+  box-shadow:inset 0 1px 0 rgba(64,255,105,.07)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhMainMenu .qhMenuRow:active{
+  border-color:#2dff61!important;
+  background:linear-gradient(180deg,#0b2b14,#05140a)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhMenuIcon{
+  border:1px solid #1fb647!important;
+  background:radial-gradient(circle at 45% 25%,#103d1b,#041109 68%)!important;
+  color:#27ff58!important;
+  text-shadow:0 0 9px #13ff4433!important;
+  box-shadow:inset 0 0 8px #0aff400c!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhMenuArrow,
+html body[data-ui-mode] #dashboardScreen .qhMenuCode{
+  color:#41ff70!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhMenuText b{color:#f5fff6!important}
+html body[data-ui-mode] #dashboardScreen .qhMenuText small{color:#a3c5aa!important}
+html body[data-ui-mode] #dashboardScreen .qhRpmGauge,
+html body[data-ui-mode] #dashboardScreen .qhTanleRpmWrap{
+  border-color:#1c7534!important;
+  box-shadow:inset 0 0 18px #000b,0 0 12px #0df4471a!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhRpmTitle{color:#2bfa5a!important}
+html body[data-ui-mode] #dashboardScreen .qhRpmArc{
+  background:conic-gradient(from 225deg,#0b9835,#20ee51 180deg,#ff6b32 234deg,#e62e36 252deg,#1e2620 252deg 270deg,transparent 270deg)!important;
+  filter:drop-shadow(0 0 3px #1cfa463b)!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTanleRpmWrap .led-segment{
+  fill:#25f358!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTanleRpmWrap .led-segment:nth-child(n+25){
+  fill:#ff4545!important;
+}
+html body[data-ui-mode] #dashboardScreen #ledRpmHot stop:nth-child(1){stop-color:#075d20!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmHot stop:nth-child(2){stop-color:#0fbb3b!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmHot stop:nth-child(3){stop-color:#2bf65b!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmHot stop:nth-child(4){stop-color:#a0ffb7!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmTop stop:nth-child(1){stop-color:#062b13!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmTop stop:nth-child(2){stop-color:#107a2c!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmTop stop:nth-child(3){stop-color:#2bfb60!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmTL stop:first-child,
+html body[data-ui-mode] #dashboardScreen #ledRpmBR stop:first-child{stop-color:#2cfa5c!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmAccent stop:first-child,
+html body[data-ui-mode] #dashboardScreen #ledRpmAccent stop:last-child{stop-color:#2cf45c!important}
+html body[data-ui-mode] #dashboardScreen #ledRpmDigitGlow feFlood{flood-color:#24ff56!important}
+
+/* Every inner screen: common neon frames and typography */
+html body[data-ui-mode] .screenHeader,
+html body[data-ui-mode] #mapsScreen .screenHeader,
+html body[data-ui-mode] #settingsScreen .screenHeader,
+html body[data-ui-mode] #ecuScreen .screenHeader,
+html body[data-ui-mode] #idleLimitScreen .screenHeader,
+html body[data-ui-mode] #mapEditorScreen .screenHeader,
+html body[data-ui-mode] #redleoEditorScreen .screenHeader{
+  border:1px solid #1c8c38!important;
+  border-radius:9px!important;
+  background:linear-gradient(180deg,#081b0d,#020804)!important;
+  box-shadow:inset 0 1px 0 #37ff6420,0 4px 12px #0006!important;
+}
+html body[data-ui-mode] .screenHeader::after{
+  background:linear-gradient(90deg,transparent,#2dff62,transparent)!important;
+  box-shadow:0 0 8px #29ed5533!important;
+}
+html body[data-ui-mode] .screenTitle{color:#f4fff5!important;text-shadow:0 0 8px #1aff4415!important}
+html body[data-ui-mode] .screenSub{color:#91b79a!important}
+html body[data-ui-mode] .screenHeader .qhBackBtn,
+html body[data-ui-mode] .screenHeader .backBtn{
+  background:#06170b!important;color:#a5ffba!important;
+  border:1px solid #259f46!important;
+  box-shadow:inset 0 1px 0 #4aff6e26!important;
+}
+html body[data-ui-mode] .miniStatus{
+  background:#06180a!important;border:1px solid #206d37!important;
+  color:#9cdbab!important;box-shadow:none!important;
+}
+html body[data-ui-mode] .miniStatus .lamp{background:#31573a!important;box-shadow:none!important}
+html body[data-ui-mode] .miniStatus.on{
+  border-color:#2feb59!important;background:#06230d!important;color:#35ff66!important;
+}
+html body[data-ui-mode] .miniStatus.on .lamp{
+  background:#26ff55!important;box-shadow:0 0 9px #26ff55!important;
+}
+html body[data-ui-mode] .groupHead{border-bottom:1px solid #167d35!important}
+html body[data-ui-mode] .groupHead h3{color:#aaffbd!important}
+html body[data-ui-mode] .groupHead span{color:#7cab8b!important}
+
+/* Map selection and map-card grid - remove all brushed brass/silver glare */
+html body[data-ui-mode] #mapsScreen .mapBankBtn,
+html body[data-ui-mode] #mapsScreen .menuCard{
+  border:1px solid #1b8b39!important;
+  border-radius:10px!important;
+  background:linear-gradient(150deg,#0a1b0e 0%,#06110a 55%,#020805 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(76,255,114,.06),0 4px 10px #0008!important;
+  color:#edfff0!important;
+  text-shadow:none!important;
+}
+html body[data-ui-mode] #mapsScreen .mapBankBtn.active{
+  background:linear-gradient(180deg,#35ff6d,#07a72d)!important;
+  border-color:#57ff82!important;
+  box-shadow:0 0 14px #22e94d44,inset 0 1px 0 #ddffe888!important;
+  color:#021c07!important;text-shadow:none!important;
+}
+html body[data-ui-mode] #mapsScreen .menuCard{min-height:114px!important}
+html body[data-ui-mode] #mapsScreen .menuCard::before{
+  background:linear-gradient(90deg,transparent,#21ff54,transparent)!important;
+  box-shadow:0 0 8px #1ff64a33!important;
+}
+html body[data-ui-mode] #mapsScreen .menuCard::after{
+  content:none!important;
+  background:none!important;box-shadow:none!important;opacity:0!important;
+}
+html body[data-ui-mode] #mapsScreen .menuCard:active,
+html body[data-ui-mode] #mapsScreen .menuCard:hover{
+  border-color:#2bfa57!important;background:linear-gradient(150deg,#0d3017,#031209)!important;
+}
+html body[data-ui-mode] #mapsScreen .menuCard .menuIcon{
+  border:1px solid #1cb646!important;
+  background:radial-gradient(circle at 35% 25%,#113c1a,#031008 70%)!important;
+  color:#2bf95d!important;
+  box-shadow:0 0 10px #26ff4e16!important;
+  text-shadow:none!important;
+}
+html body[data-ui-mode] #mapsScreen .menuCard h3{
+  color:#f5fff6!important;text-shadow:none!important;
+}
+html body[data-ui-mode] #mapsScreen .menuCard p{color:#a5c8ad!important}
+html body[data-ui-mode] #mapsScreen .menuArrow{color:#2bff5d!important}
+html body[data-ui-mode] #mapsScreen .featureCard .srcTag,
+html body[data-ui-mode] #mapsScreen .menuCode{
+  background:#061b0c!important;border-color:#198439!important;color:#8effa5!important;
+}
+
+/* Settings cards, options/ECU panels */
+html body[data-ui-mode] #settingsScreen .settingTile,
+html body[data-ui-mode] #settingsScreen .settings,
+html body[data-ui-mode] #ecuScreen .optPanel,
+html body[data-ui-mode] #idleLimitScreen .optPanel,
+html body[data-ui-mode] #tuneScreen .threePanel,
+html body[data-ui-mode] #tuneScreen .tuneNote,
+html body[data-ui-mode] #mapsScreen .sourceNote{
+  background:linear-gradient(160deg,#081b0d,#020805 75%)!important;
+  border:1px solid #197d33!important;
+  border-radius:10px!important;
+  box-shadow:inset 0 1px 0 rgba(60,255,106,.06),0 4px 12px #0008!important;
+  color:#edfdf0!important;
+}
+html body[data-ui-mode] #settingsScreen .settingTile::before,
+html body[data-ui-mode] #settingsScreen .settingTile::after,
+html body[data-ui-mode] #settingsScreen .settings::before,
+html body[data-ui-mode] #ecuScreen .optPanel::before,
+html body[data-ui-mode] #idleLimitScreen .optPanel::before,
+html body[data-ui-mode] #tuneScreen .threePanel::before,
+html body[data-ui-mode] #tuneScreen .tuneNote::before,
+html body[data-ui-mode] #mapsScreen .sourceNote::before{
+  background:linear-gradient(90deg,transparent,#26ff58,transparent)!important;
+  box-shadow:0 0 7px #23ff5033!important;
+}
+html body[data-ui-mode] #settingsScreen .settingTile .menuIcon{
+  border:1px solid #1ac047!important;
+  background:radial-gradient(circle,#103c1d,#031109 70%)!important;
+  box-shadow:0 0 8px #25ed471d!important;color:#2cff5d!important;
+}
+html body[data-ui-mode] #settingsScreen .settingTile h3{
+  color:#f4fff6!important;text-shadow:none!important;
+}
+html body[data-ui-mode] #settingsScreen .settingTile p{color:#aac9b1!important}
+html body[data-ui-mode] #settingsScreen .settingTile .tiny{color:#79a88a!important}
+html body[data-ui-mode] #settingsScreen .settings summary{color:#e3ffea!important;text-shadow:none!important}
+
+/* Form inputs and buttons override old metallic/amber high-specificity rules */
+html body[data-ui-mode] #settingsScreen .field input,
+html body[data-ui-mode] #settingsScreen .field select,
+html body[data-ui-mode] #settingsScreen .field textarea,
+html body[data-ui-mode] #ecuScreen .optionField input,
+html body[data-ui-mode] #ecuScreen .optionField select,
+html body[data-ui-mode] #idleLimitScreen .optionField input,
+html body[data-ui-mode] #idleLimitScreen .optionField select,
+html body[data-ui-mode] #tuneScreen .tuneModeRow select{
+  background:linear-gradient(180deg,#07160a,#020805)!important;
+  border:1px solid #248f43!important;
+  border-radius:8px!important;color:#eefff1!important;
+  box-shadow:inset 0 0 8px #0aff3e0c!important;text-shadow:none!important;
+}
+html body[data-ui-mode] #settingsScreen .field input:focus,
+html body[data-ui-mode] #settingsScreen .field select:focus,
+html body[data-ui-mode] #ecuScreen .optionField input:focus,
+html body[data-ui-mode] #idleLimitScreen .optionField input:focus{
+  border-color:#30ff61!important;box-shadow:0 0 0 2px #27ff5822!important;
+}
+html body[data-ui-mode] #settingsScreen .field label,
+html body[data-ui-mode] #ecuScreen .optionField label,
+html body[data-ui-mode] #idleLimitScreen .optionField label{
+  color:#b5d3be!important;
+}
+html body[data-ui-mode] #settingsScreen .toolrow button,
+html body[data-ui-mode] #ecuScreen .ecuOpsGrid button,
+html body[data-ui-mode] #ecuScreen .ioBar button,
+html body[data-ui-mode] #tuneScreen button,
+html body[data-ui-mode] #mapEditorScreen .editToolbar button,
+html body[data-ui-mode] #redleoEditorScreen .redEditorTools button,
+html body[data-ui-mode] #idleLimitScreen .redEditorTools button{
+  background:linear-gradient(180deg,#0a2411,#031008)!important;
+  border:1px solid #1b9d3f!important;
+  border-radius:8px!important;color:#e4ffeb!important;
+  box-shadow:inset 0 1px 0 #27ff5812!important;
+  text-shadow:none!important;
+}
+html body[data-ui-mode] #settingsScreen button.primary,
+html body[data-ui-mode] #settingsScreen button.good,
+html body[data-ui-mode] #ecuScreen button.good,
+html body[data-ui-mode] #tuneScreen button.primary,
+html body[data-ui-mode] #tuneScreen button.good,
+html body[data-ui-mode] #mapEditorScreen button.good,
+html body[data-ui-mode] #redleoEditorScreen button.good{
+  background:linear-gradient(180deg,#28ff59,#09a830)!important;
+  border:1px solid #48ff73!important;
+  color:#011b08!important;box-shadow:0 0 10px #24f55226!important;
+}
+html body[data-ui-mode] #settingsScreen button.danger,
+html body[data-ui-mode] #ecuScreen button.danger,
+html body[data-ui-mode] #tuneScreen button.danger{
+  background:linear-gradient(180deg,#1c2019,#0a0c09)!important;
+  border:1px solid #92433f!important;color:#ffb4aa!important;
+  box-shadow:none!important;
+}
+html body[data-ui-mode] #ecuScreen .toggleItem,
+html body[data-ui-mode] #ecuScreen .infoCell,
+html body[data-ui-mode] #tuneScreen .tuneLive{
+  background:#06170a!important;
+  border:1px solid #187f36!important;
+  box-shadow:inset 0 0 8px #10c8400d!important;
+}
+html body[data-ui-mode] #ecuScreen .infoCell .k{color:#9acaa5!important}
+html body[data-ui-mode] #ecuScreen .infoCell .v{color:#effff0!important}
+html body[data-ui-mode] #ecuScreen .toggleItem input{accent-color:#21f852!important}
+
+/* Map editors, selection tools, toggles and virtual keypads */
+html body[data-ui-mode] #mapEditorScreen .editToolbar,
+html body[data-ui-mode] #mapEditorScreen .editorStepBar,
+html body[data-ui-mode] #mapEditorScreen .editorInfo,
+html body[data-ui-mode] #redleoEditorScreen .redEditorTools,
+html body[data-ui-mode] #redleoEditorScreen .redStep,
+html body[data-ui-mode] #redleoEditorScreen .redMeta{
+  background:#031009!important;border-color:#197337!important;color:#effff3!important;
+}
+html body[data-ui-mode] #mapEditorScreen .editorTabs,
+html body[data-ui-mode] #mapEditorScreen .tabs{
+  background:#04100a!important;border-color:#197337!important;
+}
+html body[data-ui-mode] #mapEditorScreen .tab.active,
+html body[data-ui-mode] .mapBankBtn.active,
+html body[data-ui-mode] .stepChip.on,
+html body[data-ui-mode] #redleoEditorScreen .redStep button.primary,
+html body[data-ui-mode] #mapEditorScreen .editorStepBar .scanChip.on,
+html body[data-ui-mode] #redleoEditorScreen #redScanToggle.active{
+  background:linear-gradient(180deg,#2bff60,#0bad32)!important;
+  border-color:#58ff80!important;color:#041606!important;
+  box-shadow:0 0 11px #2aff5833!important;
+}
+html body[data-ui-mode] #mapEditorScreen .editorStepBar .stepChip,
+html body[data-ui-mode] #redleoEditorScreen .redStep button{
+  background:#04180a!important;border:1px solid #197b36!important;color:#d7ffe2!important;
+}
+html body[data-ui-mode] #mapEditorScreen .mapwrap,
+html body[data-ui-mode] #redleoEditorScreen .redTableWrap{
+  background:#020805!important;border-color:#167a33!important;
+}
+html body[data-ui-mode] #mapEditorScreen #mapTable th,
+html body[data-ui-mode] #mapEditorScreen #mapTable .rowhead,
+html body[data-ui-mode] #redleoEditorScreen .redTable th,
+html body[data-ui-mode] #redleoEditorScreen .redTable .rhead{
+  background:#073b18!important;color:#e9fff0!important;border-color:#237941!important;
+}
+html body[data-ui-mode] #redleoEditorScreen .redCell{
+  background:#10381b!important;border-color:#237742!important;color:#e9fff0!important;
+}
+html body[data-ui-mode] #redleoEditorScreen .redCell.sel{
+  background:#23f75a!important;color:#002509!important;box-shadow:inset 0 0 0 2px #c5ffd4!important;
+}
+html body[data-ui-mode] #redleoEditorScreen .redCell.current{
+  background:#77ffa0!important;color:#00320d!important;box-shadow:inset 0 0 0 2px #d6ffe3!important;
+}
+html body[data-ui-mode] #redleoEditorScreen .redCell.afrOff{
+  background:#0b160d!important;color:#93b69e!important;
+}
+html body[data-ui-mode] .fuelKeypad,
+html body[data-ui-mode] #qhSimpleKeypad,
+html body[data-ui-mode] #qhFullKeypad{
+  background:#031008!important;border:1px solid #2bde56!important;
+  box-shadow:0 0 25px #14d64528,0 14px 32px #000a!important;color:#edfff1!important;
+}
+html body[data-ui-mode] dialog,
+html body[data-ui-mode] #threeHistoryDialog{
+  background:#04110a!important;border:1px solid #2a9e4c!important;
+  box-shadow:0 20px 60px #000d!important;color:#f0fff4!important;
+}
+html body[data-ui-mode] dialog::backdrop{background:#000b!important}
+
+/* Remaining legacy amber badges, map meta bars and ECU controls */
+html body[data-ui-mode] #dashboardScreen .qhMapState,
+html body[data-ui-mode] #dashboardScreen .qhMapState b,
+html body[data-ui-mode] #dashboardScreen #dashMapState,
+html body[data-ui-mode] #dashboardScreen #qhTopBattery b{
+  color:#aaffbc!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTopBattery.low{
+  border-color:#ff6059!important;background:#1e0b0b!important;
+}
+html body[data-ui-mode] #dashboardScreen .qhTopBattery.low b{
+  color:#ff9d93!important;
+}
+html body[data-ui-mode] .metaChip,
+html body[data-ui-mode] .dangerNote,
+html body[data-ui-mode] .infoCell,
+html body[data-ui-mode] .toggleItem,
+html body[data-ui-mode] .threeStatus,
+html body[data-ui-mode] #redleoEditorScreen .redEditorFoot,
+html body[data-ui-mode] #mapEditorScreen .mapSelectionPad,
+html body[data-ui-mode] #redleoEditorScreen .redSelectionPad{
+  background:#06160a!important;border-color:#188039!important;
+  color:#d7f4de!important;box-shadow:none!important;
+}
+html body[data-ui-mode] .metaChip b,
+html body[data-ui-mode] #redleoEditorScreen .redEditorFoot b{color:#aaffc0!important}
+html body[data-ui-mode] .featureCard .srcTag{
+  background:#05190a!important;color:#8effaa!important;border:1px solid #1b7a37!important;
+}
+html body[data-ui-mode] .qhHomeMeta .qhMapSelectWrap,
+html body[data-ui-mode] .qhHomeMeta .qhEcuState,
+html body[data-ui-mode] .qhHomeMeta .qhMapState{
+  border-color:#1c893c!important;
+}
+html body[data-ui-mode] #mapEditorScreen .editorInfo .livebox,
+html body[data-ui-mode] #redleoEditorScreen .metaChip{
+  background:#06180b!important;border-color:#247e3e!important;color:#e6ffec!important;
+}
+html body[data-ui-mode] #mapEditorScreen .editorInfo .livebox .k{color:#99c6a6!important}
+html body[data-ui-mode] #mapEditorScreen .editorInfo .livebox .v{color:#effff0!important}
+html body[data-ui-mode] .fuelKeypad button,
+html body[data-ui-mode] #qhSimpleKeypad button,
+html body[data-ui-mode] #qhFullKeypad button{
+  background:#09210f!important;border-color:#1c8c3a!important;color:#eaffef!important;
+}
+html body[data-ui-mode] .fuelKeypad button.save,
+html body[data-ui-mode] #qhSimpleKeypad .apply,
+html body[data-ui-mode] #qhFullKeypad [data-fk="apply"]{
+  background:linear-gradient(180deg,#2aff60,#0fae35)!important;
+  color:#002108!important;
+  border-color:#4dff7a!important;
+}
+</style>
 </head>
 <body>
 
@@ -4559,7 +5046,7 @@ body[data-ui-mode] #ecuNotice{z-index:610000!important;top:max(10px,env(safe-are
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.5</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.6</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
