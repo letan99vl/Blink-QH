@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.12';
-  document.title = 'QH ECU · v1.1.12';
+  window.BLINK_PB_VERSION = 'QH-1.1.13';
+  document.title = 'QH ECU · v1.1.13';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5435,12 +5435,152 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
   #qhFullTpsManual .qhFtpsStat small{font-size:9px}
 }
 </style>
+
+<style id="qhMapCompact113Blue">
+/* QH 1.1.13: map-first, one-hand layout. All changes are presentation-only. */
+#qhFullPcScreen .qhPcMapHead{
+ display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;gap:5px!important;padding:3px 6px!important;
+ height:38px!important;flex:0 0 38px!important;min-height:38px!important;
+}
+#qhFullPcScreen .qhPcMapHead h2{
+ min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;
+ white-space:nowrap!important;font-size:clamp(11px,2.7vw,15px)!important;
+ letter-spacing:0!important;margin:0!important;
+}
+#qhFullPcScreen .qhPcMapHead .unit{display:none!important}
+#qhFullPcScreen .qhPcHeadOps{
+ display:flex!important;justify-content:flex-end!important;align-items:center!important;
+ gap:4px!important;min-width:0!important
+}
+#qhFullPcScreen .qhPcHeadOps button{
+ height:30px!important;min-height:30px!important;padding:0 8px!important;
+ border:1px solid #2ae65b!important;border-radius:4px!important;
+ background:#06220e!important;color:#eaffef!important;
+ font-size:clamp(10px,2.2vw,12px)!important;font-weight:900!important;
+ white-space:nowrap!important;flex:0 0 auto!important
+}
+#qhFullPcScreen #qhPcWriteCurrentTop{border-color:#55ef79!important;background:#105023!important}
+#qhFullPcScreen .qhPcHeadOps button:disabled{opacity:.48!important;cursor:wait!important}
+#qhFullPcScreen .qhPcShortLabel{display:none}
+#qhFullPcScreen .qhPcMapTools{
+ min-height:31px!important;height:31px!important;flex:0 0 31px!important;
+ gap:3px!important;padding:2px 4px!important;
+ display:flex!important;align-items:center!important;
+ flex-wrap:nowrap!important;overflow-x:auto!important;
+}
+#qhFullPcScreen .qhPcMapTools button,
+#qhFullPcScreen #qhFullMapSelect,
+#qhFullPcScreen #qhPcStep{height:26px!important;min-height:26px!important;font-size:10px!important}
+#qhFullPcScreen #qhFullMapSelect{
+ flex:0 0 66px!important;width:66px!important;min-width:66px!important;
+ max-width:66px!important;padding:0 2px!important;background:#05220e!important;
+ color:#effff2!important;border:1px solid #28c254!important;font-weight:800!important
+}
+#qhFullPcScreen .qhPcActions{display:none!important}
+#qhFullPcScreen #qhFullMapWrap{
+ display:flex!important;flex-direction:column!important;
+ flex:1 1 auto!important;min-height:0!important;
+ overflow:auto!important;overscroll-behavior:contain!important;
+ padding:0 2px 1px!important;background:#010503!important
+}
+#qhFullPcScreen #qhFullMapTable{
+ min-width:max-content!important;width:max-content!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ margin-top:auto!important;align-self:flex-start!important;
+ table-layout:fixed!important;border-collapse:collapse!important;
+}
+#qhFullPcScreen #qhFullMapTable th,
+#qhFullPcScreen #qhFullMapTable td{
+ width:37px!important;min-width:37px!important;max-width:37px!important;
+ height:var(--qh-full-row-height,23px)!important;
+ min-height:0!important;max-height:23px!important;
+ padding:0 1px!important;font-size:10px!important;
+ line-height:1.05!important;box-sizing:border-box!important
+}
+#qhFullPcScreen #qhFullMapTable .rh{
+ min-width:35px!important;width:35px!important;max-width:35px!important;
+ padding:0 1px!important;font-size:9px!important
+}
+/* Existing software landscape zoom still fits all available RPM columns. */
+#qhFullPcScreen.qhMapMagnified .qhPcMapHead{
+ height:36px!important;min-height:36px!important;flex:0 0 36px!important;
+ padding:3px 133px 3px 6px!important;
+}
+#qhFullPcScreen.qhMapMagnified #qhFullMapTable{
+ width:max-content!important;min-width:max-content!important;max-width:none!important;
+ margin-top:auto!important
+}
+#qhFullPcScreen.qhMapMagnified #qhFullMapTable th,
+#qhFullPcScreen.qhMapMagnified #qhFullMapTable td{
+ width:clamp(25px,calc((var(--qh-app-width,844px) - 40px)/29),34px)!important;
+ min-width:clamp(25px,calc((var(--qh-app-width,844px) - 40px)/29),34px)!important;
+ max-width:clamp(25px,calc((var(--qh-app-width,844px) - 40px)/29),34px)!important;
+ height:var(--qh-full-row-height,22px)!important
+}
+#qhFullPcScreen.qhMapMagnified #qhFullMapTable .rh{
+ min-width:36px!important;width:36px!important;max-width:36px!important
+}
+/* SIMPLE keeps its exact 8x15 grouping and all underlying 14x30 ECU values. */
+#qhSimpleFuelScreen #qhSimpleFuelWrap{display:flex!important;flex-direction:column!important;overflow:auto!important;min-height:0!important}
+#qhSimpleFuelScreen #qhSimpleFuelTable{
+ min-width:max-content!important;width:max-content!important;height:auto!important;min-height:0!important;
+ table-layout:fixed!important;margin-top:auto!important;align-self:flex-start!important
+}
+#qhSimpleFuelScreen #qhSimpleFuelTable th,
+#qhSimpleFuelScreen #qhSimpleFuelTable td{
+ min-width:43px!important;width:43px!important;max-width:43px!important;
+ height:var(--qh-simple-row-height,28px)!important;
+ padding:0 1px!important;font-size:10px!important;line-height:1.05!important
+}
+#qhSimpleFuelScreen #qhSimpleFuelTable .rowh{
+ min-width:42px!important;width:42px!important;max-width:42px!important;font-size:9px!important
+}
+/* Selection: dark-blue border, light-blue fill; distinct from red ECU cursor. */
+#qhFullMapTable td.v.qhSelectedCell,
+#qhSimpleFuelTable td.val.qhSelectedCell{
+ background:#a8deff!important;color:#092f55!important;font-weight:900!important;
+ box-shadow:inset 0 0 0 2px #064a9b,inset 0 0 9px rgba(10,89,170,.33)!important;
+ outline:none!important;
+}
+#qhFullMapTable td.v.qhCornerCell,
+#qhSimpleFuelTable td.val.qhCornerCell{
+ background:#c0e8ff!important;color:#072b52!important;
+ box-shadow:inset 0 0 0 3px #053777,inset 0 0 10px rgba(7,72,155,.45)!important;
+ outline:none!important;
+}
+/* Red is reserved ONLY for the moving RPM/TPS live cursor. */
+#qhFullMapTable td.v.qhLiveCursor,
+#qhSimpleFuelTable td.val.qhLiveCursor{
+ outline:3px solid #ff3045!important;outline-offset:-3px!important;
+ position:relative;z-index:1
+}
+@media(max-width:720px){
+ #qhFullPcScreen .qhPcHeadOps button{padding:0 5px!important}
+ #qhFullPcScreen .qhPcWideLabel{display:none!important}
+ #qhFullPcScreen .qhPcShortLabel{display:inline!important}
+ #qhFullPcScreen #qhFullMapTable th,
+ #qhFullPcScreen #qhFullMapTable td{
+   width:35px!important;min-width:35px!important;max-width:35px!important;
+   font-size:9px!important
+ }
+ #qhFullPcScreen #qhFullMapTable .rh{
+   min-width:33px!important;width:33px!important;max-width:33px!important
+ }
+}
+@media(max-height:450px){
+ #qhFullPcScreen .qhPcMapHead{height:32px!important;flex:0 0 32px!important;min-height:32px!important}
+ #qhFullPcScreen .qhPcHeadOps button{height:25px!important;min-height:25px!important}
+ #qhFullPcScreen .qhPcMapTools{height:27px!important;flex-basis:27px!important;min-height:27px!important}
+ #qhFullPcScreen .qhPcMapTools button,#qhFullPcScreen #qhFullMapSelect{height:23px!important;min-height:23px!important}
+}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.12</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.13</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5463,7 +5603,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhPcMini qhPcMainStat"><i>λ</i><div><small>AFR</small><b data-mirror="afr">0.00</b></div></div>
     <div class="qhPcMini"><i>♨</i><div><small>ECT</small><b data-mirror="ect">-- °C</b></div></div>
     <div class="qhPcMini"><i>♨</i><div><small>IAT</small><b data-mirror="iat">-- °C</b></div></div>
-    <div class="qhPcMini"><i>◴</i><div><small>MAP</small><b data-mirror="map">-- kPa</b></div></div>
+    <div class="qhPcMini"><i>◴</i><div><small>TPS V</small><b data-mirror="tpsv">-- V</b></div></div>
     <div class="qhPcMini"><i>ϟ</i><div><small>GÓC LỬA</small><b data-mirror="ign">--°</b></div></div>
     <div class="qhPcMini"><i>⌁</i><div><small>PHUN</small><b data-mirror="pw">0.00 ms</b></div></div>
     <div class="qhPcMini"><i>▣</i><div><small>ẮC QUY</small><b data-mirror="batt">-- V</b></div></div>
@@ -5480,9 +5620,13 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
   </div>
   <div class="qhPcMapHead">
     <h2>BẢN ĐỒ PHUN XĂNG</h2><div class="unit">Đơn vị: ms</div>
-    <select id="qhFullMapSelect"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
+    <div class="qhPcHeadOps">
+      <button id="qhPcReadCurrentTop" type="button" aria-label="Đọc map hiện tại từ ECU" title="ĐỌC HIỆN TẠI">▣ <span class="qhPcWideLabel">ĐỌC HIỆN TẠI</span><span class="qhPcShortLabel">ĐỌC</span></button>
+      <button id="qhPcWriteCurrentTop" type="button" aria-label="Ghi map hiện tại lên ECU" title="GHI HIỆN TẠI">➤ <span class="qhPcWideLabel">GHI HIỆN TẠI</span><span class="qhPcShortLabel">GHI</span></button>
+    </div>
   </div>
   <div class="qhPcMapTools" id="qhPcMapTools">
+    <select id="qhFullMapSelect" aria-label="Chọn map ECU"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
     <button id="qhPcZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
     <button id="qhPcKeyboard" type="button" title="Chọn một hoặc hai góc, rồi mở bàn phím">⌨ BÀN PHÍM</button>
     <button id="qhPcClearSelection" type="button" title="Bỏ vùng chọn hiện tại">✕ BỎ CHỌN</button>
@@ -5587,7 +5731,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.12</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.13</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11542,13 +11686,16 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   }
   function renderFuel(){
     activeFeature=null;
+    // QH 1.1.13: only HIDE the physical 500-RPM fuel column in this view.
+    // Keep all 420 ECU values, raw c indices, axes and write payload unchanged.
+    const visibleCols=RPMS.map((rpm,c)=>({rpm,c})).filter(col=>col.c!==0);
     let h='<thead><tr><th class="rh">TPS %</th>';
-    for(let c=0;c<RPMS.length;c++)h+='<th>'+RPMS[c]+'</th>';
+    for(const col of visibleCols)h+='<th>'+col.rpm+'</th>';
     h+='</tr></thead><tbody>';
     for(let r=0;r<TPS_ROWS.length;r++){
       const label=String(TPS_ROWS[r]).toUpperCase()==='IDLE'?'IDLE':TPS_ROWS[r]+'%';
       h+='<tr><td class="rh">'+label+'</td>';
-      for(let c=0;c<RPMS.length;c++){
+      for(const {c} of visibleCols){
         const v=fuelValue(r,c),col=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#8cff46',sel=fkCell&&fkCell.r===r&&fkCell.c===c?' sel':'';
         h+='<td class="v'+sel+'" data-r="'+r+'" data-c="'+c+'" style="background:'+col+'">'+v.toFixed(2)+'</td>';
       }
@@ -11787,6 +11934,17 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     if(document.body.dataset.uiMode==='full'&&activeTab==='options'&&!screen.classList.contains('suspended'))
       window.QHManualTps?.paint?.();
   },200);
+  // The real READ/WRITE workflow remains bound to the original hidden buttons.
+  // Header buttons merely forward to it; all ECU ACK/verification gates stay intact.
+  for(const [topId,originalId] of [
+    ['qhPcReadCurrentTop','qhPcReadCurrent'],['qhPcWriteCurrentTop','qhPcWriteCurrent']]){
+    const top=document.getElementById(topId),original=document.getElementById(originalId);
+    if(!top||!original)continue;
+    const sync=()=>{top.disabled=original.disabled;top.setAttribute('aria-busy',String(original.disabled));};
+    top.addEventListener('click',()=>{if(!original.disabled)original.click()});
+    new MutationObserver(sync).observe(original,{attributes:true,attributeFilter:['disabled']});
+    sync();
+  }
   document.getElementById('qhPcKeyboard')?.addEventListener('click',openKey);
   document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
   document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
@@ -11943,8 +12101,8 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
 (function(){
  'use strict';
  const specs=[
-   {mode:'full',screen:'qhFullPcScreen',wrap:'qhFullMapWrap',table:'qhFullMapTable',variable:'--qh-full-row-height',min:12,max:32},
-   {mode:'simple',screen:'qhSimpleFuelScreen',wrap:'qhSimpleFuelWrap',table:'qhSimpleFuelTable',variable:'--qh-simple-row-height',min:17,max:42}
+   {mode:'full',screen:'qhFullPcScreen',wrap:'qhFullMapWrap',table:'qhFullMapTable',variable:'--qh-full-row-height',min:14,max:23},
+   {mode:'simple',screen:'qhSimpleFuelScreen',wrap:'qhSimpleFuelWrap',table:'qhSimpleFuelTable',variable:'--qh-simple-row-height',min:19,max:28}
  ];
  let pending=false;
  function fit(spec){
@@ -12018,8 +12176,10 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     // RPM/TPS numbers follow the faster display-only cursor path.
     const rpm=document.getElementById('rpmLive')?.textContent;
     const tps=document.getElementById('tpsLive')?.textContent;
+    const tpsV=document.getElementById('tpsVLive')?.textContent;
     if(rpm!=null)mirror('rpm',rpm);
     if(tps!=null)mirror('tps',tps);
+    if(tpsV!=null)mirror('tpsv',tpsV);
   }
   function signal(){
     signals++;
