@@ -12378,6 +12378,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
   window.QHFullPc={render,updateLiveCursor:updateFullCursor,
     show:()=>{screen.classList.remove('suspended');render()},
     hide:()=>{window.QHOrientation?.exit('full');screen.classList.add('suspended')},
+    get isBusy(){return fullIoBusy},
     get activeTab(){return activeTab}};
 })();
 </script>
