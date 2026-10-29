@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.0.40';
-  document.title = 'QH ECU · v1.0.40';
+  window.BLINK_PB_VERSION = 'QH-1.1.0';
+  document.title = 'QH ECU · v1.1.0';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -4183,8 +4183,144 @@ body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen
   max-height:none!important;
 }
 </style>
+
+<style id="qhDualModeStyle">
+  #qhModeGate{position:fixed;inset:0;z-index:999999;background:
+    radial-gradient(circle at 50% 15%,rgba(255,255,255,.08),transparent 34%),
+    linear-gradient(180deg,#183552 0,#0e2235 42%,#07121d 100%);
+    display:flex;align-items:center;justify-content:center;padding:22px;font-family:Segoe UI,Arial,sans-serif}
+  #qhModeGate[hidden]{display:none!important}
+  .qhModeBox{width:min(760px,96vw);border:1px solid #7da1c2;background:linear-gradient(180deg,#f6f8fa,#d8e1ea);
+    box-shadow:0 22px 70px #000b,inset 0 1px #fff;border-radius:9px;overflow:hidden;color:#102235}
+  .qhModeTitle{background:linear-gradient(180deg,#3977ad,#24577f);color:#fff;font-weight:800;font-size:24px;padding:16px 20px;
+    border-bottom:1px solid #173b59;letter-spacing:.2px}
+  .qhModeSub{padding:14px 20px 4px;color:#40576b;font-size:13px}
+  .qhModeChoices{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:18px 20px 22px}
+  .qhModeChoice{min-height:150px;border:1px solid #8ea6ba!important;border-radius:6px!important;background:linear-gradient(180deg,#fff,#dfe8f0)!important;
+    color:#17354f!important;text-align:left!important;padding:18px!important;box-shadow:inset 0 1px #fff,0 2px 8px #55718733!important}
+  .qhModeChoice:hover{background:linear-gradient(180deg,#fff,#cfe0ee)!important}
+  .qhModeChoice b{display:block;font-size:23px;margin-bottom:8px;color:#174f7f}
+  .qhModeChoice span{display:block;font-size:13px;line-height:1.5;font-weight:600;color:#536b7e}
+  .qhModeFoot{padding:0 20px 18px;color:#60788a;font-size:11px}
+  @media(max-width:620px){.qhModeChoices{grid-template-columns:1fr}.qhModeChoice{min-height:118px}}
+
+  /* REDLEO PC visual language for both user modes. */
+  body[data-ui-mode="full"],body[data-ui-mode="simple"]{--accent:#2b78b5!important;--line:#5b89ae!important;--head:#3977ad!important;
+    --bg:#dbe4ec!important;--panel:#eef3f7!important;--panel2:#f8fafc!important;--text:#142536!important;--muted:#607589!important}
+  body[data-ui-mode="full"] .screen,body[data-ui-mode="simple"] .screen{background:#e7edf3!important;color:#142536!important}
+  body[data-ui-mode="full"] .screenHeader,body[data-ui-mode="simple"] .screenHeader,
+  body[data-ui-mode="full"] .groupHead,body[data-ui-mode="simple"] .groupHead{
+    background:linear-gradient(180deg,#f9fbfd,#d8e3ec)!important;border-color:#91a9bb!important;color:#1e405d!important;box-shadow:none!important}
+  body[data-ui-mode="full"] button,body[data-ui-mode="simple"] button{
+    border:1px solid #7290a8!important;background:linear-gradient(180deg,#fff,#d5e1ea)!important;color:#17354f!important;
+    box-shadow:inset 0 1px #fff!important;border-radius:4px!important}
+  body[data-ui-mode="full"] button.primary,body[data-ui-mode="simple"] button.primary,
+  body[data-ui-mode="full"] button.good,body[data-ui-mode="simple"] button.good{
+    background:linear-gradient(180deg,#4e8ec2,#2d6d9f)!important;color:#fff!important;border-color:#205b89!important}
+  body[data-ui-mode="full"] button.danger,body[data-ui-mode="simple"] button.danger{
+    background:linear-gradient(180deg,#f8f8f8,#d5dce2)!important;color:#8c1c1c!important;border-color:#aa7c7c!important}
+  body[data-ui-mode="full"] .menuCard,body[data-ui-mode="simple"] .menuCard,
+  body[data-ui-mode="full"] .optPanel,body[data-ui-mode="simple"] .optPanel,
+  body[data-ui-mode="full"] .infoCell,body[data-ui-mode="simple"] .infoCell{
+    background:linear-gradient(180deg,#fff,#e6edf3)!important;border-color:#9aaebe!important;color:#1c3347!important;box-shadow:none!important}
+  body[data-ui-mode="full"] .qhDashboardScreen,body[data-ui-mode="simple"] .qhDashboardScreen{background:#dbe4ec!important}
+  body[data-ui-mode="full"] .qhBrandMain,body[data-ui-mode="simple"] .qhBrandMain{color:#245d8b!important;text-shadow:none!important}
+  body[data-ui-mode="full"] .qhGold,body[data-ui-mode="simple"] .qhGold{color:#245d8b!important}
+  body[data-ui-mode="full"] .qhSilver,body[data-ui-mode="simple"] .qhSilver{color:#344e63!important}
+  body[data-ui-mode="full"] .qhBrandSub span,body[data-ui-mode="simple"] .qhBrandSub span{color:#5b7183!important}
+  body[data-ui-mode="full"] #mapTable,body[data-ui-mode="simple"] #mapTable{background:#fff!important}
+  body[data-ui-mode="full"] #mapTable th,body[data-ui-mode="full"] #mapTable td.rowhead,
+  body[data-ui-mode="simple"] #mapTable th,body[data-ui-mode="simple"] #mapTable td.rowhead{
+    background:#3977ad!important;color:#fff!important;border-color:#7fb0d4!important}
+  body[data-ui-mode="full"] #mapTable td.mapcell,body[data-ui-mode="simple"] #mapTable td.mapcell{
+    border-color:#a8c7df!important}
+  body[data-ui-mode="full"] .qhMainMenu .qhMenuRow,body[data-ui-mode="simple"] .qhMainMenu .qhMenuRow{
+    background:linear-gradient(180deg,#fff,#dce6ee)!important;color:#17354f!important;border-color:#94aabd!important}
+  body[data-ui-mode="full"] .qhMenuText b,body[data-ui-mode="simple"] .qhMenuText b{color:#1c4f78!important}
+  body[data-ui-mode="full"] .qhMenuText small,body[data-ui-mode="simple"] .qhMenuText small{color:#61788b!important}
+
+  /* Simple fuel editor: display only 8 x 15 while retaining the 14 x 30 source matrix. */
+  #qhSimpleFuelScreen{display:none;position:fixed;inset:0;z-index:260000;background:#dce5ed;color:#13293c;padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));overflow:auto}
+  body[data-ui-mode="simple"] #qhSimpleFuelScreen.active{display:block}
+  .qhSfWindow{min-height:calc(100dvh - 16px);border:1px solid #718da3;background:#edf3f7;box-shadow:0 9px 28px #1a304755;display:flex;flex-direction:column}
+  .qhSfTitle{height:38px;background:linear-gradient(180deg,#3979ae,#245d88);color:#fff;display:flex;align-items:center;gap:10px;padding:0 10px;font-weight:800}
+  .qhSfTitle b{font-size:15px}.qhSfTitle span{font-size:11px;opacity:.88}.qhSfTitle .spacer{flex:1}
+  .qhSfTitle button{height:28px!important;padding:0 10px!important}
+  .qhSfLive{display:grid;grid-template-columns:repeat(6,minmax(82px,1fr));gap:5px;padding:7px;border-bottom:1px solid #a7b9c7;background:#d9e5ee}
+  .qhSfStat{background:#f8fbfd;border:1px solid #9db0bf;padding:5px 7px;min-width:0}
+  .qhSfStat small{display:block;color:#60778a;font-size:9px;font-weight:700}.qhSfStat b{display:block;font-size:16px;color:#173f60;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .qhSfTabs{display:flex;gap:4px;padding:6px 7px;background:#e6edf3;border-bottom:1px solid #a7b9c7;overflow:auto}
+  .qhSfTabs button{white-space:nowrap;height:32px!important;padding:0 12px!important}.qhSfTabs .active{background:linear-gradient(180deg,#4f8fc1,#2e6d9f)!important;color:#fff!important}
+  .qhSfToolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:6px 7px;background:#f3f7fa;border-bottom:1px solid #a7b9c7}
+  .qhSfToolbar select{height:32px;background:#fff;border:1px solid #849cad;color:#17354f;border-radius:3px;padding:0 7px;font-weight:700}
+  #qhSimpleFuelWrap{padding:6px;overflow:auto;flex:1;background:#fff}
+  #qhSimpleFuelTable{border-collapse:collapse;width:100%;min-width:760px;table-layout:fixed;font-variant-numeric:tabular-nums}
+  #qhSimpleFuelTable th,#qhSimpleFuelTable td{height:38px;border:1px solid #79acd0;text-align:center;padding:0 3px;font-size:12px}
+  #qhSimpleFuelTable th{background:#3977ad;color:#fff;position:sticky;top:0;z-index:3}
+  #qhSimpleFuelTable .rowh{background:#3977ad;color:#fff;font-weight:800;position:sticky;left:0;z-index:2;width:68px}
+  #qhSimpleFuelTable td.val{font-weight:800;color:#142536;cursor:pointer}
+  #qhSimpleFuelTable td.val.active{outline:3px solid #195b8c;outline-offset:-3px}
+  .qhSfHint{padding:5px 8px;border-top:1px solid #a7b9c7;background:#e7eef4;color:#516b7f;font-size:10px}
+  #qhSimpleKeypad{position:fixed;z-index:270000;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(420px,94vw);background:#e9eff4;border:1px solid #6e899e;box-shadow:0 14px 45px #0008;padding:8px;display:none}
+  #qhSimpleKeypad.show{display:block}
+  .qhSkHead{display:flex;align-items:center;gap:8px;margin-bottom:7px}.qhSkHead b{font-size:18px;color:#174f7f}.qhSkHead span{flex:1;font-size:11px;color:#566f82}
+  .qhSkGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}.qhSkGrid button{height:44px!important;font-size:17px!important}
+  .qhSkGrid .wide{grid-column:span 2}.qhSkGrid .apply{background:linear-gradient(180deg,#4f8fc1,#2e6d9f)!important;color:white!important}
+  @media(max-width:720px){.qhSfLive{grid-template-columns:repeat(3,1fr)}#qhSimpleFuelTable{min-width:720px}}
+  @media(orientation:landscape) and (max-height:600px){#qhSimpleFuelTable th,#qhSimpleFuelTable td{height:29px;font-size:10px}.qhSfLive{grid-template-columns:repeat(6,1fr)}}
+  body[data-ui-mode="full"].mapZoomMode #mapTable{min-width:100vw!important;width:100vw!important;table-layout:fixed!important}
+  body[data-ui-mode="full"].mapZoomMode #mapTable th.corner{width:4.6vw!important;min-width:4.6vw!important}
+  body[data-ui-mode="full"].mapZoomMode #mapTable th,
+  body[data-ui-mode="full"].mapZoomMode #mapTable td{padding:0!important;font-size:clamp(6px,1.2vw,10px)!important}
+</style>
 </head>
 <body>
+
+<div id="qhModeGate" role="dialog" aria-modal="true">
+  <div class="qhModeBox">
+    <div class="qhModeTitle">QH ECU - Select Interface Mode</div>
+    <div class="qhModeSub">Choose a mode every time the app starts. ECU data and protocol are shared between both modes.</div>
+    <div class="qhModeChoices">
+      <button id="qhChooseFull" class="qhModeChoice" type="button"><b>FULL MODE</b><span>Complete REDLEO-style interface. Original ECU axes and all 420 fuel cells are preserved. Portrait mode scrolls horizontally; enlarged mode fits the full map in landscape.</span></button>
+      <button id="qhChooseSimple" class="qhModeChoice" type="button"><b>SIMPLE MODE</b><span>REDLEO-style compact interface for phone use. INJ MAP is displayed as 8 TPS rows x 15 RPM columns while the ECU still stores and reads the full 14 x 30 map.</span></button>
+    </div>
+    <div class="qhModeFoot">No mode is remembered after closing the app.</div>
+  </div>
+</div>
+
+<section id="qhSimpleFuelScreen" aria-label="Simple Injection Map">
+  <div class="qhSfWindow">
+    <div class="qhSfTitle"><b>REDLEO ECU - INJECTION MAP</b><span>SIMPLE MODE · 8 TPS x 15 RPM VIEW</span><div class="spacer"></div><button id="qhSfBack" type="button">BACK</button></div>
+    <div class="qhSfLive">
+      <div class="qhSfStat"><small>RPM</small><b data-mirror="rpm">0</b></div>
+      <div class="qhSfStat"><small>TPS</small><b data-mirror="tps">--%</b></div>
+      <div class="qhSfStat"><small>AFR</small><b data-mirror="afr">--</b></div>
+      <div class="qhSfStat"><small>ECT</small><b data-mirror="ect">-- °C</b></div>
+      <div class="qhSfStat"><small>IGNITION</small><b data-mirror="ign">--°</b></div>
+      <div class="qhSfStat"><small>INJECTION</small><b data-mirror="pw">0.00 ms</b></div>
+    </div>
+    <div class="qhSfTabs"><button class="active" type="button">Injection Map</button><button type="button" data-qh-open-feature="ign_degree">Ignition Map</button><button type="button" data-qh-open-feature="afr_map">Air-Fuel Ratio</button><button type="button" data-qh-open-feature="ect_inj">ECT Fuel Compensation</button><button type="button" data-qh-open-feature="iat_inj">IAT Fuel Compensation</button><button type="button" data-qh-open-feature="map_inj">MAP Fuel Compensation</button></div>
+    <div class="qhSfToolbar">
+      <select id="qhSfMap"><option value="1">MAP No.1</option><option value="2">MAP No.2</option><option value="3">MAP No.3</option><option value="4">MAP No.4</option></select>
+      <button id="qhSfReadAll" type="button">READ ALL</button>
+      <button id="qhSfWriteAll" type="button">WRITE ALL</button>
+      <button id="qhSfRead" class="primary" type="button">READ CURRENT</button>
+      <button id="qhSfWrite" class="primary" type="button">WRITE CURRENT</button>
+      <button id="qhSfZoom" type="button">LANDSCAPE</button>
+    </div>
+    <div id="qhSimpleFuelWrap"><table id="qhSimpleFuelTable"></table></div>
+    <div class="qhSfHint">Display rule: every visible RPM column controls two ECU columns; every paired TPS row controls two ECU rows. READ never changes unmatched hidden partner cells. Editing a SIMPLE cell synchronizes only its assigned ECU group.</div>
+  </div>
+</section>
+<div id="qhSimpleKeypad">
+  <div class="qhSkHead"><span id="qhSkCell">Select a cell</span><b id="qhSkValue">--</b></div>
+  <div class="qhSkGrid">
+    <button data-sk="1">1</button><button data-sk="2">2</button><button data-sk="3">3</button><button data-sk="clear">C</button>
+    <button data-sk="4">4</button><button data-sk="5">5</button><button data-sk="6">6</button><button data-sk="back">⌫</button>
+    <button data-sk="7">7</button><button data-sk="8">8</button><button data-sk="9">9</button><button data-sk=".">.</button>
+    <button class="wide" data-sk="0">0</button><button data-sk="close">CLOSE</button><button class="apply" data-sk="apply">APPLY</button>
+  </div>
+</div>
 <div id="portraitGate" aria-hidden="true"></div>
 <div id="ecuNotice" class="ecuNotice" role="status" aria-live="polite"><button class="icon" id="ecuNoticeIcon" type="button" aria-label="Đóng thông báo">✓</button><div style="flex:1;min-width:0"><div class="ntitle" id="ecuNoticeTitle"></div><div class="ndetail" id="ecuNoticeDetail"></div></div><button class="nclose" id="ecuNoticeClose" type="button" aria-label="Đóng thông báo">✕</button></div>
 <div id="ecuTaskStatus" class="ecuTaskStatus" role="status" aria-live="polite"><span class="ecuTaskIcon"></span><span class="ecuTaskText" id="ecuTaskText">ECU</span></div>
@@ -4194,7 +4330,7 @@ body.appForceLandscape.mapZoomMode #mapEditorScreen.mapValueEditor.mapKeypadOpen
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.0.40</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.0</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -9336,6 +9472,211 @@ updateMapControls();
     const src='redleo_real_protocol.js?v='+encodeURIComponent(v);
     document.write('<script src="'+src+'"><\/script>');
   })();
+</script>
+
+<script id="qhDualModeScript">
+(function(){
+  'use strict';
+  let uiMode=null, sfCell=null, sfBuffer='', sfLandscape=false;
+  const rowGroups=[[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12],[13]];
+  const colGroups=Array.from({length:15},(_,i)=>[i*2,i*2+1]);
+
+  const fullEnglish={
+    inj_ve:'Injection Time',
+    inj_degree:'Injection Timing',
+    ign_degree:'Ignition Timing',
+    ign_time:'Ignition Dwell Time',
+    afr_map:'Air-Fuel Ratio Map',
+    ect_inj:'ECT Fuel Compensation',
+    ect_ign:'ECT Ignition Compensation',
+    map_inj:'MAP Fuel Compensation',
+    iat_inj:'IAT Fuel Compensation',
+    idle_limit:'Idle and Limits',
+    ect_idle_motor:'ECT - Idle Motor',
+    map_idle_motor:'MAP - Idle Motor',
+    external_adjust:'External Adjustment',
+    auto_shift:'Automatic Shift',
+    auto_clutch:'Automatic Clutch',
+    ect_start:'Cold-Start Fuel Compensation',
+    v_ect:'ECT Sensor Calibration',
+    v_iat:'IAT Sensor Calibration',
+    v_map:'MAP Sensor Calibration',
+    chg_params:'Charging Parameters',
+    ate_options:'ECU Options',
+    alternate_table:'Alternate Table'
+  };
+
+  function setText(selector,text){
+    const e=document.querySelector(selector);if(e)e.textContent=text;
+  }
+  function applyCorrectedEnglish(){
+    document.documentElement.lang='en';
+    document.querySelectorAll('[data-feature]').forEach(el=>{
+      const id=el.dataset.feature,h=el.querySelector('h3');
+      if(h&&fullEnglish[id])h.textContent=fullEnglish[id];
+    });
+    setText('#connectEcuBtn','CONNECT ECU');
+    setText('#disconnectEcuBtn','DISCONNECT');
+    document.querySelectorAll('.qhMainMenu .qhMenuRow').forEach(b=>{
+      const nav=b.dataset.nav;
+      const title=b.querySelector('b'),sub=b.querySelector('small');
+      if(!title)return;
+      if(nav==='settings'){title.textContent='OPTIONS';if(sub)sub.textContent='System and ECU settings';}
+      else if(nav==='ecu'){title.textContent='ECU';if(sub)sub.textContent='Read / write ECU data';}
+      else if(nav==='maps'){title.textContent='MAPS';if(sub)sub.textContent='Fuel, ignition and compensation tables';}
+    });
+    setText('#homeAutoTuneBtn .qhMenuText b','AUTO TUNE');
+    setText('#homeAutoTuneBtn .qhMenuText small','AFR measurement and fuel correction');
+  }
+
+  function chooseMode(mode){
+    uiMode=mode;
+    document.body.dataset.uiMode=mode;
+    document.getElementById('qhModeGate').hidden=true;
+    applyCorrectedEnglish();
+    try{showScreen('dashboard')}catch(_e){}
+    try{render()}catch(_e){}
+  }
+  document.getElementById('qhChooseFull')?.addEventListener('click',()=>chooseMode('full'));
+  document.getElementById('qhChooseSimple')?.addEventListener('click',()=>chooseMode('simple'));
+
+  function simpleMainRow(sr){return rowGroups[sr][0]}
+  function simpleMainCol(sc){return colGroups[sc][1]}
+  function simpleLabelRow(sr){
+    const r=simpleMainRow(sr),v=TPS_ROWS[r];
+    return String(v).toUpperCase()==='IDLE'?'IDLE':String(v)+'%';
+  }
+  function simpleLabelCol(sc){return String(RPMS[simpleMainCol(sc)]);}
+  function simpleValue(sr,sc){
+    const r=simpleMainRow(sr),c=simpleMainCol(sc),v=Number(state.inject?.[r]?.[c]);
+    return Number.isFinite(v)?v:0;
+  }
+  function renderSimpleFuel(){
+    const t=document.getElementById('qhSimpleFuelTable');if(!t||!window.state&&typeof state==='undefined')return;
+    let h='<thead><tr><th class="rowh">TPS / RPM</th>';
+    for(let sc=0;sc<15;sc++)h+='<th>'+simpleLabelCol(sc)+'</th>';
+    h+='</tr></thead><tbody>';
+    for(let sr=0;sr<8;sr++){
+      h+='<tr><td class="rowh">'+simpleLabelRow(sr)+'</td>';
+      for(let sc=0;sc<15;sc++){
+        const v=simpleValue(sr,sc),color=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#fff';
+        const active=sfCell&&sfCell.sr===sr&&sfCell.sc===sc?' active':'';
+        h+='<td class="val'+active+'" data-sr="'+sr+'" data-sc="'+sc+'" style="background:'+color+'">'+v.toFixed(2)+'</td>';
+      }
+      h+='</tr>';
+    }
+    h+='</tbody>';t.innerHTML=h;
+    t.querySelectorAll('td.val').forEach(td=>td.addEventListener('click',()=>{
+      openSimpleKeypad(Number(td.dataset.sr),Number(td.dataset.sc));
+    }));
+    const sel=document.getElementById('qhSfMap');if(sel)sel.value=String(state.activeMap||1);
+  }
+
+  function syncPartnerGroup(sr,sc,value){
+    const v=Math.max(0,Math.min(Number(value)||0,typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100));
+    for(const r of rowGroups[sr])for(const c of colGroups[sc])state.inject[r][c]=Number(v.toFixed(3));
+    try{state.mapBanks[state.activeMap-1].inject=state.inject}catch(_e){}
+    try{saveSoon()}catch(_e){}
+    try{render()}catch(_e){}
+    renderSimpleFuel();
+  }
+
+  function openSimpleKeypad(sr,sc){
+    sfCell={sr,sc};sfBuffer=String(simpleValue(sr,sc).toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
+    document.getElementById('qhSkCell').textContent=simpleLabelRow(sr)+' · '+simpleLabelCol(sc)+' RPM';
+    document.getElementById('qhSkValue').textContent=sfBuffer+' ms';
+    document.getElementById('qhSimpleKeypad').classList.add('show');
+    renderSimpleFuel();
+  }
+  function redrawSk(){document.getElementById('qhSkValue').textContent=(sfBuffer||'0')+' ms'}
+  document.querySelectorAll('#qhSimpleKeypad [data-sk]').forEach(b=>b.addEventListener('click',()=>{
+    const k=b.dataset.sk;
+    if(k==='close'){document.getElementById('qhSimpleKeypad').classList.remove('show');return}
+    if(k==='apply'){
+      if(sfCell)syncPartnerGroup(sfCell.sr,sfCell.sc,Number(sfBuffer||0));
+      document.getElementById('qhSimpleKeypad').classList.remove('show');return;
+    }
+    if(k==='clear')sfBuffer='';
+    else if(k==='back')sfBuffer=sfBuffer.slice(0,-1);
+    else if(k==='.'){if(!sfBuffer.includes('.'))sfBuffer=sfBuffer?sfBuffer+'.':'0.';}
+    else if(/^\d$/.test(k)&&sfBuffer.length<8)sfBuffer+=k;
+    redrawSk();
+  }));
+
+  function openSimpleFuel(){
+    if(uiMode!=='simple')return;
+    try{
+      state.tab='inject';
+      state.inject=state.mapBanks[state.activeMap-1].inject;
+    }catch(_e){}
+    document.getElementById('qhSimpleFuelScreen').classList.add('active');
+    renderSimpleFuel();
+  }
+  function closeSimpleFuel(){
+    document.getElementById('qhSimpleFuelScreen').classList.remove('active');
+    document.getElementById('qhSimpleKeypad').classList.remove('show');
+    sfCell=null;
+  }
+  document.getElementById('qhSfBack')?.addEventListener('click',closeSimpleFuel);
+
+  document.addEventListener('click',e=>{
+    if(uiMode!=='simple')return;
+    const card=e.target.closest?.('[data-feature="inj_ve"]');
+    if(card){e.preventDefault();e.stopPropagation();openSimpleFuel();}
+  },true);
+
+  document.querySelectorAll('[data-qh-open-feature]').forEach(b=>b.addEventListener('click',()=>{
+    closeSimpleFuel();
+    const id=b.dataset.qhOpenFeature;
+    const target=document.querySelector('[data-feature="'+id+'"]');
+    if(target)target.click();
+  }));
+
+  document.getElementById('qhSfMap')?.addEventListener('change',e=>{
+    const v=String(e.target.value);
+    const main=document.getElementById('mapSelect');
+    if(main){main.value=v;main.dispatchEvent(new Event('change',{bubbles:true}));}
+    setTimeout(renderSimpleFuel,80);
+  });
+  document.getElementById('qhSfRead')?.addEventListener('click',()=>{
+    const b=document.getElementById('readMapBtn');if(b&&!b.disabled)b.click();
+    else document.querySelector('[data-ecucmd="READ_CURRENT"]')?.click();
+    setTimeout(renderSimpleFuel,300);
+  });
+  document.getElementById('qhSfWrite')?.addEventListener('click',()=>{
+    const b=document.getElementById('writeMapBtn');if(b&&!b.disabled)b.click();
+    else document.querySelector('[data-ecucmd="SEND_CURRENT"]')?.click();
+  });
+  document.getElementById('qhSfReadAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="READ_ALL"]')?.click());
+  document.getElementById('qhSfWriteAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="SEND_ALL"]')?.click());
+  document.getElementById('qhSfZoom')?.addEventListener('click',()=>{
+    sfLandscape=!sfLandscape;
+    document.getElementById('qhSimpleFuelScreen').style.transform=sfLandscape&&innerHeight>innerWidth?'rotate(90deg) translateY(-100%)':'';
+    document.getElementById('qhSimpleFuelScreen').style.transformOrigin=sfLandscape&&innerHeight>innerWidth?'top left':'';
+    document.getElementById('qhSimpleFuelScreen').style.width=sfLandscape&&innerHeight>innerWidth?'100vh':'';
+    document.getElementById('qhSimpleFuelScreen').style.height=sfLandscape&&innerHeight>innerWidth?'100vw':'';
+    document.getElementById('qhSfZoom').textContent=sfLandscape?'PORTRAIT':'LANDSCAPE';
+  });
+
+  // FULL mode: enlarged map must use the complete 14 x 30 matrix and fit landscape.
+  const oldEnter=typeof enterMapZoom==='function'?enterMapZoom:null;
+  if(oldEnter){
+    enterMapZoom=async function(){
+      await oldEnter();
+      if(uiMode==='full'){
+        const table=document.getElementById('mapTable');
+        if(table){table.style.minWidth='100vw';table.style.width='100vw';}
+      }
+    };
+  }
+
+  // Keep SIMPLE view synchronized after a read, map switch, or protocol update.
+  setInterval(()=>{
+    if(uiMode==='simple'&&document.getElementById('qhSimpleFuelScreen')?.classList.contains('active'))renderSimpleFuel();
+  },500);
+
+  window.QHDualMode={get mode(){return uiMode},choose:chooseMode,openSimpleFuel,renderSimpleFuel};
+})();
 </script>
 </body>
 </html>
