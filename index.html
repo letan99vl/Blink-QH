@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.16';
-  document.title = 'QH ECU · v1.1.16';
+  window.BLINK_PB_VERSION = 'QH-1.1.17';
+  document.title = 'QH ECU · v1.1.17';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5654,12 +5654,60 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  font-size:var(--qh-fuel-density-afr-font,7px)!important;
 }
 </style>
+
+<style id="qhFewRowFullWidthV117">
+/* Only FULL ECU feature maps with 1..3 rows. The source matrix and indices
+   remain untouched; all data columns are visible across the viewport. */
+#qhFullPcScreen.qhFewRowMap #qhFullMapWrap{
+ display:block!important;overflow-x:hidden!important;overflow-y:auto!important;
+ min-height:0!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable,
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable{
+ width:100%!important;min-width:0!important;max-width:100%!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ table-layout:fixed!important;align-self:flex-start!important;
+ margin:0!important;border-collapse:collapse!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable th,
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable td,
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable th,
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable td{
+ height:var(--qh-fewrow-height,54px)!important;
+ min-height:0!important;max-height:var(--qh-fewrow-height,54px)!important;
+ padding:0!important;overflow:hidden!important;text-overflow:clip!important;
+ font-size:var(--qh-fewrow-font,11px)!important;line-height:1.12!important;
+ box-sizing:border-box!important;white-space:nowrap!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable th:not(.rh),
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable td.v,
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable th:not(.rh),
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable td.v{
+ width:var(--qh-fewrow-col,30px)!important;min-width:0!important;
+ max-width:var(--qh-fewrow-col,30px)!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable .rh,
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable .rh{
+ width:var(--qh-fewrow-label,60px)!important;
+ min-width:var(--qh-fewrow-label,60px)!important;
+ max-width:var(--qh-fewrow-label,60px)!important;
+ font-size:var(--qh-fewrow-label-font,10px)!important;
+ padding:0 2px!important;text-overflow:ellipsis!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable .qhFewRowText{
+ display:inline-block!important;white-space:nowrap!important;
+ transform:scaleX(var(--qh-fewrow-text-scale,1))!important;
+ transform-origin:center center!important;pointer-events:none!important;
+ max-width:none!important;vertical-align:middle!important;
+ font-variant-numeric:tabular-nums!important;
+}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.16</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.17</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5817,7 +5865,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.16</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.17</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11855,6 +11903,67 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     if(id==='ect_inj'||id==='iat_inj'||id==='map_inj')return '#86f65e';
     return '#8cff55';
   }
+  function qhFewRowEscape(s){
+    return String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  let fewRowLayoutFrame=0;
+  function scheduleFewRowLayout(){
+    if(fewRowLayoutFrame)return;
+    fewRowLayoutFrame=requestAnimationFrame(()=>{
+      fewRowLayoutFrame=0;
+      if(!screen.classList.contains('qhFewRowMap')||!activeFeature||!table.tHead)return;
+      const f=activeFeature,n=f.cols;
+      if(!(n>0)||wrap.clientWidth<90)return;
+      const css=getComputedStyle(wrap);
+      const padding=(parseFloat(css.paddingLeft)||0)+(parseFloat(css.paddingRight)||0);
+      const usable=Math.max(40,wrap.clientWidth-padding-2);
+      const labelWidth=n>=24?Math.max(26,Math.min(40,usable*.072)):
+                       n>=14?Math.max(40,Math.min(74,usable*.12)):
+                       n>=7?Math.max(48,Math.min(86,usable*.17)):
+                             Math.max(56,Math.min(105,usable*.23));
+      const cellWidth=Math.max(1,(usable-labelWidth)/n);
+      const font=n>=22?10:Math.max(9,Math.min(13,cellWidth*.42));
+      const rowHeight=f.rows===1?76:(f.rows===2?62:54);
+      const shortRpm=f.id==='ign_time'&&n>=24&&usable<650;
+      const head=table.tHead.rows[0];
+      const first=head?.cells?.[0];
+      if(first&&f.id==='ign_time'){
+        const label=shortRpm?'kRPM':'RPM';
+        if(first.textContent!==label)first.textContent=label;
+        first.title='Trục vòng tua RPM'+(shortRpm?' · số hiển thị tính bằng 1.000 RPM':'');
+      }
+      for(let c=0;c<n;c++){
+        const th=head?.cells?.[c+1],span=th?.querySelector('.qhFewRowText');
+        if(!span)continue;
+        const axis=f.x?.[c]??('C'+(c+1)),num=Number(axis);
+        const shown=shortRpm&&Number.isFinite(num)?String(Number((num/1000).toFixed(2))):String(axis);
+        if(span.textContent!==shown)span.textContent=shown;
+      }
+      screen.style.setProperty('--qh-fewrow-label',labelWidth.toFixed(2)+'px');
+      screen.style.setProperty('--qh-fewrow-col',cellWidth.toFixed(2)+'px');
+      screen.style.setProperty('--qh-fewrow-font',font.toFixed(2)+'px');
+      screen.style.setProperty('--qh-fewrow-label-font',(n>=24?8:Math.min(12,font)).toFixed(2)+'px');
+      screen.style.setProperty('--qh-fewrow-height',rowHeight+'px');
+      // Keep the exact on-screen numeric text; shrink only the glyph width if
+      // the feature has many columns, rather than rounding tune values.
+      const ctx=document.createElement('canvas').getContext('2d');
+      let widest=0;
+      const nodes=table.querySelectorAll('.qhFewRowText');
+      if(ctx)ctx.font='800 '+font+'px Arial';
+      nodes.forEach(el=>{
+        const t=el.textContent||'';
+        const w=ctx?ctx.measureText(t).width:t.length*font*.65;
+        if(w>widest)widest=w;
+      });
+      const scale=widest>0?Math.min(1,Math.max(.20,(cellWidth-2)/widest)):1;
+      screen.style.setProperty('--qh-fewrow-text-scale',scale.toFixed(3));
+    });
+  }
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(scheduleFewRowLayout).observe(wrap);
+  if(typeof MutationObserver!=='undefined')new MutationObserver(scheduleFewRowLayout)
+    .observe(screen,{attributes:true,attributeFilter:['class']});
+  window.addEventListener('resize',scheduleFewRowLayout,{passive:true});
+  window.visualViewport?.addEventListener('resize',scheduleFewRowLayout,{passive:true});
   function renderFeatureInline(id){
     const f=profileFeature(id);
     activeFeature=f;
@@ -11865,11 +11974,18 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     const d=dataForFeature(f);
     const x=Array.isArray(f.x)?f.x:[];
     const y=Array.isArray(f.y)?f.y:[];
+    const few=screen.classList.contains('qhFewRowMap');
     let h='<thead><tr><th class="rh">'+(id==='ign_time'?'RPM':(f.rows>1?'Y / X':'X'))+'</th>';
-    for(let c=0;c<f.cols;c++)h+='<th>'+(x[c]??('C'+(c+1)))+'</th>';
+    for(let c=0;c<f.cols;c++){
+      const axis=String(x[c]??('C'+(c+1)));
+      h+='<th'+(few?' title="'+qhFewRowEscape(axis+(id==='ign_time'?' RPM':''))+'"':'')+'>'+
+         (few?'<span class="qhFewRowText">'+qhFewRowEscape(axis)+'</span>':axis)+'</th>';
+    }
     h+='</tr></thead><tbody>';
     for(let r=0;r<f.rows;r++){
-      h+='<tr><td class="rh">'+(id==='ign_time'?'TIME':(y[r]??('R'+(r+1))))+'</td>';
+      const rowLabel=String(id==='ign_time'?'TIME':(y[r]??('R'+(r+1))));
+      h+='<tr><td class="rh"'+(few?' title="'+qhFewRowEscape(rowLabel)+'"':'')+'>'+
+         (few?qhFewRowEscape(rowLabel):rowLabel)+'</td>';
       for(let c=0;c<f.cols;c++){
         const v=fullValue(f,d,r,c),sel=fkCell&&fkCell.r===r&&fkCell.c===c?' sel':'';
         let display=v===null?'--':(Math.round(v*1000)/1000).toString();
@@ -11879,13 +11995,16 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
             if(meta?.enabled?.[r]?.[c]===false)display='-';
           }catch(_e){}
         }
-        h+='<td class="v'+sel+'" data-r="'+r+'" data-c="'+c+'" style="background:'+featureCellColor(id,v)+'">'+display+'</td>';
+        const labelText=few?'<span class="qhFewRowText">'+qhFewRowEscape(display)+'</span>':display;
+        const fullHint=few?' title="'+qhFewRowEscape(String(x[c]??c)+' / '+rowLabel+' · '+(v===null?'--':String(v))+(f.unit?' '+f.unit:''))+'"':'';
+        h+='<td class="v'+sel+'" data-r="'+r+'" data-c="'+c+'"'+fullHint+' style="background:'+featureCellColor(id,v)+'">'+labelText+'</td>';
       }
       h+='</tr>';
     }
     h+='</tbody>';table.innerHTML=h;
     table.querySelectorAll('td.v').forEach(td=>td.addEventListener('click',()=>selectFullCell(Number(td.dataset.r),Number(td.dataset.c))));
     updateFullSelectionVisual();updateFullAfrBadges();updateFullCursor();
+    if(few)scheduleFewRowLayout();
   }
   function renderOptionsInline(){
     activeFeature=null;
@@ -11911,6 +12030,9 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     screen.classList.toggle('qhFuelTab',fuel);
     screen.classList.toggle('qhOneHandFuel',oneHand);
     screen.classList.toggle('qhOptionsTab',activeTab==='options');
+    const sparseFeature=activeTab!=='inj_ve'&&activeTab!=='options'?
+      profileFeature(backendTab()):null;
+    screen.classList.toggle('qhFewRowMap',!!sparseFeature&&sparseFeature.rows>=1&&sparseFeature.rows<=3);
     screen.dataset.qhFuelDensity=String(fuelDensity);
     document.querySelectorAll('#qhPcFuelDensity [data-qh-fuel-density]').forEach(b=>{
       b.setAttribute('aria-pressed',String(Number(b.dataset.qhFuelDensity)===fuelDensity));
