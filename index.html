@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.19';
-  document.title = 'QH ECU · v1.1.19';
+  window.BLINK_PB_VERSION = 'QH-1.1.20';
+  document.title = 'QH ECU · v1.1.20';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5789,7 +5789,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.19</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.20</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -5974,7 +5974,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.19</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.20</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -12369,10 +12369,14 @@ window.QHPadDrag={place};
     if(!b||fullSelection.pending){notify('offline','Chọn đủ hai góc vùng cần làm mượt rồi bấm I.');return false;}
     const dx=b.c1-b.c0,dy=b.r1-b.r0;
     if(dx<2&&dy<2){notify('offline','Vùng phải có ít nhất 3 ô theo một chiều để nội suy bốn góc.');return false;}
-    if(fullIoBusy||window.QHBackfire?.busy||window.BlinkRealProtocol?.isBusy||
-       state.recording||state.threeRun?.active||state.ecuWriteQueued||
+    // I edits the local map only; normal LIVE/telemetry polling must not block
+    // interpolation. Keep interlocks for actual MAP I/O and Auto Tune.
+    if(fullIoBusy||window.QHBackfire?.busy||state.ecuWriteQueued||
        state.ecuPhase==='write1'||state.ecuPhase==='write2'){
-      notify('error','ECU/MAP đang bận. Không làm mượt khi đang đọc/ghi hoặc ghi AFR.');return false;
+      notify('offline','MAP đang đọc/ghi. Chờ hoàn tất rồi làm mượt để tránh đè dữ liệu.');return false;
+    }
+    if(state.recording||state.threeRun?.active){
+      notify('offline','Auto Tune/ghi AFR đang chạy. Kết thúc phiên trước khi làm mượt MAP.');return false;
     }
     const source=currentData();
     const rows=activeTab==='inj_ve'?TPS_ROWS.length:(activeFeature||profileFeature(backendTab()))?.rows;
@@ -12422,7 +12426,7 @@ window.QHPadDrag={place};
     document.getElementById('qhFullKeypad')?.classList.remove('show');
     render();
     notify('success','I · Đã làm mượt '+changes.length+' ô trên MAP '+state.activeMap+
-      ', giữ 4 góc và các ô ngoài vùng. CHƯA GHI ECU; bấm ↓ để ghi.');
+      ', giữ 4 góc và các ô ngoài vùng. Chỉ lưu nháp trên app, CHƯA GHI ECU; bấm ↓ để ghi.');
     return true;
   }
   function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+(currentUnit()?' '+currentUnit():'')}
