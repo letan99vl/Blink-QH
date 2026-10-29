@@ -5701,6 +5701,11 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  max-width:none!important;vertical-align:middle!important;
  font-variant-numeric:tabular-nums!important;
 }
+/* With 30 columns on a portrait phone, rotate labels instead of crushing
+   every digit horizontally. Actual RPM headers and exact values stay shown. */
+#qhFullPcScreen.qhFewRowMap.qhFewRowVerticalText #qhFullMapTable .qhFewRowText{
+ transform:rotate(-90deg)!important;
+}
 </style>
 </head>
 <body>
@@ -11922,9 +11927,11 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
                        n>=7?Math.max(48,Math.min(86,usable*.17)):
                              Math.max(56,Math.min(105,usable*.23));
       const cellWidth=Math.max(1,(usable-labelWidth)/n);
-      const font=n>=22?10:Math.max(9,Math.min(13,cellWidth*.42));
+      const verticalText=n>=20&&cellWidth<16.5;
+      screen.classList.toggle('qhFewRowVerticalText',verticalText);
+      const font=n>=22?Math.min(10,Math.max(7,cellWidth-1.4)):Math.max(9,Math.min(13,cellWidth*.42));
       const rowHeight=f.rows===1?76:(f.rows===2?62:54);
-      const shortRpm=f.id==='ign_time'&&n>=24&&usable<650;
+      const shortRpm=f.id==='ign_time'&&n>=24&&usable<650&&!verticalText;
       const head=table.tHead.rows[0];
       const first=head?.cells?.[0];
       if(first&&f.id==='ign_time'){
@@ -12032,7 +12039,9 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
     screen.classList.toggle('qhOptionsTab',activeTab==='options');
     const sparseFeature=activeTab!=='inj_ve'&&activeTab!=='options'?
       profileFeature(backendTab()):null;
-    screen.classList.toggle('qhFewRowMap',!!sparseFeature&&sparseFeature.rows>=1&&sparseFeature.rows<=3);
+    const fewRow=!!sparseFeature&&sparseFeature.rows>=1&&sparseFeature.rows<=3;
+    screen.classList.toggle('qhFewRowMap',fewRow);
+    if(!fewRow)screen.classList.remove('qhFewRowVerticalText');
     screen.dataset.qhFuelDensity=String(fuelDensity);
     document.querySelectorAll('#qhPcFuelDensity [data-qh-fuel-density]').forEach(b=>{
       b.setAttribute('aria-pressed',String(Number(b.dataset.qhFuelDensity)===fuelDensity));
