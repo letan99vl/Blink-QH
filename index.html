@@ -5630,8 +5630,8 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
 </style>
 
 <style id="qhFuelDensityV116">
-/* X1 is original Full. X2 is old one-hand. X3/X4 preserve X2 row height,
-   while the viewport-aware controller shows 3/6 more RPM columns. */
+/* X1 is original Full. X2 is old one-hand. X3/X4 preserve X2 row height;
+   extra RPM columns appear only when readable, with overflow scrolling. */
 #qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable th,
 #qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable td,
 #qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable th,
@@ -5937,8 +5937,8 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div id="qhPcFuelDensity" role="group" aria-label="Mức hiển thị cột RPM của bản đồ phun">
       <button type="button" data-qh-fuel-density="1" aria-pressed="false" title="X1 · Bố cục gốc, đầy đủ 30 cột RPM">X1</button>
       <button type="button" data-qh-fuel-density="2" aria-pressed="true" title="X2 · Chế độ 1 tay cũ">X2</button>
-      <button type="button" data-qh-fuel-density="3" aria-pressed="false" title="X3 · Thêm 3 cột RPM nhìn thấy, giữ cỡ chữ X2">X3</button>
-      <button type="button" data-qh-fuel-density="4" aria-pressed="false" title="X4 · Thêm 6 cột RPM nhìn thấy, thu chữ nếu cần">X4</button>
+      <button type="button" data-qh-fuel-density="3" aria-pressed="false" title="X3 · Cột gọn, chữ dễ đọc, vuốt ngang để xem thêm RPM">X3</button>
+      <button type="button" data-qh-fuel-density="4" aria-pressed="false" title="X4 · Cột gọn hơn X3, tránh răng cưa, vuốt ngang để xem thêm RPM">X4</button>
     </div>
     <select id="qhFullMapSelect" aria-label="Chọn map ECU"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
     <button id="qhPcZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
@@ -12185,15 +12185,17 @@ window.QHPadDrag={place};
       const mobile=window.matchMedia('(max-width:720px)').matches;
       const rowHead=zoom?36:(mobile?33:35);
       const appWidth=parseFloat(screen.style.getPropertyValue('--qh-app-width'))||wrap.clientWidth;
-      const x2Width=zoom?Math.max(29,Math.min(35,Math.floor((appWidth-40)/29))):(mobile?35:37);
+      const x2Width=zoom?Math.max(25,Math.min(34,Math.floor((appWidth-40)/29))):(mobile?35:37);
       const styles=getComputedStyle(wrap);
       const pad=(parseFloat(styles.paddingLeft)||0)+(parseFloat(styles.paddingRight)||0);
       const available=Math.max(10,wrap.clientWidth-pad-rowHead-2);
       const x2Visible=Math.max(1,Math.min(29,Math.floor(available/x2Width)));
       const goal=Math.min(29,x2Visible+3*(fuelDensity-2));
       // Pixel-aligned cells, a readable minimum font, and horizontal scroll.
-      // X4 still has narrower columns than X3; never compress below 29px.
-      const minWidth=fuelDensity===3?32:29;
+      // On portrait use 32px (X3) / 29px (X4); in landscape never
+      // enlarge a density mode beyond the X2 column width.
+      const minWidth=zoom?(fuelDensity===3?x2Width:Math.max(25,x2Width-2))
+        :(fuelDensity===3?32:29);
       const width=Math.max(minWidth,Math.min(x2Width,Math.floor(available/goal)));
       const font=mobile?9:(fuelDensity===3?10:9);
       const visible=Math.min(29,Math.max(1,Math.floor(available/width)));
