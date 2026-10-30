@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.12';
+  window.BLINK_PB_VERSION = 'QH-1.2.13';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.2.12';
+  document.title = 'QH ECU · v1.2.13';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6303,7 +6303,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.12</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.13</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU qua Bluetooth" aria-label="Kết nối hoặc ngắt ECU qua Bluetooth"><svg class="qhBluetoothIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg></button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6504,7 +6504,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.12</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.13</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -13400,15 +13400,19 @@ function refreshButtons(){
    opt.disabled=!level?.available;
    opt.title=opt.disabled?'ECU không mã hóa được góc này':'ECU biểu diễn được '+level.actual+'°';
  });
- if(connected&&!possible){
+ if(connected&&!possible&&tone!=='busy'){
    if(tone!=='unsupported'){
      tone='unsupported';
      if(open)open.textContent='🔥 BACKFIRE: KHÔNG HỖ TRỢ';
      if(el('qhBfStatus'))el('qhBfStatus').textContent='ECU '+(caps?.profile||'UNKNOWN')+
-       ': không có serializer Backfire đã kiểm chứng hoặc các mức âm yêu cầu vượt codec. Không ghi ECU.';
+       ': chưa được phép ghi các mức Backfire yêu cầu. Bấm KIỂM TRA để xem thông tin ECU theo chế độ chỉ đọc.';
    }
  }
- for(const id of ['qhBfStart','qhBfRestore','qhBfCheck','qhBfExport','qhBfImport']){
+ // Manual KIỂM TRA is read-only and must not inherit the ECU write-support gate.
+ // Start/Restore remain locked unless the exact profile-specific writer is proven.
+ const inspectBtn=el('qhBfCheck');
+ if(inspectBtn)inspectBtn.disabled=busy||!connected;
+ for(const id of ['qhBfStart','qhBfRestore','qhBfExport','qhBfImport']){
    const btn=el(id);if(!btn)continue;
    btn.disabled=busy||!connected||!possible;
  }
@@ -13429,14 +13433,36 @@ function refreshButtons(){
 }
 async function check({auto=false}={}){
  if(busy)return;
- if(!auto)fmtStatus('busy','Đọc lại MAP lửa và giới hạn tua trực tiếp từ ECU...');
+ if(!auto)fmtStatus('busy','Đang kiểm tra ECU. Chỉ đọc, không gửi lệnh ghi...');
+ let readOnlyDiagnostic=false;
  try{
    return await transaction(async()=>{
+     const a=api(),caps=a?.backfireCapabilities?.();
+     if(!caps?.supported){
+       readOnlyDiagnostic=true;
+       // Unknown/V8 is informational only; V11 gets a fresh two-page read probe.
+       const h=a?.handshake||{};
+       if(!caps?.diagnosticRead||typeof a?.backfireInspectReadOnly!=='function'){
+         const st={tone:'unsupported',msg:'ECU profile '+(caps?.profile||a?.profile?.label||'UNKNOWN')+
+           ' · định danh '+String(h.ident||'--')+' · FW '+String(h.firmware||'--')+
+           '. Chưa có bộ ghi Backfire đã xác minh; KHÔNG ghi ECU.'};
+         fmtStatus(st.tone,st.msg);return st;
+       }
+       const d=await a.backfireInspectReadOnly(Number(state.activeMap));
+       const hint=d.possibleUltraPro1Page6
+         ?'PAGE6 trả 42B (gợi ý cần kiểm tra nhầm Ultra Pro1/V11, CHƯA đủ để đổi profile).'
+         :'PAGE6 '+d.page6Bytes+'B (chưa chứng minh loại Ultra từ độ dài trang).';
+       const st={tone:'unsupported',diagnostic:d,msg:'KIỂM TRA CHỈ ĐỌC MAP '+d.bank+
+         ' · ID '+(d.ident||'--')+' · FW '+(d.firmware||'--')+
+         ' · '+hint+' IGN '+d.ignBytes+'B. Backfire V11/Ultra Pro2 vẫn KHÓA GHI vì codec góc lửa không đạt LV yêu cầu.'};
+       fmtStatus(st.tone,st.msg);return st;
+     }
      const ctx=context(),snap=await readSnapshot(ctx),b=readBackup(ctx);
      const st=statusFrom(ctx,snap,b);fmtStatus(st.tone,st.msg);return st;
    });
  }catch(e){
-   fmtStatus('unknown','KHÔNG KIỂM TRA ĐƯỢC: '+String(e?.message||e));
+   fmtStatus(readOnlyDiagnostic?'unsupported':'unknown',
+     (readOnlyDiagnostic?'KIỂM TRA CHỈ ĐỌC THẤT BẠI: ':'KHÔNG KIỂM TRA ĐƯỢC: ')+String(e?.message||e));
    if(!auto)window.setEcuTaskStatus?.('error','BACKFIRE: '+String(e?.message||e),6000);
    return null;
  }
@@ -13609,6 +13635,8 @@ setInterval(()=>{
  }
  lastSeenConnection=true;refreshButtons();
  if(document.body.dataset.uiMode!=='full'||busy||api()?.isBusy)return;
+ // Do not background-probe unsupported/unknown ECU profiles; the user can tap KIỂM TRA.
+ if(!api()?.backfireCapabilities?.()?.supported)return;
  const rpm=Number(state.live?.rpm),age=performance.now()-Number(state.live?.auxAt);
  if(!Number.isFinite(rpm)||rpm>100||!Number.isFinite(age)||age<0||age>4500)return;
  let key;try{key=identity()+'|'+state.activeMap}catch(_e){return}
