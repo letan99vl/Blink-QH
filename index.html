@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.2';
+  window.BLINK_PB_VERSION = 'QH-1.2.3';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.2.2';
+  document.title = 'QH ECU · v1.2.3';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6164,6 +6164,13 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 #qhFullPcScreen.qhInlineKeypad #qhFullKeypad button:disabled{
  opacity:.62!important;
 }
+#qhFullPcScreen.qhInlineKeypad #qhFkValue.qhFkInvalid{
+  color:#ff8e88!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkHead span{
+  color:#aefabe!important;
+}
+
 /* The user's original QH ECU Racing poster fills the boot surface; no text logo. */
 #qhOpeningSplash{
  background:#000!important;overflow:hidden!important;
@@ -6221,7 +6228,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.2</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.3</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU">⛓</button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6426,7 +6433,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.2</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.3</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -12111,7 +12118,7 @@ else setTimeout(boot,0);
 <script id="qhFullPcNeonScript">
 (function(){
   'use strict';
-  let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',rootTab='inj_ve',activeFeature=null;
+  let fkCell=null,fkBuffer='',fkFreshEntry=true,fit=false,activeTab='inj_ve',rootTab='inj_ve',activeFeature=null;
   // X1 = old one-hand OFF, X2 = old one-hand ON; X3/X4 compress columns.
   // Migrate device-local legacy ON/OFF preference without changing ECU data.
   let fuelDensity=2;
@@ -12241,7 +12248,7 @@ else setTimeout(boot,0);
   function fullBounds(){return fullSelection.active?window.QHMapUx.bounds(fullSelection):null}
   function clearFullSelection(){
     window.QHMapUx.clearSelection(fullSelection);
-    fkCell=null;
+    fkCell=null;fkFreshEntry=true;
     document.getElementById('qhFullKeypad')?.classList.remove('show');
     updateFullSelectionVisual();scheduleInlineKeypad();
   }
@@ -12634,28 +12641,44 @@ else setTimeout(boot,0);
     const r=fullSelection.fr,c=fullSelection.fc;fkCell={r,c};
     const d=currentData(),raw=d?.[r]?.[c],v=raw==null?0:Number(raw);
     fkBuffer=String((Number.isFinite(v)?v:0).toFixed(3)).replace(/0+$/,'').replace(/\.$/,'');
-    const f=activeTab==='inj_ve'?null:(activeFeature||profileFeature(backendTab()));
+    fkFreshEntry=true;
+    document.getElementById('qhFkValue')?.classList.remove('qhFkInvalid');
+    const f=activeTab='inj_ve'?null:(activeFeature||profileFeature(backendTab()));
     const y=activeTab==='inj_ve'?TPS_ROWS[r]:(f?.y?.[r]??('R'+(r+1)));
     const x=activeTab==='inj_ve'?RPMS[c]:(f?.x?.[c]??('C'+(c+1)));
     document.getElementById('qhFkCell').textContent=String(y)+(typeof y==='number'&&activeTab==='inj_ve'?'%':'')+' · '+String(x)+(activeTab==='inj_ve'?' RPM':'')+' · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' cells';
     document.getElementById('qhFkValue').textContent=fkBuffer+(currentUnit()?' '+currentUnit():'');
     document.getElementById('qhFullKeypad').classList.add('show');
   }
-  function applyFullSelection(value){
+  function applyFullSelection(value,{inlineLive=false}={}){
     const b=fullBounds(),data=currentData();
     if(!b||!data||!Number.isFinite(Number(value)))return false;
     const isFuel=activeTab==='inj_ve',max=isFuel?(typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100):Infinity;
     const v=Number(Math.max(isFuel?0:-Infinity,Math.min(Number(value),max)).toFixed(4));
+    let affected=0;
     for(let r=b.r0;r<=b.r1;r++)for(let c=b.c0;c<=b.c1;c++){
       if(!Array.isArray(data[r])||c>=data[r].length)continue;
       if(!isFuel&&activeTab==='afr_map'){
         const meta=window.blinkEcuAfrMeta?.[state.activeMap]||window.blinkV11AfrMeta?.[state.activeMap];
         if(meta?.enabled?.[r]?.[c]===false)continue;
       }
-      data[r][c]=v;
+      data[r][c]=v;affected++;
     }
+    if(!affected)return false;
+    // Persist the local draft only. ECU transfer remains exclusive to GHI.
     try{if(isFuel){state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon()}else fb()?.saveFeature()}catch(_e){}
-    render();return true;
+    if(inlineLive&&isFuel){
+      // Refresh only affected on-screen cells. Rebuilding the 420-cell table
+      // after every keystroke causes WebView flicker and loses touch continuity.
+      for(const td of table.querySelectorAll('td.v')){
+        const r=Number(td.dataset.r),c=Number(td.dataset.c);
+        if(r<b.r0||r>b.r1||c<b.c0||c>b.c1)continue;
+        td.textContent=v.toFixed(2);
+        td.style.background=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#8cff46';
+      }
+      fullManualUntil=Date.now()+3500;
+    }else render();
+    return true;
   }
   function bumpFullSelection(sign){
     const b=fullBounds(),data=currentData();
@@ -12747,20 +12770,94 @@ else setTimeout(boot,0);
       ', giữ 4 góc và các ô ngoài vùng. Chỉ lưu nháp trên app, CHƯA GHI ECU; bấm ↓ để ghi.');
     return true;
   }
-  function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+(currentUnit()?' '+currentUnit():'')}
+  // X2/X3/X4: first digit REPLACES the previous map value; each complete
+  // numeric input applies locally to the exact selected cell/range immediately.
+  // No implicit ECU write. Floating keyboard keeps its older manual APPLY flow.
+  function redrawKey(){
+    const value=document.getElementById('qhFkValue');
+    if(!value)return;
+    value.textContent=(fkBuffer===''&&screen.classList.contains('qhInlineKeypad')?'--':(fkBuffer||'0'))+
+      (currentUnit()?' '+currentUnit():'');
+  }
+  function inlineKeypadBusy(){
+    return fullIoBusy||!!window.QHBackfire?.busy||!!state.ecuWriteQueued||
+      state.ecuPhase==='write1'||state.ecuPhase==='write2'||
+      !!state.recording||!!state.threeRun?.active;
+  }
+  function applyInlineKeypadDigit(){
+    if(!screen.classList.contains('qhInlineKeypad')||!fkCell||!fullBounds())return false;
+    // Empty/unfinished decimals are only a draft: C never changes the MAP.
+    if(!/^\d+(?:\.\d+)?$/.test(fkBuffer))return false;
+    if(inlineKeypadBusy()){
+      window.setEcuTaskStatus?.('offline','Đang đọc/ghi MAP hoặc Auto Tune. Chưa sửa ô.',2200);
+      return false;
+    }
+    const value=Number(fkBuffer);
+    const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
+    const display=document.getElementById('qhFkValue');
+    if(!Number.isFinite(value)||value<0||value>max){
+      display?.classList.add('qhFkInvalid');
+      window.setEcuTaskStatus?.('offline','Giá trị phun phải nằm trong 0–'+max.toFixed(2)+' ms. Chưa áp dụng.',2300);
+      return false;
+    }
+    display?.classList.remove('qhFkInvalid');
+    return applyFullSelection(value,{inlineLive:true});
+  }
   document.querySelectorAll('#qhFullKeypad [data-fk]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.fk;
+    const inline=screen.classList.contains('qhInlineKeypad')&&fullKeypad?.parentNode===inlineDock;
     if(k==='close'){
       document.getElementById('qhFullKeypad').classList.remove('show');
-      if(screen.classList.contains('qhInlineKeypad'))screen.classList.add('qhInlineKeypadClosed');
+      if(inline)screen.classList.add('qhInlineKeypadClosed');
       return;
     }
     if(k==='apply'){
-      if(fkCell)applyFullSelection(Number(fkBuffer||0));
+      if(!fkCell||!fullBounds()){
+        window.setEcuTaskStatus?.('offline','Chọn ô hoặc vùng MAP trước khi nhập.',2200);
+        return;
+      }
+      if(!/^\d+(?:\.\d+)?$/.test(fkBuffer)){
+        window.setEcuTaskStatus?.('offline','Hãy nhập số hợp lệ trước khi áp dụng.',2200);
+        return;
+      }
+      if(inline&&inlineKeypadBusy()){
+        window.setEcuTaskStatus?.('offline','ECU/MAP đang bận. Chưa áp dụng.',2200);
+        return;
+      }
+      const max=activeTab==='inj_ve'?(typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100):Infinity;
+      if(inline&&Number(fkBuffer)>max){
+        window.setEcuTaskStatus?.('offline','Giá trị phun vượt '+max.toFixed(2)+' ms. Chưa áp dụng.',2300);
+        return;
+      }
+      if(!applyFullSelection(Number(fkBuffer)))return;
       document.getElementById('qhFullKeypad').classList.remove('show');
-      if(screen.classList.contains('qhInlineKeypad')&&fkCell)openKey();
+      if(inline&&fkCell){
+        openKey();
+        window.setEcuTaskStatus?.('success','ĐÃ ÁP DỤNG TRÊN APP · CHƯA GHI ECU.',1800);
+      }
       return;
     }
+    if(inline){
+      if(!fkCell||!fullBounds()){
+        window.setEcuTaskStatus?.('offline','Chạm một ô MAP trước khi nhập số.',2000);
+        return;
+      }
+      if(k==='clear'){fkBuffer='';fkFreshEntry=false;}
+      else if(k==='back'){
+        fkBuffer=fkFreshEntry?'':fkBuffer.slice(0,-1);
+        fkFreshEntry=false;
+      }else if(k==='.'){
+        if(fkFreshEntry){fkBuffer='0.';fkFreshEntry=false;}
+        else if(!fkBuffer.includes('.'))fkBuffer=fkBuffer?fkBuffer+'.':'0.';
+      }else if(/^\d$/.test(k)){
+        if(fkFreshEntry){fkBuffer=k;fkFreshEntry=false;}
+        else if(fkBuffer.length<10)fkBuffer+=k;
+      }
+      redrawKey();
+      applyInlineKeypadDigit();
+      return;
+    }
+    // Original floating keypad for X1/landscape/smaller screens.
     if(k==='clear')fkBuffer='';
     else if(k==='back')fkBuffer=fkBuffer.slice(0,-1);
     else if(k==='.'){if(!fkBuffer.includes('.'))fkBuffer=fkBuffer?fkBuffer+'.':'0.';}
