@@ -5781,6 +5781,9 @@ async function qhBackfireInspectReadOnly(bank){
   // V11 PAGE6 has three groups of 4 single-byte Idle/Limit values. Row 4
   // uses an RPM/64 scale, but the repo does NOT verify which group corresponds
   // to the actual engine rev limiter. Report every group without picking one.
+  // Read-only snapshot: retain raw PAGE6 bytes for independent comparison
+  // against the original PC program. NEVER guess the rev limiter from G1/G2/G3.
+  const page6Raw=Array.from(idle.data.slice(0,43),x=>Number(x)&255);
   const v11IdleGroups=idle.data.length>=43?Array.from({length:3},(_,g)=>{
     const offset=g*4+3,raw=idle.data[offset]&255;
     return {group:g+1,offset,raw,displayRpm:decV11IdleCell(3,raw)};
@@ -5794,7 +5797,7 @@ async function qhBackfireInspectReadOnly(bank){
       targetMs:1,targetRaw:encMainDwell(1)})):[];
   return {bank,profile:sessionProfileLabel(ecuProfile,session),
     ident:String(session.ident||''),firmware:String(session.firmware||''),
-    page6Bytes:idle.data.length,ignBytes:ign.data.length,
+    page6Bytes:idle.data.length,page6Raw,ignBytes:ign.data.length,
     dwellBytes:dwell.data.length,dwellCells,dwellAxesVerified:dwellCells.length===2,
     v11IdleGroups,possibleUltraPro1Page6:idle.data.length===42,
     writable:false,verifiedWriteSupport:false};
