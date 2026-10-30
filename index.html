@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.3';
+  window.BLINK_PB_VERSION = 'QH-1.2.4';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.2.3';
+  document.title = 'QH ECU · v1.2.4';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6191,6 +6191,28 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
  background:transparent!important;pointer-events:none!important;
 }
 </style>
+<style id="qhBackfireCompactTc95124">
+/* QH P.b 1.2.4: compact Backfire dialog and red TC95 RACING wordmark.
+   Only visual presentation changes. ECU safety confirmation/readback remains. */
+#qhFullPcScreen .qhPcBrandMain .qhPcSponsor{
+ display:inline-block!important;color:#ff263b!important;
+ font:italic 900 clamp(10px,1.5vw,15px)/1 Arial,sans-serif!important;
+ letter-spacing:.1px!important;margin-right:6px!important;
+ vertical-align:baseline!important;text-shadow:0 0 6px rgba(255,38,59,.34)!important;
+}
+#qhBfPanel{padding:10px 12px!important}
+#qhBfPanel .bfHead{margin-bottom:5px!important}
+#qhBfPanel .bfHead button{min-height:30px!important}
+#qhBfPanel .bfRow{margin:5px 0 6px!important}
+#qhBfPanel select{min-height:34px!important;padding:5px 7px!important}
+#qhBfPanel #qhBfStatus{min-height:0!important;padding:7px 8px!important;margin:6px 0!important}
+#qhBfPanel .bfActions{gap:6px!important}
+#qhBfPanel .bfActions button{min-height:36px!important}
+#qhBfPanel .bfActions #qhBfRestore{grid-column:1 / -1!important}
+@media(max-width:360px){
+ #qhFullPcScreen .qhPcBrandMain .qhPcSponsor{font-size:9px!important;margin-right:3px!important}
+}
+</style>
 <link rel="preload" href="./qh_splash_poster.webp?v=122" as="image">
 </head>
 <body data-ui-mode="full">
@@ -6228,7 +6250,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.3</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="qhPcSponsor">TC95 RACING</span><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.4</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU">⛓</button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6289,7 +6311,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <button id="qhPcAfrOverlay" type="button" aria-pressed="false" title="Hiển thị AFR thực tế đã đo ở góc từng ô phun">AFR ĐO: TẮT</button>
     <button id="qhPcReadAll" type="button" title="Đọc toàn bộ dữ liệu theo lệnh ECU gốc">ĐỌC TẤT CẢ</button>
     <button id="qhPcWriteAll" type="button" title="Gửi toàn bộ theo quy trình ECU gốc">GHI TẤT CẢ</button>
-    <button id="qhBfOpen" type="button" aria-label="Trạng thái Backfire và sao lưu MAP">🔥 BACKFIRE: CHƯA SOI</button>
+    <button id="qhBfOpen" type="button" aria-label="Trạng thái Backfire">🔥 BACKFIRE: CHƯA KIỂM TRA</button>
     <span class="qhMapSelectionInfo" id="qhPcSelectionInfo">Chạm ô đầu, sau đó chạm góc đối diện</span>
   </div>
   <div id="qhFullMapWrap"><div id="qhPcInlineKeypadDock"></div><table id="qhFullMapTable"></table></div>
@@ -6392,8 +6414,6 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
   <div id="qhBfOverlay" hidden>
     <div id="qhBfPanel" role="dialog" aria-modal="true" aria-labelledby="qhBfTitle">
       <div class="bfHead"><h3 id="qhBfTitle">BACKFIRE</h3><button id="qhBfClose" type="button">✕ ĐÓNG</button></div>
-      <p class="bfExplain">Phạm vi cố định: toàn bộ 14 TPS (100% đến IDLE) tại hai cột 5.500 / 6.000 RPM (28 ô). Chỉ áp dụng MAP đánh lửa đang chọn, không đổi các MAP khác.</p>
-      <div class="bfWarn">Chỉ thao tác khi đã tắt động cơ, không dùng trên đường công cộng. Góc đánh lửa âm ở TPS lớn có thể gây quá nhiệt, hỏng bộ xả và động cơ. Các mức ECU không mã hóa được sẽ bị khóa.</div>
       <div class="bfRow">
         <label for="qhBfLevel">Cấp độ:</label>
         <select id="qhBfLevel">
@@ -6403,14 +6423,11 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
       </div>
       <div id="qhBfStatus" role="status" aria-live="polite">Chưa kiểm tra dữ liệu từ ECU.</div>
       <div class="bfActions">
-        <button id="qhBfCheck" type="button">◎ SOI ECU</button>
+        <button id="qhBfCheck" type="button">◎ KIỂM TRA</button>
         <button id="qhBfStart" type="button">🔥 BẮT ĐẦU BACKFIRE</button>
         <button id="qhBfRestore" type="button">↩ DÙNG MAP GỐC</button>
-        <button id="qhBfExport" type="button">↓ XUẤT BACKUP JSON</button>
-        <button id="qhBfImport" type="button">↑ NHẬP BACKUP JSON</button>
       </div>
       <input id="qhBfImportFile" type="file" accept=".json,application/json" hidden>
-      <div class="bfFoot">QH lưu bản gốc riêng theo ECU + MAP trong dữ liệu ứng dụng, không nằm trong tệp APK/IPA. Xuất backup JSON để khôi phục nếu cài lại app hoặc bị xóa dữ liệu. Trạng thái ON chỉ sáng khi đã đọc lại đủ cả bảng lửa và giới hạn RPM.</div>
     </div>
   </div>
 </section>
@@ -6433,7 +6450,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.3</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.4</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -13147,7 +13164,7 @@ function fmtStatus(kind,msg){
  tone=kind;
  const stateText=kind==='active'?'ON':kind==='restored'?'MAP GỐC':
    kind==='suspect'?'NGHI BACKFIRE':kind==='partial'?'CHƯA RÕ':kind==='busy'?'ĐANG XỬ LÝ':
-   kind==='unsupported'?'KHÔNG HỖ TRỢ':kind==='off'?'OFF':'CHƯA SOI';
+   kind==='unsupported'?'KHÔNG HỖ TRỢ':kind==='off'?'OFF':'CHƯA KIỂM TRA';
  if(open){
    open.textContent='🔥 BACKFIRE: '+stateText;
    open.classList.toggle('qhBfActive',kind==='active');
@@ -13423,7 +13440,7 @@ async function start(){
      const base=await readSnapshot(ctx);
      const existing=readBackup(ctx);
      if(existing&&existing.state!=='restored')
-       throw Error('Đang có backup chưa khôi phục của MAP này. Hãy SOI ECU/DÙNG MAP GỐC trước khi ghi đè.');
+       throw Error('Đang có backup chưa khôi phục của MAP này. Hãy KIỂM TRA/DÙNG MAP GỐC trước khi ghi đè.');
      const signature=statusFrom(ctx,base,null);
      if(signature.tone==='suspect')throw Error('ECU có dấu hiệu Backfire nhưng không có bản gốc. Không ghi đè.');
      if(base.rpm<6000)throw Error('Giới hạn tua gốc '+base.rpm+' nhỏ hơn 6000; không tự nâng giới hạn.');
@@ -13493,7 +13510,7 @@ async function importBackup(file){
    if(existing&&existing.state!=='restored')
      throw Error('Đã có backup đang dùng/chưa khôi phục. Không cho nhập đè.');
    saveBackup(ctx,parsed);
-   fmtStatus('unknown','ĐÃ NHẬP BACKUP ĐÚNG ECU/MAP. Hãy bấm SOI ECU để xác định trạng thái thực.');
+   fmtStatus('unknown','ĐÃ NHẬP BACKUP ĐÚNG ECU/MAP. Hãy bấm KIỂM TRA để xác định trạng thái thực.');
    await check();
  }catch(e){fmtStatus('partial','NHẬP BACKUP LỖI: '+String(e?.message||e))}
  finally{el('qhBfImportFile').value='';}
@@ -13536,7 +13553,7 @@ window.QHBackfire={get busy(){return busy},check,start,restore,
    lastAutoKey='';
    fmtStatus('unknown','Góc lửa hoặc giới hạn RPM có thể đã thay đổi. Cần đọc lại ECU để xác định Backfire ON/OFF.');
  }};
-fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc chờ tự kiểm tra.');
+fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm KIỂM TRA hoặc chờ tự kiểm tra.');
 })();
 </script>
 
