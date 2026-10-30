@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.21';
+  window.BLINK_PB_VERSION = 'QH-1.2.22';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -6296,7 +6296,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.21</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.22</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU qua Bluetooth" aria-label="Kết nối hoặc ngắt ECU qua Bluetooth"><svg class="qhBluetoothIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg></button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6376,6 +6376,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
       <div class="qhRedleoSummaryActions"><button id="qhPcLegacyIdleOpen" type="button">MỞ CHỈNH GARANTI / GIỚI HẠN GỐC · ĐỌC / GHI ECU</button></div>
       <p class="qhRedleoHint">Chỉnh ô rồi bấm GHI IDLE/LIMIT VÀO ECU. Chỉ các ô đã sửa mới được ghi trong các bản REDLEO 9.x/V10/Ultra Pro1. V11/Ultra Pro2 chỉnh bảng 4×3 theo giao thức gốc, không tự gán nhãn Maximum Speed.</p>
       <div class="qhRedleoSummaryActions"><button id="qhPcLegacyIdleRead" type="button">ĐỌC IDLE TỪ ECU (PAGE6)</button><button id="qhPcLegacyIdleWrite" type="button">GHI IDLE/LIMIT VÀO ECU</button></div>
+      <p id="qhPcIdleWriteStatus" role="status" aria-live="polite" style="margin:6px 0;padding:8px 10px;border:1px solid #2e9952;border-radius:6px;background:#07170e;color:#b3f7c2;font-size:12px">Chưa gửi lệnh ghi Idle/Limit.</p>
       <div class="qhRedleoSectionTitle">BẢNG IDLE / LIMIT GỐC (ECU HỖ TRỢ)</div>
       <div class="qhRedleoPreview" data-qh-feature-preview="idle_limit"></div>
       <div class="qhRedleoSectionTitle">MOTOR GARANTI THEO NHIỆT ĐỘ ECT</div>
@@ -13328,8 +13329,17 @@ else setTimeout(boot,0);
     });
     if(ok)renderSummary();
   });
+  function qhIdleWriteFeedback(message,tone='info'){
+    const status=document.getElementById('qhPcIdleWriteStatus');
+    if(status){
+      status.textContent=String(message||'');
+      status.style.color=tone==='error'?'#ffb2aa':tone==='success'?'#b3ffc9':'#ffdda5';
+      status.style.borderColor=tone==='error'?'#bc4949':tone==='success'?'#388b51':'#9d793e';
+    }
+  }
   document.getElementById('qhPcLegacyIdleWrite')?.addEventListener('click',async()=>{
-    if(fullIoBusy)return;
+    if(fullIoBusy){qhIdleWriteFeedback('ECU đang xử lý lệnh khác. Hãy thử lại.','error');return;}
+    qhIdleWriteFeedback('Đang kiểm tra điều kiện ghi ECU...');
     try{
       assertIdleWriteReady();
       const snap=activeIdleProof(),v11=state.ecuProfile==='MODERN_V11';
@@ -13360,8 +13370,16 @@ else setTimeout(boot,0);
       const detail=v11?
         'Bảng 4×3 V11: chỉ sửa Idle 12 byte, giữ nguyên AutoShift/ECT Motor.':
         Object.entries(changes).map(([k,v])=>k+' = '+v).join('; ');
-      if(!window.confirm('GHI IDLE/LIMIT · MAP No.'+savedBank+
-          '\n'+detail+'\nĐỘNG CƠ PHẢI TẮT. QH sẽ so PAGE6 gốc, ghi và đọc lại xác nhận. Tiếp tục?'))return;
+      if(typeof window.blinkConfirm!=='function'){
+        qhIdleWriteFeedback('Thiếu hộp thoại xác nhận của ứng dụng. Chưa gửi lệnh ghi.','error');
+        return;
+      }
+      qhIdleWriteFeedback('Đang mở hộp xác nhận ghi...');
+      const agreed=await window.blinkConfirm('GHI IDLE/LIMIT · MAP No.'+savedBank,
+        detail+'\nĐỘNG CƠ PHẢI TẮT. QH sẽ so PAGE6 gốc, ghi và đọc lại xác nhận.',
+        'GHI ECU','HỦY');
+      if(!agreed){qhIdleWriteFeedback('Đã hủy ghi. ECU không bị thay đổi.');return;}
+      qhIdleWriteFeedback('Đã xác nhận. Đang ghi và đọc lại ECU...');
       const ok=await fullIoFeedback('write','idle_limit',async(api,bank)=>{
         assertIdleWriteReady();
         if(bank!==savedBank||api.handshake!==savedSession||activeIdleProof()!==snap)
@@ -13387,8 +13405,14 @@ else setTimeout(boot,0);
         if(after.verified)idleLimitProof.originalValues=syncClassicIdleSummaryFromEcu();
         return result;
       });
-      if(ok){renderSummary();window.QHBackfire?.invalidate?.();}
+      if(ok){
+        renderSummary();window.QHBackfire?.invalidate?.();
+        qhIdleWriteFeedback('ĐÃ GHI IDLE/LIMIT VÀ ĐỌC LẠI ECU THÀNH CÔNG.','success');
+      }else{
+        qhIdleWriteFeedback('GHI IDLE/LIMIT KHÔNG THÀNH CÔNG. Xem thông báo lỗi ECU và thử đọc lại.','error');
+      }
     }catch(e){
+      qhIdleWriteFeedback('KHÔNG THỂ GHI IDLE/LIMIT: '+String(e?.message||e),'error');
       window.setEcuTaskStatus?.('error','KHÔNG GHI IDLE: '+String(e?.message||e),7500);
     }
   });
