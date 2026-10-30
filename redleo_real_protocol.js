@@ -5624,10 +5624,13 @@ function qhBackfireCapabilities(){
   return {profile:sessionProfileLabel(ecuProfile,handshakeInfo)||'UNKNOWN',supported:!!spec,
     // Preview is informational only; no V11 Backfire write permission.
     diagnosticRead:!!spec||isV11Profile(),previewLevel:previewOK?1:null,
-    // User clarification: TWO additional cells must become the literal value 1,
-    // not 50% of baseline. Their actual feature/page coordinates are not yet
-    // available from the supplied screenshot. Never invent a writable address.
-    extraCellRequest:{count:2,exactValue:1,coordinatesVerified:false,writeAvailable:false},
+    // Corrected exact user requirement: IGN TIME row 0, RPM 5500/6000,
+    // both value 1ms (not half). V11 raw20 -> 1.00ms, classic raw16 -> 1.02ms.
+    // The preview is read-only until ignition edge and PAGE6 limiter mapping
+    // are validated and a three-table atomic rollback is implemented.
+    extraCellRequest:{count:2,feature:'ign_time',rpm:[5500,6000],exactValue:1,
+      raw:encMainDwell(1),actualMs:decMainDwell(encMainDwell(1)),
+      pageLayoutVerified:true,writeAvailable:false},
     limiterKind:spec?.kind||null,levels};
 }
 
@@ -5713,6 +5716,7 @@ async function qhBackfireInspectReadOnly(bank){
   if(!session)throw new Error('Thiếu handshake ECU 0x5A.');
   const idle=await readDirectPageReal(page(6,bank),18,'BACKFIRE CHẨN ĐOÁN PAGE6 CHỈ ĐỌC',false);
   const ign=await readDirectPageReal(page(3,bank),420,'BACKFIRE CHẨN ĐOÁN IGN CHỈ ĐỌC',false);
+  const dwell=await readDirectPageReal(page(4,bank),30,'BACKFIRE CHẨN ĐOÁN IGN TIME CHỈ ĐỌC',false);
   if(epoch!==transportEpoch||session!==handshakeInfo)
     throw new Error('ECU thay đổi trong khi kiểm tra. Đọc lại kết nối.');
   // V11 PAGE6 has three groups of 4 single-byte Idle/Limit values. Row 4
@@ -5722,10 +5726,18 @@ async function qhBackfireInspectReadOnly(bank){
     const offset=g*4+3,raw=idle.data[offset]&255;
     return {group:g+1,offset,raw,displayRpm:decV11IdleCell(3,raw)};
   }):[];
+  const axes=window.getBlinkEcuAxes?.();
+  const dwellIndices=[5500,6000].map(rpm=>axes?.rpm?.findIndex(v=>Number(v)===rpm));
+  const dwellCells=dwellIndices.every(c=>Number.isInteger(c)&&c>=0&&c<30)&&
+    dwellIndices[0]!==dwellIndices[1]
+    ?dwellIndices.map((c,i)=>({rpm:[5500,6000][i],column:c,
+      currentRaw:dwell.data[c]&255,currentMs:decMainDwell(dwell.data[c]),
+      targetMs:1,targetRaw:encMainDwell(1)})):[];
   return {bank,profile:sessionProfileLabel(ecuProfile,session),
     ident:String(session.ident||''),firmware:String(session.firmware||''),
-    page6Bytes:idle.data.length,ignBytes:ign.data.length,v11IdleGroups,
-    possibleUltraPro1Page6:idle.data.length===42,
+    page6Bytes:idle.data.length,ignBytes:ign.data.length,
+    dwellBytes:dwell.data.length,dwellCells,dwellAxesVerified:dwellCells.length===2,
+    v11IdleGroups,possibleUltraPro1Page6:idle.data.length===42,
     writable:false,verifiedWriteSupport:false};
 }
 
