@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.25';
+  window.BLINK_PB_VERSION = 'QH-1.2.0';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.1.25';
+  document.title = 'QH ECU · v1.2.0';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5914,25 +5914,145 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
   position:sticky!important;top:0!important;left:0!important;z-index:5!important;
 }
 </style>
+<style id="qhSingleRedleoLayout120">
+/* QH 1.2.0: one FULL workspace; Redleo tab sequence + composite setting pages.
+   Source ECU objects and read/write engines are unchanged. */
+#qhModeGate,#qhSimpleFuelScreen,#qhSimpleKeypad{display:none!important}
+#qhFullPcScreen .qhPcBrandMain #qhFullVersion{
+ font:700 9px/1.1 Arial,sans-serif!important;color:#74d992!important;
+ letter-spacing:0!important;white-space:nowrap!important;vertical-align:middle
+}
+#qhFullPcScreen .qhPcTabs{
+ flex:0 0 36px!important;height:36px!important;overflow-x:auto!important;
+ white-space:nowrap!important;-webkit-overflow-scrolling:touch!important
+}
+#qhFullPcScreen .qhPcTabs button{flex:0 0 auto!important}
+#qhFullPcScreen #qhPcSummaryPanel{
+ flex:1 1 auto!important;min-height:0!important;overflow:auto!important;
+ background:#010703!important;color:#e8ffe9!important;
+ padding:6px 8px 18px!important;-webkit-overflow-scrolling:touch
+}
+#qhPcSummaryPanel[hidden],#qhPcSummaryPanel .qhRedleoSummarySection[hidden]{display:none!important}
+#qhFullPcScreen.qhSummaryMode #qhFullMapWrap,
+#qhFullPcScreen.qhSummaryMode #qhFullOptionsPanel,
+#qhFullPcScreen.qhSummaryMode #qhFullSelectionPad,
+#qhFullPcScreen.qhSummaryMode .qhPcActions,
+#qhFullPcScreen.qhSummaryMode .qhPcMapTools,
+#qhFullPcScreen.qhSummaryMode .qhPcMapHead .unit,
+#qhFullPcScreen.qhSummaryMode .qhPcMapHead .qhPcHeadOps,
+#qhFullPcScreen.qhSummaryMode #qhPcStepChoices{display:none!important}
+#qhFullPcScreen.qhSummaryMode #qhPcSummaryPanel{display:block!important}
+#qhFullPcScreen #qhPcSectionBack[hidden]{display:none!important}
+#qhFullPcScreen .qhRedleoSummarySection h3{font-size:14px;font-weight:900;color:#eaffed;margin:4px 0 6px}
+#qhFullPcScreen .qhRedleoSummarySection h3 small{font-size:10px;color:#63db8b;margin-left:8px}
+#qhFullPcScreen .qhRedleoHint{font-size:11px;color:#93bca1;line-height:1.4;margin:4px 0 9px}
+#qhFullPcScreen .qhRedleoSectionTitle{
+ font-size:11px;line-height:1.25;color:#bdffd0;font-weight:900;
+ padding:6px 7px;margin:10px 0 0;background:#064323;
+ border:1px solid #1b974a
+}
+#qhFullPcScreen .qhRedleoOptionGrid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;
+ background:#042412;padding:4px
+}
+#qhFullPcScreen .qhRedleoOptionGrid .optionField{
+ min-width:0!important;display:flex!important;flex-direction:row!important;
+ align-items:center!important;gap:5px!important;
+ padding:4px 5px!important;border:1px solid #24603c!important;
+ background:#0a2516!important;color:#e3ffe8!important
+}
+#qhFullPcScreen .qhRedleoOptionGrid .optionField label{
+ min-width:0!important;flex:1 1 auto!important;font-size:10px!important;
+ line-height:1.2!important;color:#c9f8d3!important
+}
+#qhFullPcScreen .qhRedleoOptionGrid .optionField label span{font-size:9px!important;color:#84b99a!important}
+#qhFullPcScreen .qhRedleoOptionGrid .optionField input,
+#qhFullPcScreen .qhRedleoOptionGrid .optionField select{
+ width:72px!important;max-width:42%!important;min-width:55px!important;flex:0 0 72px!important;
+ height:31px!important;color:#eaffec!important;background:#031307!important;
+ border:1px solid #278f49!important;border-radius:3px!important;
+ padding:2px 4px!important;font-weight:800!important;font-size:11px!important
+}
+#qhFullPcScreen .qhRedleoSummaryActions{
+ display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 10px
+}
+#qhFullPcScreen .qhRedleoSummaryActions button{
+ min-height:33px!important;padding:4px 12px!important;
+ background:#104422!important;color:#eaffef!important;border:1px solid #3cbe68!important;
+ font-weight:800!important;font-size:11px!important
+}
+#qhFullPcScreen .qhRedleoPreview{
+ background:#071c0f;border:1px solid #1b7740;margin:0 0 5px;
+ overflow:hidden;min-height:36px
+}
+#qhFullPcScreen .qhRedleoPreview .qhPreviewHead{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 6px;
+ font-size:10px;color:#d8ffe0
+}
+#qhFullPcScreen .qhRedleoPreview .qhPreviewHead button{
+ min-height:27px!important;padding:0 7px!important;font-size:10px!important;
+ border:1px solid #27a74b!important;background:#0d361b!important;color:#caffd8!important
+}
+#qhFullPcScreen .qhRedleoPreview .qhPreviewHead button:disabled{opacity:.42!important}
+#qhFullPcScreen .qhPreviewScroll{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+#qhFullPcScreen .qhPreviewScroll table{
+ width:max-content;min-width:100%;border-spacing:0;border-collapse:separate;
+ font-variant-numeric:tabular-nums;font-size:10px
+}
+#qhFullPcScreen .qhPreviewScroll :is(th,td){
+ min-width:56px;padding:5px 7px;text-align:center;white-space:nowrap;
+ border-right:1px solid #328055;border-bottom:1px solid #328055
+}
+#qhFullPcScreen .qhPreviewScroll th{background:#176236;color:#f2fff4}
+#qhFullPcScreen .qhPreviewScroll td{background:#0c2616;color:#e6ffec}
+#qhFullPcScreen .qhRedleoSensorGrid{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:5px 0
+}
+#qhFullPcScreen .qhRedleoSensorGrid>div{
+ padding:8px 7px;border:1px solid #24924b;background:#071a0e;
+ display:flex;flex-direction:column;gap:5px
+}
+#qhFullPcScreen .qhRedleoSensorGrid span{font-size:10px;color:#9ce8b2;font-weight:800}
+#qhFullPcScreen .qhRedleoSensorGrid b{font-size:17px;color:#fff}
+#qhFullPcScreen #qhPcLegacyAfr .optPanel,
+#qhFullPcScreen #qhPcLegacySwitches .optPanel,
+#qhFullPcScreen #qhPcLegacyInfo .infoGrid{
+ background:#071c0e!important;color:#e0ffe8!important;border:1px solid #246f41!important;
+ padding:6px!important;margin:3px 0 8px!important;max-width:100%
+}
+#qhFullPcScreen #qhPcLegacySwitches .toggleGrid{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important
+}
+#qhFullPcScreen #qhPcLegacySwitches .toggleItem{
+ background:#0b2515!important;color:#e6ffeb!important;font-size:10px!important;
+ border:1px solid #226e3b!important;padding:5px!important
+}
+#qhFullPcScreen #qhPcLegacyAfr :is(label,small,span),
+#qhFullPcScreen #qhPcLegacySwitches :is(label,small,span){color:#d2f3dc!important}
+#qhFullPcScreen #qhPcLegacyInfo .infoGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+#qhFullPcScreen #qhPcLegacyInfo .infoCell{background:#0b2616!important;color:#d9ffe5!important}
+#qhFullPcScreen #qhPcLegacyTools{
+ display:flex!important;gap:5px;flex-wrap:wrap;align-items:center;padding:6px;background:#071e10
+}
+#qhFullPcScreen #qhPcLegacyTools button{padding:5px 8px!important;min-height:31px!important;font-size:10px!important}
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual{display:block!important;max-height:none!important;margin:4px 0}
+@media(max-width:760px){
+ #qhFullPcScreen .qhRedleoOptionGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #qhFullPcScreen #qhPcLegacySwitches .toggleGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ #qhFullPcScreen #qhPcLegacyInfo .infoGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){
+ #qhFullPcScreen .qhRedleoOptionGrid{grid-template-columns:1fr}
+ #qhFullPcScreen .qhRedleoSensorGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #qhFullPcScreen .qhPcTabs{height:32px!important;flex-basis:32px!important}
+}
+</style>
 </head>
-<body>
-
-<div id="qhModeGate" role="dialog" aria-modal="true">
-  <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.25</span></div>
-    <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
-    <div class="qhModeChoices">
-      <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
-      <button id="qhChooseSimple" class="qhModeChoice" type="button"><b>CHẾ ĐỘ RÚT GỌN</b><span>Giao diện gọn cho điện thoại. Bản đồ phun hiển thị 8 × 15 ô; ECU vẫn đọc/ghi dữ liệu gốc 14 × 30 ô.</span></button>
-    </div>
-    <div class="qhModeFoot">Ứng dụng sẽ hỏi lại chế độ ở lần mở tiếp theo.</div>
-  </div>
-</div>
-
+<body data-ui-mode="full">
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.0</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU">⛓</button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -5947,18 +6067,21 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhPcMini"><i>⌁</i><div><small>PHUN</small><b data-mirror="pw">0.00 ms</b></div></div>
     <div class="qhPcMini"><i>▣</i><div><small>ẮC QUY</small><b data-mirror="batt">-- V</b></div></div>
   </div>
-  <div class="qhPcTabs">
-    <button class="active" data-qh-full-tab="inj_ve">THỜI GIAN PHUN</button>
-    <button data-qh-full-tab="ign_degree">GÓC ĐÁNH LỬA</button>
-    <button data-qh-full-tab="ign_time" type="button">IGN TIME · DWELL BOBIN</button>
-    <button data-qh-full-tab="afr_map">AFR ECU</button>
-    <button data-qh-full-tab="ect_inj">BÙ XĂNG ECT</button>
-    <button data-qh-full-tab="iat_inj">BÙ XĂNG IAT</button>
-    <button data-qh-full-tab="map_inj">BÙ XĂNG MAP</button>
-    <button data-qh-full-tab="idle_limit">GARANTI / GIỚI HẠN</button>
-    <button data-qh-full-tab="options">TÙY CHỌN</button>
+<div class="qhPcTabs">
+    <button class="active" type="button" data-qh-full-tab="inj_ve">INJ VE · PHUN XĂNG</button>
+    <button type="button" data-qh-full-tab="inj_degree">INJ DEGREE · GÓC PHUN</button>
+    <button type="button" data-qh-full-tab="ign_degree">IGN DEGREE · GÓC LỬA</button>
+    <button type="button" data-qh-full-tab="ign_time">IGN TIME · BOBIN</button>
+    <button type="button" data-qh-full-tab="afr_map">AIR FUEL RATIO</button>
+    <button type="button" data-qh-full-tab="ect_inj">ECT COMP INJ</button>
+    <button type="button" data-qh-full-tab="ect_ign">ECT COMP IGN</button>
+    <button type="button" data-qh-full-tab="map_inj">MAP COMP INJ</button>
+    <button type="button" data-qh-full-tab="idle_limit">IDLE & LIMIT</button>
+    <button type="button" data-qh-full-tab="options">OPTIONS</button>
+    <button type="button" data-qh-full-tab="sensor_voltage">SENSOR VOLTAGE</button>
+    <button type="button" data-qh-full-tab="set_info">SET & INFO</button>
   </div>
-  <div class="qhPcMapHead">
+    <div class="qhPcMapHead">
     <div class="qhPcTitleStep">
       <h2>BẢN ĐỒ PHUN XĂNG</h2>
       <div class="qhPcStepChoices" id="qhPcStepChoices" role="group" aria-label="Bước tăng giảm vùng chọn">
@@ -5982,15 +6105,84 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
       <button type="button" data-qh-fuel-density="4" aria-pressed="false" title="X4 · Cột gọn hơn X3, tránh răng cưa, vuốt ngang để xem thêm RPM">X4</button>
     </div>
     <select id="qhFullMapSelect" aria-label="Chọn map ECU"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
+    <button id="qhPcSectionBack" type="button" hidden>‹ QUAY VỀ NHÓM</button>
     <button id="qhPcZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
     <button id="qhPcKeyboard" type="button" title="Chọn một hoặc hai góc, rồi mở bàn phím">⌨ BÀN PHÍM</button>
     <button id="qhPcClearSelection" type="button" title="Bỏ vùng chọn hiện tại">✕ BỎ CHỌN</button>
     <button id="qhPcLiveFollow" type="button" aria-pressed="true" title="Bật: tự cuộn theo con trỏ. Tắt: con trỏ vẫn chạy, không tự cuộn.">◎ TỰ CUỘN: BẬT</button>
     <button id="qhPcAfrOverlay" type="button" aria-pressed="false" title="Hiển thị AFR thực tế đã đo ở góc từng ô phun">AFR ĐO: TẮT</button>
+    <button id="qhPcReadAll" type="button" title="Đọc toàn bộ dữ liệu theo lệnh ECU gốc">ĐỌC TẤT CẢ</button>
+    <button id="qhPcWriteAll" type="button" title="Gửi toàn bộ theo quy trình ECU gốc">GHI TẤT CẢ</button>
     <button id="qhBfOpen" type="button" aria-label="Trạng thái Backfire và sao lưu MAP">🔥 BACKFIRE: CHƯA SOI</button>
     <span class="qhMapSelectionInfo" id="qhPcSelectionInfo">Chạm ô đầu, sau đó chạm góc đối diện</span>
   </div>
   <div id="qhFullMapWrap"><table id="qhFullMapTable"></table></div>
+  <div id="qhPcSummaryPanel" hidden aria-label="Các bảng tùy chọn REDLEO">
+    <section class="qhRedleoSummarySection" id="qhPcSummaryIdle" data-qh-summary="idle_limit" hidden>
+      <h3>GARANTI VÀ GIỚI HẠN <small>IDLE AND LIMIT</small></h3>
+      <p class="qhRedleoHint">Nhóm thông số gốc theo Redleo. Giá trị trên ứng dụng không được xem là đã đọc từ ECU cho tới khi xác nhận đọc thành công.</p>
+      <div class="qhRedleoOptionGrid" id="qhPcIdleFields"></div>
+      <div class="qhRedleoSummaryActions"><button data-qh-summary-io="read" type="button">ĐỌC CÀI ĐẶT ECU</button><button data-qh-summary-io="write" type="button">GHI CÀI ĐẶT ECU</button></div>
+      <div class="qhRedleoSectionTitle">BẢNG IDLE / LIMIT GỐC (ECU HỖ TRỢ)</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="idle_limit"></div>
+      <div class="qhRedleoSectionTitle">MOTOR GARANTI THEO NHIỆT ĐỘ ECT</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="ect_idle_motor"></div>
+      <div class="qhRedleoSectionTitle">BÙ PHUN KHI KHỞI ĐỘNG NGUỘI</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="ect_start"></div>
+    </section>
+    <section class="qhRedleoSummarySection" id="qhPcSummaryOptions" data-qh-summary="options" hidden>
+      <h3>OPTIONS <small>CẤU HÌNH ECU</small></h3>
+      <p class="qhRedleoHint">Điện áp TPS, phun garanti, chỉnh garanti, cảm biến và quạt làm mát. Các ô được tái sử dụng từ tùy chọn ECU hiện có.</p>
+      <div class="qhRedleoOptionGrid" id="qhPcOptionsFields"></div>
+      <div class="qhRedleoSummaryActions"><button data-qh-summary-io="read" type="button">ĐỌC OPTIONS ECU</button><button data-qh-summary-io="write" type="button">GHI OPTIONS ECU</button></div>
+      <div class="qhRedleoSectionTitle">BẢNG OPTIONS A2 (NẾU ECU HỖ TRỢ)</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="ate_options"></div>
+      <div class="qhRedleoSectionTitle">BÙ MOTOR GARANTI THEO MAP</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="map_idle_motor"></div>
+      <div class="qhRedleoSectionTitle">BÙ PHUN THEO NHIỆT ĐỘ KHÍ NẠP IAT</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="iat_inj"></div>
+      <div class="qhRedleoSectionTitle">HIỆU CHỈNH NGOÀI / EXTERNAL ADJUSTMENT</div>
+      <div class="qhRedleoPreview" data-qh-feature-preview="external_adjust"></div>
+    </section>
+    <section class="qhRedleoSummarySection" id="qhPcSummarySensor" data-qh-summary="sensor_voltage" hidden>
+      <h3>SENSOR VOLTAGE <small>GIÁ TRỊ LIVE / HIỆU CHUẨN</small></h3>
+      <p class="qhRedleoHint">Giữ giá trị cảm biến thật do ECU/ESP32 báo. Nếu chưa có số đo điện áp, hiển thị -- thay vì tự suy ra điện áp từ nhiệt độ.</p>
+      <div class="qhRedleoSensorGrid">
+        <div><span>TPS (V)</span><b data-qh-sensor-live="tpsv">--</b></div>
+        <div><span>RPM</span><b data-qh-sensor-live="rpm">--</b></div>
+        <div><span>TPS (%)</span><b data-qh-sensor-live="tps">--</b></div>
+        <div><span>ECT (°C)</span><b data-qh-sensor-live="ect">--</b></div>
+        <div><span>IAT (°C)</span><b data-qh-sensor-live="iat">--</b></div>
+        <div><span>ẮC QUY (V)</span><b data-qh-sensor-live="batt">--</b></div>
+      </div>
+      <div class="qhRedleoSectionTitle">HIỆU CHUẨN CẢM BIẾN ECT</div><div class="qhRedleoPreview" data-qh-feature-preview="v_ect"></div>
+      <div class="qhRedleoSectionTitle">HIỆU CHUẨN CẢM BIẾN IAT</div><div class="qhRedleoPreview" data-qh-feature-preview="v_iat"></div>
+      <div class="qhRedleoSectionTitle">HIỆU CHUẨN CẢM BIẾN MAP</div><div class="qhRedleoPreview" data-qh-feature-preview="v_map"></div>
+      <div class="qhRedleoSectionTitle">TRỤC TPS ECU · XEM TRƯỚC CHỈ ĐỌC</div><div class="qhRedleoPreview" data-qh-feature-preview="tps_axis"></div>
+      <div class="qhRedleoSectionTitle">TRỤC RPM ECU · XEM TRƯỚC CHỈ ĐỌC</div><div class="qhRedleoPreview" data-qh-feature-preview="rpm_axis"></div>
+    </section>
+    <section class="qhRedleoSummarySection" id="qhPcSummarySetInfo" data-qh-summary="set_info" hidden>
+      <h3>SET &amp; INFO <small>CẤU HÌNH VÀ THÔNG TIN ECU</small></h3>
+      <div class="qhRedleoSectionTitle">CẤU HÌNH AFR / CẢM BIẾN O2</div><div id="qhPcLegacyAfr"></div>
+      <div class="qhRedleoSectionTitle">ECU SETTINGS / SOFTWARE SETTINGS</div><div id="qhPcLegacySwitches"></div>
+      <div class="qhRedleoSectionTitle">THÔNG TIN ECU / FIRMWARE</div><div id="qhPcLegacyInfo"></div>
+      <div class="qhRedleoSectionTitle">HỌC TPS THỦ CÔNG</div><div id="qhPcLegacyTps"></div>
+      <div class="qhRedleoSectionTitle">LY HỢP TỰ ĐỘNG / AUTO CLUTCH (NẾU HỖ TRỢ)</div><div class="qhRedleoPreview" data-qh-feature-preview="auto_clutch"></div>
+      <div class="qhRedleoSectionTitle">SANG SỐ / AUTO SHIFT (NẾU HỖ TRỢ)</div><div class="qhRedleoPreview" data-qh-feature-preview="auto_shift"></div>
+      <div class="qhRedleoSectionTitle">THÔNG SỐ BỘ SẠC / CHARGING PARAMETERS</div><div class="qhRedleoPreview" data-qh-feature-preview="chg_params"></div>
+      <div class="qhRedleoSectionTitle">BẢNG THAY THẾ / ALTERNATE TABLE</div><div class="qhRedleoPreview" data-qh-feature-preview="alternate_table"></div>
+      <div class="qhRedleoSectionTitle">BẢNG DỰ PHÒNG · CHỈ ĐỌC NẾU ECU HỖ TRỢ</div><div class="qhRedleoPreview" data-qh-feature-preview="spare"></div>
+      <div class="qhRedleoSectionTitle">THÔNG SỐ BỔ SUNG</div><div class="qhRedleoOptionGrid" id="qhPcMiscFields"></div>
+      <div class="qhRedleoSectionTitle">THAO TÁC ECU / SAO LƯU / KHÔI PHỤC</div>
+      <p class="qhRedleoHint">Các nút bên dưới là nút gốc, giữ nguyên quy trình và cảnh báo của Redleo. Không tự chạy lệnh ECU khi chỉ mở tab.</p>
+      <div id="qhPcLegacyTools" class="qhRedleoToolGrid"></div>
+      <div class="qhRedleoSummaryActions">
+        <button id="qhPcAutoTune" type="button">AUTO TUNE QH</button>
+        <button id="qhPcAdvancedSettings" type="button">CẤU HÌNH AFR / OTA</button>
+      </div>
+    </section>
+  </div>
+
   <div id="qhFullSelectionPad" class="qhNewSelectionPad" aria-label="Adjust selected cells">
     <button id="qhPcSaveArrow" type="button" title="Gửi map hiện tại lên ECU" aria-label="Send current map">↓</button>
     <button id="qhPcPlus" type="button" title="Tăng vùng chọn" aria-label="Increase selection">＋</button>
@@ -6046,7 +6238,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     </div>
   </div>
 </section>
-<button id="qhFullReturnBtn" type="button">TRANG CHỦ ĐẦY ĐỦ</button>
+<button id="qhFullReturnBtn" type="button">‹ TRỞ LẠI QH ECU</button>
 <div id="qhFullKeypad">
   <div class="qhFkHead"><span id="qhFkCell">Chọn ô trước</span><b id="qhFkValue">--</b></div>
   <div class="qhFkGrid">
@@ -6054,53 +6246,6 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <button data-fk="4">4</button><button data-fk="5">5</button><button data-fk="6">6</button><button data-fk="back">⌫</button>
     <button data-fk="7">7</button><button data-fk="8">8</button><button data-fk="9">9</button><button data-fk=".">.</button>
     <button class="wide" data-fk="0">0</button><button data-fk="close">ẨN</button><button data-fk="apply">ÁP DỤNG</button>
-  </div>
-</div>
-<section id="qhSimpleFuelScreen" aria-label="Simple Injection Map">
-  <div class="qhSfWindow">
-    <div class="qhSfTitle"><b>QH ECU - BẢN ĐỒ PHUN</b><span>CHẾ ĐỘ RÚT GỌN · 8 TPS × 15 RPM</span><div class="spacer"></div><button id="qhSfBack" type="button">QUAY LẠI</button></div>
-    <div class="qhSfLive">
-      <div class="qhSfStat"><small>RPM</small><b data-mirror="rpm">0</b></div>
-      <div class="qhSfStat"><small>TPS</small><b data-mirror="tps">--%</b></div>
-      <div class="qhSfStat"><small>AFR</small><b data-mirror="afr">--</b></div>
-      <div class="qhSfStat"><small>ECT</small><b data-mirror="ect">-- °C</b></div>
-      <div class="qhSfStat"><small>GÓC LỬA</small><b data-mirror="ign">--°</b></div>
-      <div class="qhSfStat"><small>PHUN</small><b data-mirror="pw">0.00 ms</b></div>
-    </div>
-    <div class="qhSfTabs"><button class="active" type="button">Thời gian phun</button><button type="button" data-qh-open-feature="ign_degree">Góc đánh lửa</button><button type="button" data-qh-open-feature="afr_map">AFR của ECU</button><button type="button" data-qh-open-feature="ect_inj">Bù xăng ECT</button><button type="button" data-qh-open-feature="iat_inj">Bù xăng IAT</button><button type="button" data-qh-open-feature="map_inj">Bù xăng MAP</button></div>
-    <div class="qhSfToolbar">
-      <select id="qhSfMap"><option value="1">MAP 1</option><option value="2">MAP 2</option><option value="3">MAP 3</option><option value="4">MAP 4</option></select>
-      <button id="qhSfZoom" type="button" aria-pressed="false">⛶ PHÓNG TO NGANG</button>
-      <button id="qhSfReadAll" type="button">ĐỌC TẤT CẢ</button>
-      <button id="qhSfWriteAll" type="button">GHI TẤT CẢ</button>
-      <button id="qhSfRead" class="primary" type="button">ĐỌC HIỆN TẠI</button>
-      <button id="qhSfWrite" class="primary" type="button">GHI HIỆN TẠI</button>
-    </div>
-    <div class="qhSfMapTools">
-      <button id="qhSfKeyboard" type="button" title="Chạm chọn ô hoặc hai góc rồi mở bàn phím">⌨ BÀN PHÍM</button>
-      <button id="qhSfClearSelection" type="button">✕ BỎ CHỌN</button>
-      <select id="qhSfStep" aria-label="Adjustment step" title="Bước tăng giảm vùng chọn"><option value="1">±1</option><option value="0.1" selected>±0.1</option><option value="0.01">±0.01</option></select>
-      <button id="qhSfLiveFollow" type="button" aria-pressed="true" title="Bật: tự cuộn theo con trỏ. Tắt: con trỏ vẫn chạy, không tự cuộn.">◎ TỰ CUỘN: BẬT</button>
-      <button id="qhSfAfrOverlay" type="button" aria-pressed="false" title="AFR thực đo: góc ô, không ghi vào map phun">AFR ĐO: TẮT</button>
-      <span class="qhMapSelectionInfo" id="qhSfSelectionInfo">Chạm một ô hoặc hai góc để chọn vùng</span>
-    </div>
-    <div id="qhSimpleFuelWrap"><table id="qhSimpleFuelTable"></table></div>
-    <div id="qhSimpleSelectionPad" class="qhNewSelectionPad" aria-label="Adjust selected fuel cells">
-      <button id="qhSfSaveArrow" type="button" title="Ghi map phun lên ECU">↓</button>
-      <button id="qhSfPlus" type="button" title="Tăng vùng chọn">＋</button>
-      <button id="qhSfMinus" type="button" title="Giảm vùng chọn">−</button>
-    </div>
-    <div class="qhSfHint">Mỗi cột RPM hiển thị đại diện hai cột ECU; mỗi cặp TPS tương ứng hai hàng. Đọc map không thay đổi ô gốc. Chỉnh ô rút gọn chỉ đồng bộ các ô gốc trong cùng nhóm.</div>
-  </div>
-  <button id="qhSfZoomExit" type="button" aria-label="Thu nhỏ bản đồ về dọc">↙ THU NHỎ DỌC</button>
-</section>
-<div id="qhSimpleKeypad">
-  <div class="qhSkHead"><span id="qhSkCell">Select a cell</span><b id="qhSkValue">--</b></div>
-  <div class="qhSkGrid">
-    <button data-sk="1">1</button><button data-sk="2">2</button><button data-sk="3">3</button><button data-sk="clear">C</button>
-    <button data-sk="4">4</button><button data-sk="5">5</button><button data-sk="6">6</button><button data-sk="back">⌫</button>
-    <button data-sk="7">7</button><button data-sk="8">8</button><button data-sk="9">9</button><button data-sk=".">.</button>
-    <button class="wide" data-sk="0">0</button><button data-sk="close">CLOSE</button><button class="apply" data-sk="apply">APPLY</button>
   </div>
 </div>
 <div id="portraitGate" aria-hidden="true"></div>
@@ -6112,7 +6257,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.25</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.0</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11611,10 +11756,7 @@ window.QHMapUx={get showAfr(){return afrOn},setAfr,toggleAfr(){setAfr(!afrOn)},p
 <script id="qhPadLongPressDrag119">
 (function(){
 'use strict';
-const IDS=[
-  {screenId:'qhFullPcScreen',padId:'qhFullSelectionPad'},
-  {screenId:'qhSimpleFuelScreen',padId:'qhSimpleSelectionPad'}
-];
+const IDS=[{screenId:'qhFullPcScreen',padId:'qhFullSelectionPad'}];
 const PREFIX='qhFloatingPadLocationV119:';
 const HOLD_MS=220;
 const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
@@ -11738,15 +11880,9 @@ window.addEventListener('resize',()=>{
 window.QHPadDrag={place};
 })();
 </script>
-<script id="qhDualModeScript">
+<script id="qhSingleModeBootstrapV120">
 (function(){
-  'use strict';
-  let uiMode=null, sfCell=null, sfBuffer='';
-  const simpleSelection=window.QHMapUx.makeSelection();
-  let simpleFollow=true,simpleManualUntil=0,simpleCursorKey='',simpleLiveTd=null;
-  const rowGroups=[[0,1],[2,3],[4,5],[6,7],[8,9],[10,11],[12],[13]];
-  const colGroups=Array.from({length:15},(_,i)=>[i*2,i*2+1]);
-
+'use strict';
   const qhVietnameseLabels={
     inj_ve:'Thời gian phun',inj_degree:'Góc phun',ign_degree:'Góc đánh lửa',
     ign_time:'Thời gian tích điện bobin',afr_map:'Tỷ lệ hòa khí ECU',
@@ -11784,306 +11920,29 @@ window.QHPadDrag={place};
     setText('#homeAutoTuneBtn .qhMenuText small','Đo AFR và tự động bù xăng');
   }
 
-  function chooseMode(mode){
-    window.QHOrientation?.exit();
-    uiMode=mode;
-    document.body.dataset.uiMode=mode;
-    document.getElementById('qhModeGate').hidden=true;
-    applyVietnameseUi();
-    if(mode==='full'){
-      try{document.getElementById('qhFullPcScreen')?.classList.remove('suspended')}catch(_e){}
-      try{window.QHFullPc?.render?.()}catch(_e){}
-    }else{
-      try{showScreen('dashboard')}catch(_e){}
-    }
-    try{render()}catch(_e){}
-  }
-  document.getElementById('qhChooseFull')?.addEventListener('click',()=>chooseMode('full'));
-  document.getElementById('qhChooseSimple')?.addEventListener('click',()=>chooseMode('simple'));
 
-  function simpleMainRow(sr){return rowGroups[sr][0]}
-  function simpleMainCol(sc){return colGroups[sc][1]}
-  function simpleLabelRow(sr){
-    const r=simpleMainRow(sr),v=TPS_ROWS[r];
-    return String(v).toUpperCase()==='IDLE'?'IDLE':String(v)+'%';
-  }
-  function simpleLabelCol(sc){return String(RPMS[simpleMainCol(sc)]);}
-  function simpleValue(sr,sc){
-    const r=simpleMainRow(sr),c=simpleMainCol(sc),v=Number(state.inject?.[r]?.[c]);
-    return Number.isFinite(v)?v:0;
-  }
-  function simpleSelectedBounds(){
-    return simpleSelection.active?window.QHMapUx.bounds(simpleSelection):null;
-  }
-  function updateSimpleSelectionVisual(){
-    const ux=window.QHMapUx,t=document.getElementById('qhSimpleFuelTable');
-    const b=simpleSelectedBounds();
-    t?.querySelectorAll('td.val').forEach(td=>{
-      const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
-      const selected=!!b&&sr>=b.r0&&sr<=b.r1&&sc>=b.c0&&sc<=b.c1;
-      td.classList.toggle('qhSelectedCell',selected);
-      td.classList.toggle('qhCornerCell',selected&&simpleSelection.pending&&sr===simpleSelection.ar&&sc===simpleSelection.ac);
-    });
-    const info=document.getElementById('qhSfSelectionInfo');
-    if(info)info.textContent=!b?'Chạm ô đầu, sau đó chạm góc đối diện':
-      simpleSelection.pending?
-        'Góc 1: '+simpleLabelRow(simpleSelection.ar)+' / '+simpleLabelCol(simpleSelection.ac)+' RPM · chạm góc đối diện':
-        'Đã chọn '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' ô hiển thị · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' nhóm';
-    requestAnimationFrame(()=>window.QHMapUx.positionPad('qhSimpleFuelScreen','qhSimpleFuelTable','qhSimpleSelectionPad',simpleSelection));
-  }
-  function simpleCellFromEcu(r,c){
-    const sr=rowGroups.findIndex(g=>g.includes(r));
-    const sc=colGroups.findIndex(g=>g.includes(c));
-    return sr<0||sc<0?null:{sr,sc};
-  }
-  function updateSimpleCursor(){
-    const t=document.getElementById('qhSimpleFuelTable'),screen=document.getElementById('qhSimpleFuelScreen');
-    if(!t)return;
-    const showing=uiMode==='simple'&&screen?.classList.contains('active');
-    const cur=showing?window.QHMapUx.liveCell():null;
-    const pos=cur?simpleCellFromEcu(cur.r,cur.c):null;
-    const key=pos?pos.sr+':'+pos.sc:'';
-    // No DOM class toggles for repeated samples within the same ECU cell.
-    if(key===simpleCursorKey&&(key?simpleLiveTd&&t.contains(simpleLiveTd):!simpleLiveTd))return;
-    if(simpleLiveTd)simpleLiveTd.classList.remove('qhLiveCursor');
-    simpleLiveTd=null;
-    if(!pos){simpleCursorKey='';return}
-    const td=t.querySelector('td.val[data-sr="'+pos.sr+'"][data-sc="'+pos.sc+'"]');
-    if(!td){simpleCursorKey='';return}
-    td.classList.add('qhLiveCursor');simpleLiveTd=td;
-    if(simpleFollow&&key!==simpleCursorKey&&Date.now()>simpleManualUntil){
-      const wrap=document.getElementById('qhSimpleFuelWrap');
-      if(wrap){
-        const left=td.offsetLeft,right=left+td.offsetWidth;
-        if(left<wrap.scrollLeft+75)wrap.scrollLeft=Math.max(0,left-75);
-        else if(right>wrap.scrollLeft+wrap.clientWidth-8)wrap.scrollLeft=right-wrap.clientWidth+8;
-      }
-    }
-    simpleCursorKey=key;
-  }
-  function updateSimpleAfrBadges(){
-    const ux=window.QHMapUx,t=document.getElementById('qhSimpleFuelTable');
-    const enabled=ux.showAfr;
-    const btn=document.getElementById('qhSfAfrOverlay');
-    if(btn){btn.textContent=enabled?'AFR ĐO: BẬT':'AFR ĐO: TẮT';btn.setAttribute('aria-pressed',String(enabled))}
-    if(!t)return;
-    t.querySelectorAll('td.val').forEach(td=>{
-      const r=Number(td.dataset.sr),c=Number(td.dataset.sc);
-      const b=enabled?ux.badgeForGroup(rowGroups[r],colGroups[c],simpleMainRow(r),simpleMainCol(c)):null;
-      ux.refreshBadge(td,b);
-    });
-  }
-  function renderSimpleFuel(){
-    const t=document.getElementById('qhSimpleFuelTable');if(!t||typeof state==='undefined')return;
-    let h='<thead><tr><th class="rowh">TPS / RPM</th>';
-    for(let sc=0;sc<15;sc++)h+='<th>'+simpleLabelCol(sc)+'</th>';
-    h+='</tr></thead><tbody>';
-    for(let sr=0;sr<8;sr++){
-      h+='<tr><td class="rowh">'+simpleLabelRow(sr)+'</td>';
-      for(let sc=0;sc<15;sc++){
-        const v=simpleValue(sr,sc),color=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#fff';
-        h+='<td class="val" data-sr="'+sr+'" data-sc="'+sc+'" style="background:'+color+'">'+v.toFixed(2)+'</td>';
-      }
-      h+='</tr>';
-    }
-    h+='</tbody>';t.innerHTML=h;
-    t.querySelectorAll('td.val').forEach(td=>td.addEventListener('click',()=>{
-      const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
-      simpleManualUntil=Date.now()+3500;
-      window.QHMapUx.restorePad('qhSimpleSelectionPad');
-      window.QHMapUx.selectTap(simpleSelection,sr,sc);
-      updateSimpleSelectionVisual();
-    }));
-    const sel=document.getElementById('qhSfMap');if(sel)sel.value=String(state.activeMap||1);
-    updateSimpleSelectionVisual();updateSimpleAfrBadges();updateSimpleCursor();
-  }
-  function applySimpleSelection(value){
-    const b=simpleSelectedBounds();if(!b)return;
-    const raw=Number(value);if(!Number.isFinite(raw))return;
-    const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
-    const v=Number(Math.max(0,Math.min(raw,max)).toFixed(3));
-    // SIMPLE edits are local only. Expand every selected visible cell into
-    // exactly its source TPS x RPM group, without touching other ECU cells.
-    for(let sr=b.r0;sr<=b.r1;sr++)for(let sc=b.c0;sc<=b.c1;sc++){
-      for(const r of rowGroups[sr])for(const c of colGroups[sc])state.inject[r][c]=v;
-    }
-    try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon();render()}catch(_e){}
-    renderSimpleFuel();
-  }
-  function bumpSimpleSelected(sign){
-    const b=simpleSelectedBounds();if(!b)return;
-    const step=Number(document.getElementById('qhSfStep')?.value)||.1;
-    const max=typeof fuelProtocolMaxMs==='function'?fuelProtocolMaxMs():100;
-    const updates=new Map();
-    for(let sr=b.r0;sr<=b.r1;sr++)for(let sc=b.c0;sc<=b.c1;sc++){
-      const v=Number(Math.max(0,Math.min(simpleValue(sr,sc)+sign*step,max)).toFixed(3));
-      for(const r of rowGroups[sr])for(const c of colGroups[sc])updates.set(r+':'+c,{r,c,v});
-    }
-    for(const {r,c,v} of updates.values())state.inject[r][c]=v;
-    try{state.mapBanks[state.activeMap-1].inject=state.inject;saveSoon();render()}catch(_e){}
-    renderSimpleFuel();
-  }
-  function openSimpleKeypad(){
-    const b=simpleSelectedBounds();
-    if(!b){
-      window.setEcuTaskStatus?.('offline','Hãy chọn một ô hoặc hai góc trước khi mở bàn phím.',2500);
-      return;
-    }
-    const sr=simpleSelection.fr,sc=simpleSelection.fc;
-    sfCell={sr,sc};sfBuffer=String(simpleValue(sr,sc).toFixed(2)).replace(/0+$/,'').replace(/\.$/,'');
-    document.getElementById('qhSkCell').textContent=simpleLabelRow(sr)+' · '+simpleLabelCol(sc)+' RPM · '+((b.r1-b.r0+1)*(b.c1-b.c0+1))+' ô';
-    document.getElementById('qhSkValue').textContent=sfBuffer+' ms';
-    document.getElementById('qhSimpleKeypad').classList.add('show');
-  }
-  function redrawSk(){document.getElementById('qhSkValue').textContent=(sfBuffer||'0')+' ms'}
-  document.querySelectorAll('#qhSimpleKeypad [data-sk]').forEach(b=>b.addEventListener('click',()=>{
-    const k=b.dataset.sk;
-    if(k==='close'){document.getElementById('qhSimpleKeypad').classList.remove('show');return}
-    if(k==='apply'){
-      if(sfCell)applySimpleSelection(Number(sfBuffer||0));
-      document.getElementById('qhSimpleKeypad').classList.remove('show');return;
-    }
-    if(k==='clear')sfBuffer='';
-    else if(k==='back')sfBuffer=sfBuffer.slice(0,-1);
-    else if(k==='.'){if(!sfBuffer.includes('.'))sfBuffer=sfBuffer?sfBuffer+'.':'0.';}
-    else if(/^\d$/.test(k)&&sfBuffer.length<8)sfBuffer+=k;
-    redrawSk();
-  }));
-
-  function openSimpleFuel(){
-    if(uiMode!=='simple')return;
-    try{
-      state.tab='inject';
-      state.inject=state.mapBanks[state.activeMap-1].inject;
-    }catch(_e){}
-    document.getElementById('qhSimpleFuelScreen').classList.add('active');
-    renderSimpleFuel();
-  }
-  function closeSimpleFuel(){
-    window.QHOrientation?.exit('simple');
-    document.getElementById('qhSimpleFuelScreen').classList.remove('active');
-    document.getElementById('qhSimpleKeypad').classList.remove('show');
-    sfCell=null;window.QHMapUx.clearSelection(simpleSelection);simpleCursorKey='';
-    if(simpleLiveTd)simpleLiveTd.classList.remove('qhLiveCursor');simpleLiveTd=null;
-  }
-  document.getElementById('qhSfBack')?.addEventListener('click',closeSimpleFuel);
-  document.getElementById('qhSfKeyboard')?.addEventListener('click',openSimpleKeypad);
-  document.getElementById('qhSfPlus')?.addEventListener('click',()=>bumpSimpleSelected(1));
-  document.getElementById('qhSfMinus')?.addEventListener('click',()=>bumpSimpleSelected(-1));
-  document.getElementById('qhSfSaveArrow')?.addEventListener('click',()=>{
-    window.QHMapUx.dismissPad('qhSimpleSelectionPad');
-    document.getElementById('qhSfWrite')?.click();
-  });
-  document.getElementById('qhSfClearSelection')?.addEventListener('click',()=>{
-    window.QHMapUx.clearSelection(simpleSelection);
-    document.getElementById('qhSimpleKeypad')?.classList.remove('show');
-    sfCell=null;updateSimpleSelectionVisual();
-  });
-  document.getElementById('qhSfAfrOverlay')?.addEventListener('click',()=>window.QHMapUx.toggleAfr());
-  document.getElementById('qhSfLiveFollow')?.addEventListener('click',()=>{
-    simpleFollow=!simpleFollow;simpleCursorKey='';
-    const btn=document.getElementById('qhSfLiveFollow');
-    btn.textContent=simpleFollow?'◎ TỰ CUỘN: BẬT':'◎ TỰ CUỘN: TẮT';
-    btn.setAttribute('aria-pressed',String(simpleFollow));
-    updateSimpleCursor();
-  });
-  document.getElementById('qhSimpleFuelWrap')?.addEventListener('pointerdown',()=>{simpleManualUntil=Date.now()+3500},{passive:true});
-  document.getElementById('qhSimpleFuelWrap')?.addEventListener('wheel',()=>{simpleManualUntil=Date.now()+3500},{passive:true});
-  document.getElementById('qhSimpleFuelWrap')?.addEventListener('scroll',()=>{
-    if(simpleSelection.active)window.QHMapUx.positionPad('qhSimpleFuelScreen','qhSimpleFuelTable','qhSimpleSelectionPad',simpleSelection);
-  },{passive:true});
-  window.addEventListener('qhAfrOverlayChange',updateSimpleAfrBadges);
-
-  document.addEventListener('click',e=>{
-    if(uiMode!=='simple')return;
-    const card=e.target.closest?.('[data-feature="inj_ve"]');
-    if(card){e.preventDefault();e.stopPropagation();openSimpleFuel();}
-  },true);
-
-  document.querySelectorAll('[data-qh-open-feature]').forEach(b=>b.addEventListener('click',()=>{
-    closeSimpleFuel();
-    const id=b.dataset.qhOpenFeature;
-    const target=document.querySelector('[data-feature="'+id+'"]');
-    if(target)target.click();
-  }));
-
-  document.getElementById('qhSfMap')?.addEventListener('change',e=>{
-    window.QHMapUx.clearSelection(simpleSelection);
-    document.getElementById('qhSimpleKeypad')?.classList.remove('show');
-    sfCell=null;simpleCursorKey='';
-    const v=String(e.target.value);
-    const main=document.getElementById('mapSelect');
-    if(main){main.value=v;main.dispatchEvent(new Event('change',{bubbles:true}));}
-    setTimeout(renderSimpleFuel,80);
-  });
-  // Directly use the exact Blink-Redleo transport API, not hidden legacy
-  // QH button handlers that can point to the wrong tab/screen.
-  let simpleIoBusy=false;
-  async function simpleFuelIo(direction){
-    if(simpleIoBusy)return;
-    const read=direction==='read',label=read?'ĐỌC HIỆN TẠI':'GHI HIỆN TẠI';
-    const a=document.getElementById('qhSfRead'),b=document.getElementById('qhSfWrite');
-    const oldA=a?.textContent,oldB=b?.textContent;
-    if(a)a.disabled=true;if(b)b.disabled=true;
-    if(read&&a)a.textContent='⟳ ĐANG ĐỌC...';
-    if(!read&&b)b.textContent='⟳ ĐANG GHI...';
-    simpleIoBusy=true;
-    window.setEcuTaskStatus?.('loading',(read?'⟳ ĐANG ĐỌC':'⟳ ĐANG GHI')+' BẢN ĐỒ PHUN '+state.activeMap);
-    try{
-      if(!state.ecuConnected)throw new Error('Chưa kết nối ECU');
-      const api=window.BlinkRealProtocol;
-      if(!api)throw new Error('Giao thức ECU chưa sẵn sàng');
-      const result=read?await api.readCurrentFuelBank(state.activeMap,true)
-                       :await api.writeCurrentFuelAndVerify(state.activeMap);
-      if(result===false)throw new Error(label+' chưa hoàn tất');
-      renderSimpleFuel();
-      window.setEcuTaskStatus?.('success',(read?'✓ ĐÃ ĐỌC':'✓ ĐÃ GỬI')+' BẢN ĐỒ PHUN '+state.activeMap,3000);
-    }catch(e){
-      window.setEcuTaskStatus?.('error',label+' thất bại: '+String(e?.message||e),7000);
-    }finally{
-      simpleIoBusy=false;
-      if(a){a.disabled=false;a.textContent=oldA;}
-      if(b){b.disabled=false;b.textContent=oldB;}
-    }
-  }
-  document.getElementById('qhSfRead')?.addEventListener('click',()=>void simpleFuelIo('read'));
-  document.getElementById('qhSfWrite')?.addEventListener('click',()=>void simpleFuelIo('write'));
-  document.getElementById('qhSfReadAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="READ_ALL"]')?.click());
-  document.getElementById('qhSfWriteAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="SEND_ALL"]')?.click());
-  // QHOrientation handles FULL/SIMPLE zoom and restoration in one browser-only controller.
-
-  // Incremental SIMPLE data sync: never discard 120 live cells every 500ms.
-  // A changed ECU axis still rebuilds the map, preserving its displayed 8x15 grouping.
-  function refreshSimpleCellValues(){
-    if(uiMode!=='simple'||!document.getElementById('qhSimpleFuelScreen')?.classList.contains('active'))return;
-    const t=document.getElementById('qhSimpleFuelTable'),head=t?.tHead?.rows?.[0],body=t?.tBodies?.[0];
-    if(!head||head.cells.length!==16||!body||body.rows.length!==8){renderSimpleFuel();return;}
-    for(let sc=0;sc<15;sc++)if(head.cells[sc+1]?.textContent!==simpleLabelCol(sc)){renderSimpleFuel();return;}
-    for(let sr=0;sr<8;sr++)if(body.rows[sr]?.cells?.[0]?.textContent!==simpleLabelRow(sr)){renderSimpleFuel();return;}
-    const cells=t.querySelectorAll('td.val');
-    if(cells.length!==120){renderSimpleFuel();return;}
-    for(const td of cells){
-      const sr=Number(td.dataset.sr),sc=Number(td.dataset.sc);
-      const v=simpleValue(sr,sc),label=v.toFixed(2);
-      if(td.textContent!==label)td.textContent=label;
-      const bg=typeof injectionHeatColor==='function'?injectionHeatColor(v):'#fff';
-      if(td.dataset.qhHeat!==bg){td.dataset.qhHeat=bg;td.style.background=bg;}
-    }
-    const bank=document.getElementById('qhSfMap');
-    if(bank&&bank.value!==String(state.activeMap))bank.value=String(state.activeMap);
-    if(window.QHMapUx.showAfr)updateSimpleAfrBadges();
-  }
-  setInterval(refreshSimpleCellValues,500);
-
-  window.QHDualMode={get mode(){return uiMode},choose:chooseMode,openSimpleFuel,renderSimpleFuel,
-    refreshCells:refreshSimpleCellValues,updateLiveCursor:updateSimpleCursor};
+let booted=false;
+function boot(){
+ if(booted)return;
+ booted=true;
+ document.documentElement.lang='vi';
+ document.body.dataset.uiMode='full';
+ applyVietnameseUi();
+ const v=String(window.BLINK_PB_VERSION||'QH-1.2.0').replace(/^QH-/,'');
+ const label=document.getElementById('qhFullVersion');if(label)label.textContent='P.b '+v;
+ document.getElementById('qhFullPcScreen')?.classList.remove('suspended');
+ try{window.QHFullPc?.render?.()}catch(e){console.error('QH full bootstrap',e)}
+}
+window.QHSingleMode={boot};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+else setTimeout(boot,0);
 })();
 </script>
 
 <script id="qhFullPcNeonScript">
 (function(){
   'use strict';
-  let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',activeFeature=null;
+  let fkCell=null,fkBuffer='',fit=false,activeTab='inj_ve',rootTab='inj_ve',activeFeature=null;
   // X1 = old one-hand OFF, X2 = old one-hand ON; X3/X4 compress columns.
   // Migrate device-local legacy ON/OFF preference without changing ECU data.
   let fuelDensity=2;
@@ -12105,15 +11964,33 @@ window.QHPadDrag={place};
 
   const tabMeta={
     inj_ve:{title:'BẢN ĐỒ PHUN XĂNG',unit:'ms'},
+    inj_degree:{title:'GÓC PHUN',unit:'°'},
     ign_degree:{title:'GÓC ĐÁNH LỬA',unit:'°'},
     ign_time:{title:'THỜI GIAN TÍCH ĐIỆN BOBIN (IGN TIME)',unit:'ms'},
     afr_map:{title:'TỶ LỆ HÒA KHÍ ECU',unit:'AFR'},
-    ect_inj:{title:'BÙ XĂNG THEO ECT',unit:'%'},
-    iat_inj:{title:'BÙ XĂNG THEO IAT',unit:'±ms'},
-    map_inj:{title:'BÙ XĂNG THEO MAP',unit:'%'},
+    ect_inj:{title:'BÙ PHUN THEO ECT',unit:'%'},
+    ect_ign:{title:'BÙ GÓC LỬA THEO ECT',unit:'°'},
+    map_inj:{title:'BÙ PHUN THEO MAP',unit:'%'},
+    iat_inj:{title:'BÙ PHUN THEO IAT',unit:'ms'},
+    ect_idle_motor:{title:'MOTOR GARANTI THEO ECT',unit:'step'},
+    ect_start:{title:'BÙ KHỞI ĐỘNG NGUỘI',unit:'ms'},
+    map_idle_motor:{title:'MOTOR GARANTI THEO MAP',unit:'step'},
+    external_adjust:{title:'HIỆU CHỈNH NGOÀI',unit:''},
+    ate_options:{title:'BẢNG OPTIONS ECU',unit:''},
+    v_ect:{title:'HIỆU CHUẨN ECT',unit:'V'},
+    v_iat:{title:'HIỆU CHUẨN IAT',unit:'V'},
+    v_map:{title:'HIỆU CHUẨN MAP',unit:'V'},
+    auto_clutch:{title:'LY HỢP TỰ ĐỘNG',unit:'ms'},
+    auto_shift:{title:'SANG SỐ TỰ ĐỘNG',unit:''},
+    chg_params:{title:'THÔNG SỐ BỘ SẠC',unit:''},
+    alternate_table:{title:'BẢNG THAY THẾ',unit:''},
     idle_limit:{title:'GARANTI VÀ GIỚI HẠN',unit:''},
-    options:{title:'TÙY CHỌN ECU',unit:''}
+    options:{title:'TÙY CHỌN ECU',unit:''},
+    sensor_voltage:{title:'ĐIỆN ÁP VÀ HIỆU CHUẨN CẢM BIẾN',unit:''},
+    set_info:{title:'CẤU HÌNH VÀ THÔNG TIN ECU',unit:''}
   };
+  const summaryTabs=new Set(['idle_limit','options','sensor_voltage','set_info']);
+  const isSummaryRoot=()=>activeTab===rootTab&&summaryTabs.has(rootTab);
 
   function profileFeature(id){
     try{return fb()?.getFeature(id)||null}catch(_e){return null}
@@ -12199,7 +12076,7 @@ window.QHPadDrag={place};
     const m=tabMeta[activeTab]||{title:String(activeTab||'MAP').toUpperCase(),unit:''};
     if(titleEl)titleEl.textContent=m.title;
     if(unitEl)unitEl.textContent='Đơn vị: '+(m.unit||'—');
-    document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.classList.toggle('active',b.dataset.qhFullTab===activeTab));
+    document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.classList.toggle('active',b.dataset.qhFullTab===rootTab));
   }
   function setBankControl(){
     const sel=document.getElementById('qhFullMapSelect');
@@ -12212,7 +12089,7 @@ window.QHPadDrag={place};
       else head.appendChild(sel);
     }
     const banked=activeTab==='inj_ve'||!!profileFeature(backendTab())?.banked;
-    sel.style.display=banked?'':'none';
+    sel.style.display=banked&&!isSummaryRoot()?'':'none';
     sel.value=String(state.activeMap||1);
   }
   let fuelDensityFrame=0;
@@ -12408,15 +12285,71 @@ window.QHPadDrag={place};
       try{fb()?.setOptionValue(inp.dataset.qhFullOpt,inp.value)}catch(_e){}
     }));
   }
+
+  function qhEsc(v){return String(v??'').replace(/[&<>"']/g,
+    c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function renderPreview(panel){
+    const id=panel.dataset.qhFeaturePreview,f=profileFeature(id);
+    if(!f){
+      panel.innerHTML='<div class="qhPreviewHead"><span>Bảng '+qhEsc(id)+' · ECU hiện tại chưa xác nhận hỗ trợ</span><button disabled>KHÔNG HỖ TRỢ</button></div>';
+      return;
+    }
+    const readOnly=['tps_axis','rpm_axis','spare'].includes(id);
+    const d=dataForFeature(f),rows=Math.min(Math.max(1,f.rows||1),3),cols=Math.min(Math.max(1,f.cols||1),16);
+    let h='<div class="qhPreviewHead"><span>'+qhEsc(f.title||f.source||id)
+      +' · '+qhEsc(f.rows)+' × '+qhEsc(f.cols)+' · XEM TRƯỚC CỤC BỘ</span>'
+      +(readOnly?'<button type="button" disabled title="Trục/ô dự phòng chỉ xem, không ghi từ giao diện tổng hợp">CHỈ XEM</button>'
+        :'<button type="button" data-qh-section-feature="'+qhEsc(id)+'">MỞ BẢNG / CHỈNH</button>')+'</div>';
+    h+='<div class="qhPreviewScroll"><table><thead><tr><th>'+qhEsc(f.rows>1?'Y / X':'RPM')+'</th>';
+    for(let c=0;c<cols;c++)h+='<th>'+qhEsc(f.x?.[c]??('C'+(c+1)))+'</th>';
+    h+='</tr></thead><tbody>';
+    for(let r=0;r<rows;r++){
+      h+='<tr><th>'+qhEsc(f.y?.[r]??('R'+(r+1)))+'</th>';
+      for(let c=0;c<cols;c++){const raw=d?.[r]?.[c],n=raw==null?NaN:Number(raw);
+        h+='<td>'+qhEsc(Number.isFinite(n)?String(Number(n.toFixed(3))):'--')+'</td>';
+      }
+      h+='</tr>';
+    }
+    h+='</tbody></table></div>';
+    if(f.rows>rows||f.cols>cols)h+='<div class="qhRedleoHint" style="padding:3px 6px">Xem trước '+rows+' hàng × '+cols+' cột; mở bảng để xem/chỉnh đầy đủ, không tự ghi ECU.</div>';
+    panel.innerHTML=h;
+  }
+  function updateSensorSummary(){
+    document.querySelectorAll('#qhPcSummarySensor [data-qh-sensor-live]').forEach(target=>{
+      const src=screen.querySelector('.qhPcTelemetry [data-mirror="'+target.dataset.qhSensorLive+'"]');
+      if(src)target.textContent=src.textContent||'--';
+    });
+  }
+  function renderSummary(){
+    const view=document.getElementById('qhPcSummaryPanel');if(!view)return;
+    view.querySelectorAll('[data-qh-summary]').forEach(p=>{p.hidden=p.dataset.qhSummary!==rootTab;});
+    const current=view.querySelector('[data-qh-summary="'+rootTab+'"]');
+    current?.querySelectorAll('[data-qh-feature-preview]').forEach(renderPreview);
+    // Modern V10/V11 encode Options in their native ATE matrix, not in
+    // generic V9 local option inputs. Keep summary fields read-only there.
+    const nativeOptions=!!fb()?.usesOptionsTable?.();
+    if(rootTab==='options'||rootTab==='idle_limit'){
+      current?.querySelectorAll('[data-ecuopt]').forEach(input=>{
+        input.disabled=nativeOptions;
+        input.title=nativeOptions?'V10/V11: mở bảng ECU gốc bên dưới để chỉnh, không ghi các ô tổng hợp.':'Cấu hình V9: thay đổi cục bộ, cần GHI CÀI ĐẶT ECU';
+      });
+      current?.querySelectorAll('[data-qh-summary-io="write"]').forEach(btn=>{
+        btn.disabled=nativeOptions;
+        btn.title=nativeOptions?'Mở bảng OPTIONS/IDLE ECU gốc để ghi dữ liệu đúng định dạng':'';
+      });
+    }
+    if(rootTab==='sensor_voltage')updateSensorSummary();
+  }
   function render(){
     if(!table||typeof state==='undefined')return;
     const fuel=activeTab==='inj_ve',oneHand=fuel&&fuelDensity>=2;
+    const summary=isSummaryRoot();
     screen.classList.toggle('qhFuelTab',fuel);
     screen.classList.toggle('qhIgnTab',activeTab==='ign_degree');
     screen.classList.toggle('qhOneHandFuel',oneHand);
-    screen.classList.toggle('qhOptionsTab',activeTab==='options');
-    const sparseFeature=activeTab!=='inj_ve'&&activeTab!=='options'?
-      profileFeature(backendTab()):null;
+    screen.classList.toggle('qhOptionsTab',activeTab==='options'&&!summary);
+    screen.classList.toggle('qhSummaryMode',summary);
+    const sparseFeature=!fuel&&!summary?profileFeature(backendTab()):null;
     const fewRow=!!sparseFeature&&sparseFeature.rows>=1&&sparseFeature.rows<=3;
     screen.classList.toggle('qhFewRowMap',fewRow);
     if(!fewRow)screen.classList.remove('qhFewRowVerticalText');
@@ -12425,17 +12358,24 @@ window.QHPadDrag={place};
       b.setAttribute('aria-pressed',String(Number(b.dataset.qhFuelDensity)===fuelDensity));
     });
     setHeader();setBankControl();syncConn();
+    const sectionBack=document.getElementById('qhPcSectionBack');
+    if(sectionBack)sectionBack.hidden=activeTab===rootTab;
     const tpsPanel=document.getElementById('qhFullTpsManual');
-    if(tpsPanel){tpsPanel.hidden=activeTab!=='options';tpsPanel.style.display=activeTab==='options'?'block':'none';}
-    if(activeTab==='options')window.QHManualTps?.paint?.();
+    if(tpsPanel){tpsPanel.hidden=rootTab!=='set_info'||!summary;}
+    if(summary){
+      activeFeature=null;
+      wrap.style.display='none';optionsPanel.style.display='none';
+      const pane=document.getElementById('qhPcSummaryPanel');if(pane)pane.hidden=false;
+      renderSummary();if(rootTab==='set_info')window.QHManualTps?.paint?.();
+      return;
+    }
+    const pane=document.getElementById('qhPcSummaryPanel');if(pane)pane.hidden=true;
     if(activeTab==='options'&&!fb()?.usesOptionsTable?.()){
       wrap.style.display='none';optionsPanel.style.display='block';renderOptionsInline();return;
     }
     wrap.style.display='block';optionsPanel.style.display='none';
-    if(activeTab==='inj_ve'){
-      renderFuel();
-      scheduleFuelDensityLayout();
-    }else renderFeatureInline(backendTab());
+    if(fuel){renderFuel();scheduleFuelDensityLayout();}
+    else renderFeatureInline(backendTab());
   }
   function syncConn(){
     const on=!!state?.ecuConnected,box=document.getElementById('qhPcConn'),txt=document.getElementById('qhPcConnText');
@@ -12627,6 +12567,7 @@ window.QHPadDrag={place};
     }
   }
   async function readCurrent(){
+    if(isSummaryRoot())return false;
     const id=activeTab;
     const result=await fullIoFeedback('read',id,async(api,bank)=>{
       let result;
@@ -12646,6 +12587,7 @@ window.QHPadDrag={place};
       throw new Error('ECU hiện tại không hỗ trợ ghi bảng này.');
   }
   async function writeCurrent(){
+    if(isSummaryRoot())return false;
     const id=activeTab;
     return fullIoFeedback('write',id,async(api,bank)=>{
       let result;
@@ -12664,7 +12606,7 @@ window.QHPadDrag={place};
   document.getElementById('qhFtpsLearnMax')?.addEventListener('click',()=>window.QHManualTps?.learn('max'));
   document.getElementById('qhFtpsSync')?.addEventListener('click',()=>void window.QHManualTps?.sync());
   setInterval(()=>{
-    if(document.body.dataset.uiMode==='full'&&activeTab==='options'&&!screen.classList.contains('suspended'))
+    if(document.body.dataset.uiMode==='full'&&rootTab==='set_info'&&isSummaryRoot()&&!screen.classList.contains('suspended'))
       window.QHManualTps?.paint?.();
   },200);
   // The real READ/WRITE workflow remains bound to the original hidden buttons.
@@ -12725,7 +12667,9 @@ window.QHPadDrag={place};
     if(fullSelection.active)window.QHMapUx.positionPad('qhFullPcScreen','qhFullMapTable','qhFullSelectionPad',fullSelection);
   },{passive:true});
   document.getElementById('qhPcConnect')?.addEventListener('click',()=>{if(state.ecuConnected)document.getElementById('disconnectEcuBtn')?.click();else document.getElementById('connectEcuBtn')?.click()});
-  document.getElementById('qhPcSettings')?.addEventListener('click',()=>{activeTab='options';fkCell=null;render()});
+  document.getElementById('qhPcSettings')?.addEventListener('click',()=>openTab('set_info'));
+  document.getElementById('qhPcReadAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="READ_ALL"]')?.click());
+  document.getElementById('qhPcWriteAll')?.addEventListener('click',()=>document.querySelector('[data-ecucmd="SEND_ALL"]')?.click());
   document.getElementById('qhPcReadCurrent')?.addEventListener('click',readCurrent);
   document.getElementById('qhPcWriteCurrent')?.addEventListener('click',writeCurrent);
   document.getElementById('qhFullMapSelect')?.addEventListener('change',e=>{
@@ -12736,26 +12680,53 @@ window.QHPadDrag={place};
   });
   let fullTabReadToken=0;
   async function readFeatureOnTabOpen(id,token){
-    if(id==='inj_ve'||!state.ecuConnected||state.ecuPhase!=='live'||fullIoBusy)return;
+    if(id==='inj_ve'||summaryTabs.has(id)||!profileFeature(id)||!state.ecuConnected||
+       state.ecuPhase!=='live'||fullIoBusy)return;
     await fullIoFeedback('read',id,async(api,bank)=>{
-      const result=id==='options'
-        ?await fb()?.readOptions()
-        :await api.readFeaturePageReal(id,bank,true);
+      const result=await api.readFeaturePageReal(id,bank,true);
       if(token===fullTabReadToken&&activeTab===id)render();
       return result;
     },{auto:true});
   }
-  document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>{
-    activeTab=b.dataset.qhFullTab;activeFeature=null;
+  function openTab(id,parent){
+    if(fullIoBusy)return;
+    rootTab=parent||id;activeTab=id;activeFeature=null;
     clearFullSelection();fullLastCursor='';
+    const token=++fullTabReadToken;
     render();
-    const id=activeTab,token=++fullTabReadToken;
-    // Match Blink REDLEO editor's lazy read policy without repeatedly
-    // re-reading fuel or sending a write simply by changing tabs.
-    setTimeout(()=>{
-      if(token===fullTabReadToken&&activeTab===id)void readFeatureOnTabOpen(id,token);
-    },160);
+    if(isSummaryRoot())return;
+    setTimeout(()=>{if(token===fullTabReadToken&&activeTab===id)void readFeatureOnTabOpen(id,token);},160);
+  }
+  document.querySelectorAll('[data-qh-full-tab]').forEach(b=>b.addEventListener('click',()=>openTab(b.dataset.qhFullTab)));
+  document.getElementById('qhPcSectionBack')?.addEventListener('click',()=>openTab(rootTab));
+  document.getElementById('qhPcSummaryPanel')?.addEventListener('click',e=>{
+    const btn=e.target.closest?.('[data-qh-section-feature]');
+    if(!btn)return;
+    const id=btn.dataset.qhSectionFeature;
+    if(!profileFeature(id)){window.setEcuTaskStatus?.('offline','ECU này chưa hỗ trợ bảng '+id,3000);return;}
+    openTab(id,rootTab);
+  });
+  document.querySelectorAll('[data-qh-summary-io]').forEach(btn=>btn.addEventListener('click',async()=>{
+    if(fullIoBusy||!state.ecuConnected){window.setEcuTaskStatus?.('offline','Chưa kết nối hoặc ECU đang bận.',3000);return;}
+    const writing=btn.dataset.qhSummaryIo==='write';
+    if(writing&&fb()?.usesOptionsTable?.()){
+      window.setEcuTaskStatus?.('error','V10/V11: cần mở BẢNG OPTIONS/IDLE ECU gốc để chỉnh và ghi theo cấu trúc thật.',6000);return;
+    }
+    if(writing&&(typeof window.confirm!=='function'||
+       !window.confirm('Ghi các tùy chọn ECU hiện có xuống ECU? Chỉ tiếp tục khi đã đọc đúng cấu hình và tắt động cơ.')))return;
+    const ok=await fullIoFeedback(writing?'write':'read','options',async()=>{
+      if(writing)return fb()?.writeOptions();
+      return fb()?.readOptions();
+    });
+    if(ok)renderSummary();
   }));
+  document.getElementById('qhPcAutoTune')?.addEventListener('click',()=>{
+    window.QHFullPc?.hide?.();document.getElementById('homeAutoTuneBtn')?.click();
+  });
+  document.getElementById('qhPcAdvancedSettings')?.addEventListener('click',()=>{
+    window.QHFullPc?.hide?.();document.querySelector('[data-nav="settings"]')?.click();
+  });
+  setInterval(()=>{if(isSummaryRoot()&&rootTab==='sensor_voltage')updateSensorSummary();},350);
   document.getElementById('qhFullReturnBtn')?.addEventListener('click',()=>{screen.classList.remove('suspended');render()});
   document.addEventListener('keydown',e=>{if(e.key==='F11'&&document.body.dataset.uiMode==='full'){e.preventDefault();fit=!fit;screen.classList.toggle('fit',fit)}});
   // Low-frequency connection/AFR fallback; cursor follows every actual ECU sample.
@@ -12764,14 +12735,55 @@ window.QHPadDrag={place};
     syncConn();updateFullCursor();
     if(activeTab==='inj_ve'&&window.QHMapUx.showAfr)updateFullAfrBadges();
   },900);
-  window.QHFullPc={render,updateLiveCursor:updateFullCursor,
+  window.QHFullPc={render,openTab,updateLiveCursor:updateFullCursor,
     show:()=>{screen.classList.remove('suspended');render();window.QHBackfire?.invalidate?.()},
     hide:()=>{window.QHOrientation?.exit('full');screen.classList.add('suspended')},
     get isBusy(){return fullIoBusy},
-    get activeTab(){return activeTab}};
+    get activeTab(){return activeTab},get rootTab(){return rootTab}};
 })();
 </script>
 
+
+<script id="qhRedleoSingleRehomeV120">
+/* Move EXISTING ECU controls, not copies: data-ecuopt, data-ecutoggle,
+   data-ecucmd and backup handlers keep their original event listeners. */
+(function(){
+'use strict';
+const byId=id=>document.getElementById(id);
+const legacy=byId('legacyEcuOptionsPanel');
+const fields=[...(legacy?.querySelectorAll('.optionField')||[])];
+const idle=new Set(['idleCold','idleHot','maxSpeed','returnCold','returnHot','accelPct','idleSensitivity']);
+const options=new Set(['tpsMinEcu','tpsMaxEcu','idleMinCold','idleMinHot',
+ 'idleIgnReg','idleInjReg','coldStartInj','coldStartDelay','fanTemp']);
+for(const field of fields){
+ const key=field.querySelector('[data-ecuopt]')?.dataset.ecuopt;
+ if(!key)continue;
+ const holder=idle.has(key)?byId('qhPcIdleFields'):
+    options.has(key)?byId('qhPcOptionsFields'):byId('qhPcMiscFields');
+ holder?.appendChild(field);
+}
+const original=byId('ecuScreen');
+const afr=original?.querySelector('#afrControlToggle')?.closest('.optPanel');
+const toggles=original?.querySelector('[data-ecutoggle="idleMotor"]')?.closest('.optPanel');
+const info=original?.querySelector('.infoGrid');
+if(afr)byId('qhPcLegacyAfr')?.appendChild(afr);
+if(toggles)byId('qhPcLegacySwitches')?.appendChild(toggles);
+if(info)byId('qhPcLegacyInfo')?.appendChild(info);
+const infoBtn=original?.querySelector('[data-ecucmd="ECU_INFO"]');
+if(infoBtn)byId('qhPcLegacyInfo')?.appendChild(infoBtn);
+const tools=byId('qhPcLegacyTools');
+original?.querySelectorAll('[data-copybank]').forEach(node=>tools?.appendChild(node));
+for(const key of ['READ_ALL','SEND_ALL','RESTORE','TEST_INJ','LOGIN','LOGOUT','CHANGE_PASSWORD']){
+ const node=original?.querySelector('[data-ecucmd="'+key+'"]');
+ if(node)tools?.appendChild(node);
+}
+for(const id of ['exportBackupBtn','importBackupBtn','backupFile']){
+ const node=byId(id);if(node)tools?.appendChild(node);
+}
+const tps=byId('qhFullTpsManual');if(tps)byId('qhPcLegacyTps')?.appendChild(tps);
+window.QHSingleLayout={rehomeComplete:true};
+})();
+</script>
 
 <script id="qhBackfireControllerV118">
 (function(){
@@ -13185,12 +13197,11 @@ fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc ch�
 /* Software rotate: same browser layout logic on iOS / Android / Web. No OS orientation/fullscreen call. */
 (function(){
  'use strict';
- const modes={full:{screen:'qhFullPcScreen',button:'qhPcZoom',exit:'qhPcZoomExit',keypad:'qhFullKeypad'},
- simple:{screen:'qhSimpleFuelScreen',button:'qhSfZoom',exit:'qhSfZoomExit',keypad:'qhSimpleKeypad'}};
+ const modes={full:{screen:'qhFullPcScreen',button:'qhPcZoom',exit:'qhPcZoomExit',keypad:'qhFullKeypad'}};
  const places={};let active=null;
  const el=id=>document.getElementById(id);
  function redraw(mode){
-   try{if(mode==='full')window.QHFullPc?.render?.();else window.QHDualMode?.renderSimpleFuel?.()}catch(_e){}
+   try{if(mode==='full')window.QHFullPc?.render?.()}catch(_e){}
  }
  function moveKeypad(mode,toScreen){
    const cfg=modes[mode],keypad=el(cfg.keypad),screen=el(cfg.screen);if(!keypad||!screen)return;
@@ -13250,14 +13261,12 @@ fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc ch�
  }
  function toggle(mode){return active===mode?exit(mode):enter(mode)}
  el('qhPcZoom')?.addEventListener('click',()=>toggle('full'));
- el('qhSfZoom')?.addEventListener('click',()=>toggle('simple'));
  el('qhPcZoomExit')?.addEventListener('click',()=>exit('full'));
- el('qhSfZoomExit')?.addEventListener('click',()=>exit('simple'));
  window.addEventListener('resize',refresh,{passive:true});
  window.visualViewport?.addEventListener('resize',refresh,{passive:true});
  document.addEventListener('keydown',e=>{if(active&&e.key==='Escape'){e.preventDefault();exit()}});
  window.addEventListener('pagehide',()=>exit());
- button('full',false);button('simple',false);
+ button('full',false);
  window.QHOrientation={enter,exit,toggle,refresh,get active(){return active}};
 })();
 </script>
@@ -13268,10 +13277,8 @@ fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc ch�
  * Entirely a visual sizing aid: no map cell values or ECU protocol are modified. */
 (function(){
  'use strict';
- const specs=[
-   {mode:'full',screen:'qhFullPcScreen',wrap:'qhFullMapWrap',table:'qhFullMapTable',variable:'--qh-full-row-height',min:12,max:32},
-   {mode:'simple',screen:'qhSimpleFuelScreen',wrap:'qhSimpleFuelWrap',table:'qhSimpleFuelTable',variable:'--qh-simple-row-height',min:19,max:28}
- ];
+ const specs=[{mode:'full',screen:'qhFullPcScreen',wrap:'qhFullMapWrap',
+  table:'qhFullMapTable',variable:'--qh-full-row-height',min:12,max:32}];
  let pending=false;
  function fit(spec){
    const screen=document.getElementById(spec.screen);
@@ -13339,9 +13346,8 @@ fmtStatus('unknown','Kết nối ECU, tắt máy rồi bấm SOI ECU hoặc ch�
     pending=false;frames++;
     lastUiDelayMs=queuedAt?Math.max(0,performance.now()-queuedAt):0;
     if(document.hidden)return;
-    const mode=document.body.dataset.uiMode;
-    if(mode==='full')window.QHFullPc?.updateLiveCursor?.();
-    else if(mode==='simple')window.QHDualMode?.updateLiveCursor?.();
+    // Consolidated FULL workspace is the only active map cursor surface.
+    if(document.body.dataset.uiMode==='full')window.QHFullPc?.updateLiveCursor?.();
     // The large mirror synchronizer stays on its old slow schedule; only
     // RPM/TPS numbers follow the faster display-only cursor path.
     const rpm=document.getElementById('rpmLive')?.textContent;
