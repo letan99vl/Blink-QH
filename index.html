@@ -8,8 +8,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.23';
-  document.title = 'QH ECU · v1.1.23';
+  window.BLINK_PB_VERSION = 'QH-1.1.24';
+  document.title = 'QH ECU · v1.1.24';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5829,12 +5829,56 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  #qhFullPcScreen .qhPcMapHead .qhPcStepChoices button{height:23px!important;min-height:23px!important}
 }
 </style>
+<style id="qhDensityRpmScrollV124">
+/* QH v1.1.24: pixel-aligned X3/X4 columns; legible text and RPM scrolling. */
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapWrap,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapWrap{
+ overflow-x:auto!important;overflow-y:auto!important;
+ -webkit-overflow-scrolling:touch!important;
+}
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable{
+ width:max-content!important;min-width:max-content!important;
+ max-width:none!important;table-layout:fixed!important;
+}
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable th:not(.rh),
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable th:not(.rh){
+ writing-mode:horizontal-tb!important;text-orientation:mixed!important;
+ transform:none!important;white-space:nowrap!important;
+ height:27px!important;min-height:27px!important;max-height:none!important;
+ font-variant-numeric:tabular-nums!important;
+}
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="3"] #qhFullMapTable td.v,
+#qhFullPcScreen.qhFuelTab.qhOneHandFuel[data-qh-fuel-density="4"] #qhFullMapTable td.v{
+ text-align:center!important;vertical-align:middle!important;
+ font-variant-numeric:tabular-nums!important;
+ letter-spacing:-.1px!important;
+}
+/* One-to-three-row ECU maps (IGN TIME, etc.) use horizontal axis labels. */
+#qhFullPcScreen.qhFewRowMap #qhFullMapWrap{
+ overflow-x:auto!important;overflow-y:auto!important;
+ -webkit-overflow-scrolling:touch!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable,
+#qhFullPcScreen.qhFewRowMap.qhMapMagnified #qhFullMapTable{
+ width:max-content!important;min-width:max-content!important;
+ max-width:none!important;table-layout:fixed!important;
+}
+#qhFullPcScreen.qhFewRowMap #qhFullMapTable th:not(.rh){
+ writing-mode:horizontal-tb!important;text-orientation:mixed!important;
+ white-space:nowrap!important;
+}
+#qhFullPcScreen.qhFewRowMap.qhFewRowVerticalText #qhFullMapTable .qhFewRowText{
+ transform:scaleX(var(--qh-fewrow-text-scale,1))!important;
+ writing-mode:horizontal-tb!important;
+}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.23</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.24</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -6027,7 +6071,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.23</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.24</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -12141,25 +12185,23 @@ window.QHPadDrag={place};
       const mobile=window.matchMedia('(max-width:720px)').matches;
       const rowHead=zoom?36:(mobile?33:35);
       const appWidth=parseFloat(screen.style.getPropertyValue('--qh-app-width'))||wrap.clientWidth;
-      const x2Width=zoom?Math.max(25,Math.min(34,(appWidth-40)/29)):(mobile?35:37);
+      const x2Width=zoom?Math.max(29,Math.min(35,Math.floor((appWidth-40)/29))):(mobile?35:37);
       const styles=getComputedStyle(wrap);
       const pad=(parseFloat(styles.paddingLeft)||0)+(parseFloat(styles.paddingRight)||0);
       const available=Math.max(10,wrap.clientWidth-pad-rowHead-2);
       const x2Visible=Math.max(1,Math.min(29,Math.floor(available/x2Width)));
-      const x3Goal=Math.min(29,x2Visible+3);
       const goal=Math.min(29,x2Visible+3*(fuelDensity-2));
-      const width=Math.min(x2Width,available/goal);
-      const baseFont=mobile?9:10;
-      // X3 retains X2's font. X4 shrinks digits only if it really adds
-      // more visible RPM columns and a five-digit heading needs space.
-      // Once all 29 display columns fit, do not shrink digits unnecessarily.
-      const font=(fuelDensity===4&&goal>x3Goal)
-        ?Math.min(baseFont,Math.max(5.5,(width-2.5)/2.85)):baseFont;
-      screen.style.setProperty('--qh-fuel-density-cell-width',width.toFixed(2)+'px');
+      // Pixel-aligned cells, a readable minimum font, and horizontal scroll.
+      // X4 still has narrower columns than X3; never compress below 29px.
+      const minWidth=fuelDensity===3?32:29;
+      const width=Math.max(minWidth,Math.min(x2Width,Math.floor(available/goal)));
+      const font=mobile?9:(fuelDensity===3?10:9);
+      const visible=Math.min(29,Math.max(1,Math.floor(available/width)));
+      screen.style.setProperty('--qh-fuel-density-cell-width',width+'px');
       screen.style.setProperty('--qh-fuel-density-rowhead',rowHead+'px');
-      screen.style.setProperty('--qh-fuel-density-font',font.toFixed(2)+'px');
-      screen.style.setProperty('--qh-fuel-density-afr-font',Math.min(8,Math.max(5,font*0.75)).toFixed(2)+'px');
-      screen.dataset.qhFuelVisibleRpm=String(goal);
+      screen.style.setProperty('--qh-fuel-density-font',font+'px');
+      screen.style.setProperty('--qh-fuel-density-afr-font',Math.min(8,Math.max(7,font*.85))+'px');
+      screen.dataset.qhFuelVisibleRpm=String(visible);
     });
   }
   if(typeof ResizeObserver!=='undefined')new ResizeObserver(scheduleFuelDensityLayout).observe(wrap);
@@ -12217,12 +12259,13 @@ window.QHPadDrag={place};
                        n>=14?Math.max(40,Math.min(74,usable*.12)):
                        n>=7?Math.max(48,Math.min(86,usable*.17)):
                              Math.max(56,Math.min(105,usable*.23));
-      const cellWidth=Math.max(1,(usable-labelWidth)/n);
-      const verticalText=n>=20&&cellWidth<16.5;
-      screen.classList.toggle('qhFewRowVerticalText',verticalText);
-      const font=n>=22?Math.min(10,Math.max(7,cellWidth-1.4)):Math.max(9,Math.min(13,cellWidth*.42));
+      // Keep RPM headings horizontal and allow scroll instead of 1px columns.
+      const cellWidth=Math.max(n>=20?48:32,Math.floor((usable-labelWidth)/n));
+      const verticalText=false;
+      screen.classList.toggle('qhFewRowVerticalText',false);
+      const font=n>=22?10:Math.max(9,Math.min(13,cellWidth*.42));
       const rowHeight=f.rows===1?76:(f.rows===2?62:54);
-      const shortRpm=f.id==='ign_time'&&n>=24&&usable<650&&!verticalText;
+      const shortRpm=false;
       const head=table.tHead.rows[0];
       const first=head?.cells?.[0];
       if(first&&f.id==='ign_time'){
