@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.18';
+  window.BLINK_PB_VERSION = 'QH-1.2.19';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -6296,7 +6296,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.18</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.19</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU qua Bluetooth" aria-label="Kết nối hoặc ngắt ECU qua Bluetooth"><svg class="qhBluetoothIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg></button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6366,6 +6366,9 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
       <h3>GARANTI VÀ GIỚI HẠN <small>IDLE AND LIMIT</small></h3>
       <p class="qhRedleoHint">Nhóm thông số gốc theo Redleo. Giá trị trên ứng dụng không được xem là đã đọc từ ECU cho tới khi xác nhận đọc thành công.</p>
       <div class="qhRedleoOptionGrid" id="qhPcIdleFields"></div>
+      <p class="qhRedleoHint" id="qhPcIdleLimitProof" role="status" aria-live="polite">
+        GIỚI HẠN TUA: chưa có kết quả đọc trực tiếp từ ECU của MAP này. Các ô phía trên có thể là dữ liệu lưu trong ứng dụng.
+      </p>
       <div class="qhRedleoSummaryActions"><button id="qhPcLegacyIdleOpen" type="button">MỞ CHỈNH GARANTI / GIỚI HẠN GỐC · ĐỌC / GHI ECU</button></div>
       <p class="qhRedleoHint">Cài đặt Idle phải ghi qua PAGE6 riêng từng đời ECU. Các ô tổng hợp không tự ghi vào ECU.</p>
       <div class="qhRedleoSummaryActions"><button id="qhPcLegacyIdleRead" type="button">ĐỌC IDLE TỪ ECU (PAGE6)</button><button id="qhPcLegacyIdleWrite" type="button">MỞ TRÌNH GHI IDLE GỐC</button></div>
@@ -12640,6 +12643,7 @@ else setTimeout(boot,0);
       if(src)target.textContent=src.textContent||'--';
     });
   }
+  let idleLimitProof=null;
   function renderSummary(){
     const view=document.getElementById('qhPcSummaryPanel');if(!view)return;
     view.querySelectorAll('[data-qh-summary]').forEach(p=>{p.hidden=p.dataset.qhSummary!==rootTab;});
@@ -12657,6 +12661,37 @@ else setTimeout(boot,0);
         btn.disabled=nativeOptions;
         btn.title=nativeOptions?'Mở bảng OPTIONS/IDLE ECU gốc để ghi dữ liệu đúng định dạng':'';
       });
+    }
+    if(rootTab==='idle_limit'){
+      const proof=document.getElementById('qhPcIdleLimitProof');
+      const maxField=current?.querySelector('[data-ecuopt="maxSpeed"]');
+      const api=window.BlinkRealProtocol;
+      const snap=idleLimitProof&&idleLimitProof.bank===Number(state.activeMap)&&
+        idleLimitProof.ecuSession===api?.handshake&&
+        idleLimitProof.ecuProfile===state.ecuProfile&&
+        state.ecuConnected&&state.ecuPhase==='live'?idleLimitProof:null;
+      const local=String(fb()?.getOptionValue('maxSpeed')??'').trim();
+      if(state.ecuProfile==='MODERN_V11'){
+        if(maxField){
+          maxField.title='V11/Ultra Pro2: số này được lưu trên ứng dụng, chưa được chứng minh là RPM LIMIT đọc từ ECU.';
+          maxField.setAttribute('data-qh-local-unverified','true');
+        }
+        if(proof){
+          const groupText=snap?.groups?.length?snap.groups.map(g=>
+            'G'+g.group+': raw '+g.raw+' → '+g.displayRpm+' RPM').join(' | '):'';
+          proof.textContent='MAXIMUM SPEED V11: '+
+            (local?(local+' RPM chỉ là bản lưu trong app. '):'Chưa có giá trị ECU được xác nhận. ')+
+            (snap?(groupText+' · '+(snap.reason||'Chưa xác minh địa chỉ giới hạn tua.')):
+             'Nhấn ĐỌC IDLE TỪ ECU để lấy PAGE6 thật.')+
+            ' Backfire không dùng số lưu cục bộ để ghi ECU.';
+        }
+      }else{
+        if(maxField)maxField.removeAttribute('data-qh-local-unverified');
+        if(proof)proof.textContent=snap?.verified?
+          'MAXIMUM SPEED đọc trực tiếp ECU · MAP '+snap.bank+' · '+snap.rpm+
+          ' RPM · '+snap.source+' · đối chiếu PAGE6 thành công.':
+          'Maximum Speed trên trang có thể là dữ liệu lưu trong app. Bấm ĐỌC IDLE TỪ ECU để xác nhận.';
+      }
     }
     if(rootTab==='sensor_voltage')updateSensorSummary();
   }
@@ -13135,11 +13170,20 @@ else setTimeout(boot,0);
   document.getElementById('qhPcLegacyIdleWrite')?.addEventListener('click',openOriginalIdle);
   document.getElementById('qhPcLegacyIdleRead')?.addEventListener('click',async()=>{
     if(fullIoBusy||!state.ecuConnected){window.setEcuTaskStatus?.('offline','Cần kết nối ECU trước khi đọc Idle.',3000);return;}
-    const ok=await fullIoFeedback('read','idle_limit',async(api,bank)=>api.readIdlePageReal(bank,true));
-    if(ok){const fields=document.querySelectorAll('#qhPcSummaryIdle [data-ecuopt]');fields.forEach(input=>{
-      const original=document.querySelector('[data-idleopt="'+input.dataset.ecuopt+'"]');
-      if(original)input.value=original.value;
-    });renderSummary();}
+    const ok=await fullIoFeedback('read','idle_limit',async(api,bank)=>{
+      const read=await api.readMaxSpeedFromIdle(bank,true);
+      idleLimitProof={...read,ecuSession:api.handshake,ecuProfile:state.ecuProfile};
+      return read;
+    });
+    if(ok){
+      // The summary displays legacy local optionStore values. Only an ECU-verified
+      // RPM may replace the Maximum Speed field; never copy V11 G1/G2/G3.
+      if(idleLimitProof?.verified){
+        const max=document.querySelector('#qhPcSummaryIdle [data-ecuopt="maxSpeed"]');
+        if(max)max.value=String(idleLimitProof.rpm);
+      }
+      renderSummary();
+    }
   });
   document.querySelectorAll('[data-qh-summary-io]').forEach(btn=>btn.addEventListener('click',async()=>{
     if(fullIoBusy||!state.ecuConnected){window.setEcuTaskStatus?.('offline','Chưa kết nối hoặc ECU đang bận.',3000);return;}
@@ -13560,12 +13604,15 @@ async function check({auto=false}={}){
          ' · PAGE6 nhóm RPM/64 '+d.v11IdleGroups.map(g=>'G'+g.group+' byte '+g.offset+'='+g.raw+
            ' (hiển thị '+g.displayRpm+' RPM)').join('; ')+
            '. Chưa xác định nhóm nào là RPM LIMIT thực tế.':'';
+       const limitInfo=d.limiterRead?.verified?
+         ' · MAXIMUM SPEED ECU '+d.limiterRead.rpm+' RPM (PAGE6 đã xác nhận).':
+         ' · MAXIMUM SPEED V11 CHƯA XÁC MINH. Giá trị trong ô tổng hợp Idle có thể chỉ là dữ liệu app; không được coi là giới hạn tua đọc từ ECU.';
        const dwellText=d.dwellCells?.length===2
          ?' · IGN TIME '+d.dwellCells.map(c=>c.rpm+'RPM '+c.currentMs.toFixed(2)+'ms (raw '+c.currentRaw+') → 1ms (raw '+c.targetRaw+')').join('; ')
          :' · IGN TIME PAGE4 '+d.dwellBytes+'B; chưa chứng minh đủ 5500/6000 RPM';
        const st={tone:'unsupported',diagnostic:d,msg:'KIỂM TRA CHỈ ĐỌC MAP '+d.bank+
          ' · ID '+(d.ident||'--')+' · FW '+(d.firmware||'--')+
-         ' · '+hint+' IGN '+d.ignBytes+'B'+rpmGroupInfo+dwellText+
+         ' · '+hint+' IGN '+d.ignBytes+'B'+rpmGroupInfo+limitInfo+dwellText+
          '. V11 LV1 −18° (raw 0) chỉ XEM TRƯỚC. KHÓA GHI tới khi xác minh RPM LIMIT và ECU thật.'};
        fmtStatus(st.tone,st.msg);return st;
      }
