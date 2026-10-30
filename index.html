@@ -8,8 +8,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.1.24';
-  document.title = 'QH ECU · v1.1.24';
+  window.BLINK_PB_VERSION = 'QH-1.1.25';
+  // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
+  // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
+  try {
+    const query=new URLSearchParams(window.location.search);
+    const ua=String(navigator.userAgent||'');
+    if(query.get('android')==='1' ||
+       (/Android/i.test(ua) && (/;\s*wv\)/i.test(ua)||/BLINK-REDLEO-ANDROID\//i.test(ua)))) {
+      document.documentElement.classList.add('qhAndroidWebView');
+    }
+  } catch (_e) {}
+  document.title = 'QH ECU · v1.1.25';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -5873,12 +5883,43 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
  writing-mode:horizontal-tb!important;
 }
 </style>
+<style id="qhAndroidWebViewTablePaint125">
+/* QH 1.1.25: avoid Android Chromium WebView shared collapsed-border repaints
+ * with sticky RPM headers / TPS first column. Do not alter Bluefy/iOS.
+ * Leave hardware acceleration enabled and leave all ECU cell values intact. */
+html.qhAndroidWebView #qhFullMapTable,
+html.qhAndroidWebView #qhSimpleFuelTable{
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+/* Each cell owns exactly one right/bottom border (no overlapping 2px grid). */
+html.qhAndroidWebView #qhFullMapTable :is(th,td),
+html.qhAndroidWebView #qhSimpleFuelTable :is(th,td){
+  border:0!important;
+  border-right:1px solid #347944!important;
+  border-bottom:1px solid #347944!important;
+  background-clip:padding-box!important;
+}
+html.qhAndroidWebView #qhFullMapTable tr > :first-child,
+html.qhAndroidWebView #qhSimpleFuelTable tr > :first-child{
+  border-left:1px solid #347944!important;
+}
+html.qhAndroidWebView #qhFullMapTable thead tr:first-child > *,
+html.qhAndroidWebView #qhSimpleFuelTable thead tr:first-child > *{
+  border-top:1px solid #347944!important;
+}
+/* Sticky corner must paint above both independently scrolling axes. */
+html.qhAndroidWebView #qhFullMapTable thead th.rh,
+html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
+  position:sticky!important;top:0!important;left:0!important;z-index:5!important;
+}
+</style>
 </head>
 <body>
 
 <div id="qhModeGate" role="dialog" aria-modal="true">
   <div class="qhModeBox">
-    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.24</span></div>
+    <div class="qhModeTitle"><span>QH ECU - CHỌN CHẾ ĐỘ GIAO DIỆN</span><span id="qhModeVersion">P.b 1.1.25</span></div>
     <div class="qhModeSub">Mỗi lần mở ứng dụng hãy chọn một chế độ. Dữ liệu ECU và giao thức được dùng chung.</div>
     <div class="qhModeChoices">
       <button id="qhChooseFull" class="qhModeChoice" type="button"><b>CHẾ ĐỘ ĐẦY ĐỦ</b><span>Giữ nguyên 14 hàng TPS × 30 cột RPM (420 ô). Có thể vuốt ngang hoặc phóng to bản đồ để xem ở dạng ngang.</span></button>
@@ -6071,7 +6112,7 @@ body[data-ui-mode="simple"] #qhSimpleFuelScreen.qhMapMagnified.qhSoftwareRotated
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.24</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.1.25</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
