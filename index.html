@@ -6132,11 +6132,12 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 (function(){
   var splash=document.getElementById('qhOpeningSplash');
   if(!splash)return;
-  function finish(){
-    splash.classList.add('qhSplashLeaving');
-    setTimeout(function(){splash.remove()},170);
+  function finish(){splash.classList.add('qhSplashLeaving')}
+  // Fade begins at 1.35s; cover is completely removed at 1.50s.
+  function begin(){
+    setTimeout(finish,1350);
+    setTimeout(function(){splash.remove()},1500);
   }
-  function begin(){setTimeout(finish,1500)}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',begin,{once:true});
   else begin();
 })();
