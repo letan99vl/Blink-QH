@@ -13301,18 +13301,21 @@ else setTimeout(boot,0);
     fb()?.openLegacyIdle?.();
   };
   document.getElementById('qhPcLegacyIdleOpen')?.addEventListener('click',openOriginalIdle);
-  for(const key of [...idleSummaryKeys,'vvtOpenRpm']){
-    const inp=summaryIdleInput(key);
-    inp?.addEventListener('input',()=>{
-      if(state.ecuProfile==='MODERN_V11')return;
-      const native=document.querySelector('[data-idleopt="'+key+'"]');
-      if(native)native.value=inp.value;
-      const snap=activeIdleProof();
-      if(snap)snap.dirty=true;
-      const status=document.getElementById('qhPcIdleLimitProof');
-      if(status)status.textContent='ĐÃ SỬA IDLE/LIMIT CỤC BỘ · CHƯA GHI ECU. Cần đọc đúng MAP và bấm GHI IDLE/LIMIT VÀO ECU.';
-    });
-  }
+  // The summary receives legacy inputs LATER from the rehome script.
+  // Delegate input handling to the permanent summary parent; binding individual
+  // inputs here would miss those moved after this controller initializes.
+  document.getElementById('qhPcSummaryIdle')?.addEventListener('input',e=>{
+    const inp=e.target?.closest?.('[data-ecuopt],[data-qh-idleopt]');
+    if(!inp||state.ecuProfile==='MODERN_V11')return;
+    const key=inp.dataset.ecuopt||inp.dataset.qhIdleopt;
+    if(!idleSummaryKeys.includes(key)&&key!=='vvtOpenRpm')return;
+    const native=document.querySelector('[data-idleopt="'+key+'"]');
+    if(native)native.value=inp.value;
+    const snap=activeIdleProof();
+    if(snap)snap.dirty=true;
+    const status=document.getElementById('qhPcIdleLimitProof');
+    if(status)status.textContent='ĐÃ SỬA IDLE/LIMIT CỤC BỘ · CHƯA GHI ECU. Bấm GHI IDLE/LIMIT VÀO ECU.';
+  });
   document.getElementById('qhPcLegacyIdleRead')?.addEventListener('click',async()=>{
     if(fullIoBusy||!state.ecuConnected){
       window.setEcuTaskStatus?.('offline','Cần kết nối ECU trước khi đọc Idle.',3000);return;
