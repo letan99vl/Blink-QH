@@ -5750,17 +5750,52 @@ async function qhBackfireWriteDwellPatch(bank,patches){
   }
 }
 
-async function qhBackfireReadLimiter(bank,showUi=false){
+/* Shared Maximum Speed source for Idle & Limit and Backfire.
+   Read directly through the EXISTING readIdlePageReal PAGE6 serializer.
+   V11 has a distinct 4x3-byte Idle matrix; none of its rows has been
+   established as the Windows PC's "Maximum Speed" field. The 10500 value
+   in the old QH summary is optionStore (local), not a verified ECU read.
+   Preserve this uncertainty explicitly: DO NOT convert G1 raw203 into a
+   fake 10500 RPM limiter or copy the classic PAGE6 offset. */
+function qhMaxSpeedFromIdlePage(bank,data){
+  if(!(data instanceof Uint8Array))throw Error('Thiếu dữ liệu PAGE6 từ ECU.');
   const spec=qhBackfireLimiterSpec();
-  if(!spec)throw new Error('Backfire RPM chưa được hỗ trợ trên đời ECU này. Không ghi giới hạn tua.');
+  if(spec){
+    if(data.length<spec.length)throw Error('PAGE6 thiếu '+spec.length+' byte cho '+spec.kind+'.');
+    const rpm=(data[spec.offset]<<8)|data[spec.offset+1];
+    if(!Number.isInteger(rpm)||rpm<500||rpm>30000)
+      throw Error('RPM giới hạn đọc từ PAGE6 không hợp lệ: '+rpm);
+    return {bank,verified:true,rpm,profile:spec.kind,
+      source:'PAGE6 / Idle & Limit',offset:spec.offset,
+      writableLength:spec.length,raw:Array.from(data)};
+  }
+  if(isV11Profile()){
+    if(data.length<43)throw Error('V11 PAGE6 chưa đủ 43 byte.');
+    const groups=Array.from({length:3},(_,g)=>{
+      const offset=g*4+3,raw=data[offset]&255;
+      return {group:g+1,offset,raw,displayRpm:decV11IdleCell(3,raw)};
+    });
+    return {bank,verified:false,rpm:null,profile:'V11 / Ultra Pro2',
+      source:'PAGE6 / Idle 12B + AutoShift 9B + ECT Motor 22B',
+      groups,raw:Array.from(data),
+      reason:'Chưa xác định trường Maximum Speed của phần mềm gốc trong PAGE6 V11; G1/G2/G3 không được phép suy đoán là giới hạn tua.'};
+  }
+  return {bank,verified:false,rpm:null,profile:sessionProfileLabel(ecuProfile,handshakeInfo)||'UNKNOWN',
+    source:'PAGE6',raw:Array.from(data),reason:'Chưa có serializer Maximum Speed riêng cho ECU này.'};
+}
+async function qhReadMaxSpeedFromIdle(bank,showUi=false){
   bank=normalizeBankForProfile(bank);
+  // Reuse exactly the same live ECU read as the original Idle editor.
   const R=await readIdlePageReal(bank,showUi);
-  const data=R.data;
-  if(!(data instanceof Uint8Array)||data.length<spec.length)
-    throw new Error('ECU trả thiếu Idle/Limit bytes của '+spec.kind+'.');
-  const rpm=(data[spec.offset]<<8)|data[spec.offset+1];
-  if(rpm<500||rpm>30000)throw new Error('Giới hạn RPM đọc được không hợp lệ: '+rpm);
-  return {bank,rpm,profile:spec.kind,page:page(6,bank)};
+  const snapshot=qhMaxSpeedFromIdlePage(bank,R.data);
+  return {...snapshot,page:page(6,bank),readLength:R.data.length};
+}
+async function qhBackfireReadLimiter(bank,showUi=false){
+  const read=await qhReadMaxSpeedFromIdle(bank,showUi);
+  if(!read.verified||!Number.isInteger(read.rpm))
+    throw new Error('Backfire RPM chưa có trường Maximum Speed được xác minh trên '+
+      read.profile+'. Không dùng giá trị lưu cục bộ hay nhóm G1/G2/G3 để ghi ECU.');
+  return {bank:read.bank,rpm:read.rpm,profile:read.profile,page:read.page};
 }
 /* QH 1.2.13: READ-ONLY profile diagnostic for V11 (including a possible
    misidentified Ultra Pro1). A page6 byte count is a clue, NOT proof of
@@ -5773,7 +5808,8 @@ async function qhBackfireInspectReadOnly(bank){
   const session=handshakeInfo;
   const epoch=transportEpoch;
   if(!session)throw new Error('Thiếu handshake ECU 0x5A.');
-  const idle=await readDirectPageReal(page(6,bank),18,'BACKFIRE CHẨN ĐOÁN PAGE6 CHỈ ĐỌC',false);
+  const limit=await qhReadMaxSpeedFromIdle(bank,false);
+  const idle={data:new Uint8Array(limit.raw)};
   const ign=await readDirectPageReal(page(3,bank),420,'BACKFIRE CHẨN ĐOÁN IGN CHỈ ĐỌC',false);
   const dwell=await readDirectPageReal(page(4,bank),30,'BACKFIRE CHẨN ĐOÁN IGN TIME CHỈ ĐỌC',false);
   if(epoch!==transportEpoch||session!==handshakeInfo)
@@ -5784,10 +5820,7 @@ async function qhBackfireInspectReadOnly(bank){
   // Read-only snapshot: retain raw PAGE6 bytes for independent comparison
   // against the original PC program. NEVER guess the rev limiter from G1/G2/G3.
   const page6Raw=Array.from(idle.data.slice(0,43),x=>Number(x)&255);
-  const v11IdleGroups=idle.data.length>=43?Array.from({length:3},(_,g)=>{
-    const offset=g*4+3,raw=idle.data[offset]&255;
-    return {group:g+1,offset,raw,displayRpm:decV11IdleCell(3,raw)};
-  }):[];
+  const v11IdleGroups=Array.isArray(limit.groups)?limit.groups:[];
   const axes=window.getBlinkEcuAxes?.();
   const dwellIndices=[5500,6000].map(rpm=>axes?.rpm?.findIndex(v=>Number(v)===rpm));
   const dwellCells=dwellIndices.every(c=>Number.isInteger(c)&&c>=0&&c<30)&&
@@ -5799,7 +5832,9 @@ async function qhBackfireInspectReadOnly(bank){
     ident:String(session.ident||''),firmware:String(session.firmware||''),
     page6Bytes:idle.data.length,page6Raw,ignBytes:ign.data.length,
     dwellBytes:dwell.data.length,dwellCells,dwellAxesVerified:dwellCells.length===2,
-    v11IdleGroups,possibleUltraPro1Page6:idle.data.length===42,
+    v11IdleGroups,limiterRead:{verified:limit.verified,rpm:limit.rpm,source:limit.source,
+      reason:limit.reason||'',profile:limit.profile},
+    possibleUltraPro1Page6:idle.data.length===42,
     writable:false,verifiedWriteSupport:false};
 }
 
@@ -5828,6 +5863,6 @@ async function qhBackfireWriteLimiter(bank,targetRpm,expectedCurrentRpm){
   return {...after,before:before.rpm,after:after.rpm,unchanged:false};
 }
 
-window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireInspectReadOnly:qhBackfireInspectReadOnly,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,backfireWriteDwellPatch:qhBackfireWriteDwellPatch,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
+window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireInspectReadOnly:qhBackfireInspectReadOnly,readMaxSpeedFromIdle:qhReadMaxSpeedFromIdle,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,backfireWriteDwellPatch:qhBackfireWriteDwellPatch,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
