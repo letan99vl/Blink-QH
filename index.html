@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.1';
+  window.BLINK_PB_VERSION = 'QH-1.2.2';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.2.1';
+  document.title = 'QH ECU · v1.2.2';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6122,31 +6122,106 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
  display:block;margin-top:15px;letter-spacing:.35em;color:#bfffd0;
  font:bold clamp(9px,3vw,15px) Arial,sans-serif;
 }
+
+/* v1.2.2 -- responsive X2/X3/X4 keypad overlay in the genuine free space.
+   Absolute positioning prevents the keypad from pushing any MAP rows down. */
+#qhFullPcScreen.qhOneHandFuel #qhFullMapWrap{position:relative!important}
+#qhFullPcScreen.qhInlineKeypad #qhPcInlineKeypadDock{
+ position:absolute!important;inset:2px 0 auto 0!important;
+ height:var(--qh-inline-height,224px)!important;min-height:0!important;
+ max-height:var(--qh-inline-height,224px)!important;
+ width:100%!important;flex:none!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ padding:2px 4px!important;box-sizing:border-box!important;
+ overflow:visible!important;pointer-events:none!important;z-index:12!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhPcInlineKeypadDock #qhFullKeypad{
+ position:relative!important;display:block!important;
+ width:min(390px,97%)!important;max-width:390px!important;
+ height:auto!important;max-height:calc(var(--qh-inline-height,224px) - 4px)!important;
+ min-height:0!important;padding:5px!important;margin:0!important;
+ overflow:hidden!important;pointer-events:auto!important;
+ transform:none!important;left:auto!important;right:auto!important;
+ top:auto!important;bottom:auto!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkHead{
+ min-height:24px!important;margin:0 0 3px!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkGrid{
+ display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ gap:3px!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkGrid button{
+ height:clamp(24px,calc((var(--qh-inline-height,224px) - 50px)/4),43px)!important;
+ min-height:24px!important;max-height:43px!important;
+ padding:0 2px!important;font-size:clamp(12px,3.5vw,17px)!important;
+ line-height:1!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkHead span{
+ font-size:10px!important;white-space:nowrap!important;overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad button:disabled{
+ opacity:.62!important;
+}
+/* The user's original QH ECU Racing poster fills the boot surface; no text logo. */
+#qhOpeningSplash{
+ background:#000!important;overflow:hidden!important;
+}
+#qhOpeningSplash .qhSplashBackdrop{
+ position:absolute!important;inset:-12px!important;
+ background-image:url('./qh_splash_poster.webp?v=122')!important;
+ background-repeat:no-repeat!important;background-position:center!important;
+ background-size:cover!important;filter:blur(14px) brightness(.35)!important;
+ pointer-events:none!important;
+}
+#qhOpeningSplash .qhSplashPoster{
+ display:block!important;position:relative!important;
+ width:100%!important;height:100%!important;
+ max-width:100%!important;max-height:100%!important;
+ object-fit:contain!important;object-position:center center!important;
+ margin:0!important;padding:0!important;border:0!important;
+ background:transparent!important;pointer-events:none!important;
+}
 </style>
+<link rel="preload" href="./qh_splash_poster.webp?v=122" as="image">
 </head>
 <body data-ui-mode="full">
-<div id="qhOpeningSplash" aria-label="QH ECU khởi động">
-  <div class="qhSplashLogo"><strong><i>QH</i> ECU</strong><small>ĐIỀU CHỈNH ECU</small></div>
+<div id="qhOpeningSplash" aria-label="QH ECU Racing khởi động">
+  <div class="qhSplashBackdrop" aria-hidden="true"></div>
+  <img id="qhSplashPoster" class="qhSplashPoster" src="./qh_splash_poster.webp?v=122"
+       alt="Dynojet TUSS Racing - QH ECU Service Racing"
+       fetchpriority="high" loading="eager" decoding="sync">
 </div>
 <script id="qhOpeningSplashLogic">
 (function(){
   var splash=document.getElementById('qhOpeningSplash');
+  var poster=document.getElementById('qhSplashPoster');
   if(!splash)return;
-  function finish(){splash.classList.add('qhSplashLeaving')}
-  // Fade begins at 1.35s; cover is completely removed at 1.50s.
+  var started=false;
   function begin(){
-    setTimeout(finish,1350);
+    if(started)return;
+    started=true;
+    // The actual poster stays on screen for 1.5 seconds after it loads.
+    setTimeout(function(){splash.classList.add('qhSplashLeaving')},1350);
     setTimeout(function(){splash.remove()},1500);
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',begin,{once:true});
-  else begin();
+  if(poster){
+    if(poster.complete&&poster.naturalWidth>0)begin();
+    else{
+      poster.addEventListener('load',begin,{once:true});
+      poster.addEventListener('error',begin,{once:true});
+      // Never leave a black screen indefinitely if network access fails.
+      setTimeout(begin,4000);
+    }
+  }else begin();
 })();
 </script>
 
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.1</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.2</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU">⛓</button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6351,7 +6426,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.1</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.2</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -12067,11 +12142,17 @@ else setTimeout(boot,0);
     const fuelPage=activeTab==='inj_ve'&&fuelDensity>=2&&!isSummaryRoot();
     const normalPortrait=!screen.classList.contains('qhMapMagnified')&&
       !screen.classList.contains('suspended');
-    // When the table already fills the viewport keep the original floating
-    // number pad, so this feature never hides any MAP row.
-    const rowsHeight=table.getBoundingClientRect().height;
-    const freeSpace=wrap.clientHeight-rowsHeight;
-    const inline=fuelPage&&normalPortrait&&freeSpace>=245;
+    // Measure table without its auto-margin; the overlay never contributes
+    // to flex height, so RPM/TPS data stay anchored exactly as before.
+    const rowsHeight=Math.max(table.offsetHeight,Math.ceil(table.getBoundingClientRect().height));
+    const freeSpace=Math.max(0,wrap.clientHeight-rowsHeight);
+    // The old 245px gate hid the keypad even with useful blank space.
+    // Scale the keys down for 160-240px gaps; keep floating fallback below.
+    const inline=fuelPage&&normalPortrait&&freeSpace>=160;
+    if(inline){
+      const height=Math.max(154,Math.min(244,Math.floor(freeSpace-6)));
+      inlineDock.style.setProperty('--qh-inline-height',height+'px');
+    }
     screen.classList.toggle('qhInlineKeypad',inline);
     if(inline){
       if(fullKeypad.parentNode!==inlineDock){
