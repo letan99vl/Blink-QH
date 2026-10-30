@@ -5603,15 +5603,31 @@ function qhBackfireLimiterSpec(){
 }
 function qhBackfireCapabilities(){
   const spec=qhBackfireLimiterSpec();
-  const levels=[-19,-21,-23].map((target,i)=>{
-    if(!spec)return {level:i+1,target,actual:null,raw:null,available:false};
-    const raw=encMainIgn(target),actual=decMainIgn(raw);
-    const available=raw>0&&raw<255&&Number.isFinite(actual)&&Math.abs(actual-target)<=0.21;
-    return {level:i+1,target,actual,raw,available};
-  });
+  // V11 raw=0 is the negative-edge value: (0-64)*0.28125 = -18.0 deg.
+  // This is a MATHEMATICAL CODEC LIMIT, not verified as a safe physical
+  // Backfire setting on a real ECU. Keep writes CLOSED until a V11 limiter
+  // field and the raw=0 hardware behavior are independently validated.
+  const v11Preview=!spec&&isV11Profile();
+  const v11Target=-18;
+  const v11Raw=v11Preview?encMainIgn(v11Target):null;
+  const v11Actual=v11Preview?decMainIgn(v11Raw):null;
+  const previewOK=!!(v11Preview&&v11Raw===0&&v11Actual===-18);
+  const levels=(spec?[-19,-21,-23]:(v11Preview?[-18,-21,-23]:[-19,-21,-23]))
+    .map((target,i)=>{
+      if(v11Preview)return {level:i+1,target,actual:i===0?v11Actual:null,
+        raw:i===0?v11Raw:null,previewOnly:i===0&&previewOK,available:false};
+      if(!spec)return {level:i+1,target,actual:null,raw:null,available:false};
+      const raw=encMainIgn(target),actual=decMainIgn(raw);
+      const available=raw>0&&raw<255&&Number.isFinite(actual)&&Math.abs(actual-target)<=0.21;
+      return {level:i+1,target,actual,raw,available};
+    });
   return {profile:sessionProfileLabel(ecuProfile,handshakeInfo)||'UNKNOWN',supported:!!spec,
-    // Checking the ECU is read-only; writing remains locked for V11 / Ultra Pro2.
-    diagnosticRead:!!spec||isV11Profile(),
+    // Preview is informational only; no V11 Backfire write permission.
+    diagnosticRead:!!spec||isV11Profile(),previewLevel:previewOK?1:null,
+    // User clarification: TWO additional cells must become the literal value 1,
+    // not 50% of baseline. Their actual feature/page coordinates are not yet
+    // available from the supplied screenshot. Never invent a writable address.
+    extraCellRequest:{count:2,exactValue:1,coordinatesVerified:false,writeAvailable:false},
     limiterKind:spec?.kind||null,levels};
 }
 
@@ -5699,9 +5715,16 @@ async function qhBackfireInspectReadOnly(bank){
   const ign=await readDirectPageReal(page(3,bank),420,'BACKFIRE CHẨN ĐOÁN IGN CHỈ ĐỌC',false);
   if(epoch!==transportEpoch||session!==handshakeInfo)
     throw new Error('ECU thay đổi trong khi kiểm tra. Đọc lại kết nối.');
+  // V11 PAGE6 has three groups of 4 single-byte Idle/Limit values. Row 4
+  // uses an RPM/64 scale, but the repo does NOT verify which group corresponds
+  // to the actual engine rev limiter. Report every group without picking one.
+  const v11IdleGroups=idle.data.length>=43?Array.from({length:3},(_,g)=>{
+    const offset=g*4+3,raw=idle.data[offset]&255;
+    return {group:g+1,offset,raw,displayRpm:decV11IdleCell(3,raw)};
+  }):[];
   return {bank,profile:sessionProfileLabel(ecuProfile,session),
     ident:String(session.ident||''),firmware:String(session.firmware||''),
-    page6Bytes:idle.data.length,ignBytes:ign.data.length,
+    page6Bytes:idle.data.length,ignBytes:ign.data.length,v11IdleGroups,
     possibleUltraPro1Page6:idle.data.length===42,
     writable:false,verifiedWriteSupport:false};
 }
