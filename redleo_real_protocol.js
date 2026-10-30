@@ -5609,7 +5609,9 @@ function qhBackfireCapabilities(){
     const available=raw>0&&raw<255&&Number.isFinite(actual)&&Math.abs(actual-target)<=0.21;
     return {level:i+1,target,actual,raw,available};
   });
-  return {profile:ecuProfile?.label||'UNKNOWN',supported:!!spec,
+  return {profile:sessionProfileLabel(ecuProfile,handshakeInfo)||'UNKNOWN',supported:!!spec,
+    // Checking the ECU is read-only; writing remains locked for V11 / Ultra Pro2.
+    diagnosticRead:!!spec||isV11Profile(),
     limiterKind:spec?.kind||null,levels};
 }
 
@@ -5682,6 +5684,28 @@ async function qhBackfireReadLimiter(bank,showUi=false){
   if(rpm<500||rpm>30000)throw new Error('Giới hạn RPM đọc được không hợp lệ: '+rpm);
   return {bank,rpm,profile:spec.kind,page:page(6,bank)};
 }
+/* QH 1.2.13: READ-ONLY profile diagnostic for V11 (including a possible
+   misidentified Ultra Pro1). A page6 byte count is a clue, NOT proof of
+   product identity or permission to use the V10 / Ultra serializer.
+   Never write, change ecuProfile, or infer a limiter offset from V11 data. */
+async function qhBackfireInspectReadOnly(bank){
+  if(!isV11Profile())throw new Error('Chẩn đoán V11 chỉ đọc yêu cầu handshake V11.');
+  requireProfile('pageRead','Chẩn đoán Backfire chỉ đọc');
+  bank=normalizeBankForProfile(bank);
+  const session=handshakeInfo;
+  const epoch=transportEpoch;
+  if(!session)throw new Error('Thiếu handshake ECU 0x5A.');
+  const idle=await readDirectPageReal(page(6,bank),18,'BACKFIRE CHẨN ĐOÁN PAGE6 CHỈ ĐỌC',false);
+  const ign=await readDirectPageReal(page(3,bank),420,'BACKFIRE CHẨN ĐOÁN IGN CHỈ ĐỌC',false);
+  if(epoch!==transportEpoch||session!==handshakeInfo)
+    throw new Error('ECU thay đổi trong khi kiểm tra. Đọc lại kết nối.');
+  return {bank,profile:sessionProfileLabel(ecuProfile,session),
+    ident:String(session.ident||''),firmware:String(session.firmware||''),
+    page6Bytes:idle.data.length,ignBytes:ign.data.length,
+    possibleUltraPro1Page6:idle.data.length===42,
+    writable:false,verifiedWriteSupport:false};
+}
+
 async function qhBackfireWriteLimiter(bank,targetRpm,expectedCurrentRpm){
   const spec=qhBackfireLimiterSpec();
   if(!spec)throw new Error('Không ghi được giới hạn tua: ECU chưa có serializer an toàn.');
@@ -5707,6 +5731,6 @@ async function qhBackfireWriteLimiter(bank,targetRpm,expectedCurrentRpm){
   return {...after,before:before.rpm,after:after.rpm,unchanged:false};
 }
 
-window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
+window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireInspectReadOnly:qhBackfireInspectReadOnly,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
