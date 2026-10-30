@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.0';
+  window.BLINK_PB_VERSION = 'QH-1.2.1';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.2.0';
+  document.title = 'QH ECU · v1.2.1';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6047,12 +6047,105 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
  #qhFullPcScreen .qhPcTabs{height:32px!important;flex-basis:32px!important}
 }
 </style>
+<style id="qhInlineNumberPadAndBoot121">
+/* QH 1.2.1: X2/X3/X4 in-map number pad. The original keyboard is moved,
+   never cloned, so its existing selection/write safeguards remain intact. */
+#qhFullPcScreen #qhPcInlineKeypadDock{display:none!important}
+#qhFullPcScreen.qhInlineKeypad #qhPcInlineKeypadDock{
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ flex:1 0 238px!important;min-height:238px!important;width:100%!important;
+ box-sizing:border-box!important;padding:8px 8px!important;
+ overflow:visible!important;pointer-events:auto!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhPcInlineKeypadDock #qhFullKeypad{
+ position:relative!important;display:block!important;left:auto!important;right:auto!important;
+ top:auto!important;bottom:auto!important;transform:none!important;
+ z-index:10!important;flex:0 1 390px!important;max-width:390px!important;
+ width:min(390px,95%)!important;margin:0!important;
+ padding:8px!important;border-radius:10px!important;
+ box-shadow:0 0 14px #11e45518!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkGrid button{
+ height:43px!important;min-height:43px!important;padding:0 3px!important;
+ font-size:16px!important;border-radius:5px!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkHead{
+ min-height:30px!important;margin-bottom:5px!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkHead span{
+ font-size:11px!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkHead b{
+ font-size:19px!important;
+}
+#qhFullPcScreen.qhInlineKeypad #qhFullKeypad button:disabled{
+ opacity:.4!important;cursor:default!important;
+}
+#qhFullPcScreen.qhInlineKeypad.qhInlineKeypadClosed #qhPcInlineKeypadDock #qhFullKeypad{
+ visibility:hidden!important;pointer-events:none!important;
+}
+@media(max-width:440px){
+ #qhFullPcScreen.qhInlineKeypad #qhPcInlineKeypadDock{
+  padding:4px 3px!important;min-height:230px!important
+ }
+ #qhFullPcScreen.qhInlineKeypad #qhPcInlineKeypadDock #qhFullKeypad{
+  width:min(345px,97%)!important;padding:5px!important
+ }
+ #qhFullPcScreen.qhInlineKeypad #qhFullKeypad .qhFkGrid button{
+  height:40px!important;min-height:40px!important;font-size:15px!important;
+ }
+}
+/* Remove the four requested legacy-style pages from the main tab strip.
+   Their underlying ECU data and native routines are intentionally retained. */
+#qhFullPcScreen .qhPcTabs [data-qh-full-tab="idle_limit"],
+#qhFullPcScreen .qhPcTabs [data-qh-full-tab="options"],
+#qhFullPcScreen .qhPcTabs [data-qh-full-tab="sensor_voltage"],
+#qhFullPcScreen .qhPcTabs [data-qh-full-tab="set_info"]{
+ display:none!important;
+}
+/* 1.5s startup cover; neutral QH branding is the fallback image for now. */
+#qhOpeningSplash{
+ position:fixed!important;inset:0!important;z-index:9000000!important;
+ background:radial-gradient(ellipse at 50% 46%,#063016 0%,#020e07 48%,#010402 100%)!important;
+ display:flex!important;align-items:center!important;justify-content:center!important;
+ margin:0!important;padding:0!important;pointer-events:all!important;
+ opacity:1;transition:opacity .15s ease-out;
+}
+#qhOpeningSplash.qhSplashLeaving{opacity:0!important;pointer-events:none!important}
+#qhOpeningSplash .qhSplashLogo{text-align:center;line-height:1.25;color:white}
+#qhOpeningSplash .qhSplashLogo strong{
+ display:block;font:italic 900 clamp(46px,15vw,82px)/1.1 Arial,sans-serif;
+ letter-spacing:-2px;white-space:nowrap;
+}
+#qhOpeningSplash .qhSplashLogo strong i{color:#31ef66;font-style:italic}
+#qhOpeningSplash .qhSplashLogo small{
+ display:block;margin-top:15px;letter-spacing:.35em;color:#bfffd0;
+ font:bold clamp(9px,3vw,15px) Arial,sans-serif;
+}
+</style>
 </head>
 <body data-ui-mode="full">
+<div id="qhOpeningSplash" aria-label="QH ECU khởi động">
+  <div class="qhSplashLogo"><strong><i>QH</i> ECU</strong><small>ĐIỀU CHỈNH ECU</small></div>
+</div>
+<script id="qhOpeningSplashLogic">
+(function(){
+  var splash=document.getElementById('qhOpeningSplash');
+  if(!splash)return;
+  function finish(){
+    splash.classList.add('qhSplashLeaving');
+    setTimeout(function(){splash.remove()},170);
+  }
+  function begin(){setTimeout(finish,1500)}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',begin,{once:true});
+  else begin();
+})();
+</script>
+
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.0</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.1</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU">⛓</button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6076,10 +6169,10 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <button type="button" data-qh-full-tab="ect_inj">ECT COMP INJ</button>
     <button type="button" data-qh-full-tab="ect_ign">ECT COMP IGN</button>
     <button type="button" data-qh-full-tab="map_inj">MAP COMP INJ</button>
-    <button type="button" data-qh-full-tab="idle_limit">IDLE & LIMIT</button>
-    <button type="button" data-qh-full-tab="options">OPTIONS</button>
-    <button type="button" data-qh-full-tab="sensor_voltage">SENSOR VOLTAGE</button>
-    <button type="button" data-qh-full-tab="set_info">SET & INFO</button>
+    <button type="button" hidden data-qh-full-tab="idle_limit">IDLE & LIMIT</button>
+    <button type="button" hidden data-qh-full-tab="options">OPTIONS</button>
+    <button type="button" hidden data-qh-full-tab="sensor_voltage">SENSOR VOLTAGE</button>
+    <button type="button" hidden data-qh-full-tab="set_info">SET & INFO</button>
   </div>
     <div class="qhPcMapHead">
     <div class="qhPcTitleStep">
@@ -6116,7 +6209,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <button id="qhBfOpen" type="button" aria-label="Trạng thái Backfire và sao lưu MAP">🔥 BACKFIRE: CHƯA SOI</button>
     <span class="qhMapSelectionInfo" id="qhPcSelectionInfo">Chạm ô đầu, sau đó chạm góc đối diện</span>
   </div>
-  <div id="qhFullMapWrap"><table id="qhFullMapTable"></table></div>
+  <div id="qhFullMapWrap"><div id="qhPcInlineKeypadDock"></div><table id="qhFullMapTable"></table></div>
   <div id="qhPcSummaryPanel" hidden aria-label="Các bảng tùy chọn REDLEO">
     <section class="qhRedleoSummarySection" id="qhPcSummaryIdle" data-qh-summary="idle_limit" hidden>
       <h3>GARANTI VÀ GIỚI HẠN <small>IDLE AND LIMIT</small></h3>
@@ -6215,7 +6308,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
   <div id="qhBfOverlay" hidden>
     <div id="qhBfPanel" role="dialog" aria-modal="true" aria-labelledby="qhBfTitle">
-      <div class="bfHead"><h3 id="qhBfTitle">BACKFIRE GA THÒNG</h3><button id="qhBfClose" type="button">✕ ĐÓNG</button></div>
+      <div class="bfHead"><h3 id="qhBfTitle">BACKFIRE</h3><button id="qhBfClose" type="button">✕ ĐÓNG</button></div>
       <p class="bfExplain">Phạm vi cố định: toàn bộ 14 TPS (100% đến IDLE) tại hai cột 5.500 / 6.000 RPM (28 ô). Chỉ áp dụng MAP đánh lửa đang chọn, không đổi các MAP khác.</p>
       <div class="bfWarn">Chỉ thao tác khi đã tắt động cơ, không dùng trên đường công cộng. Góc đánh lửa âm ở TPS lớn có thể gây quá nhiệt, hỏng bộ xả và động cơ. Các mức ECU không mã hóa được sẽ bị khóa.</div>
       <div class="bfRow">
@@ -6257,7 +6350,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.0</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.1</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -11961,6 +12054,65 @@ else setTimeout(boot,0);
   const optionsPanel=document.getElementById('qhFullOptionsPanel');
   const titleEl=screen?.querySelector('.qhPcMapHead h2');
   const unitEl=screen?.querySelector('.qhPcMapHead .unit');
+  // The X2/X3/X4 numeric keypad is the existing keypad, moved into unused
+  // space above the fuel table. It has no duplicate inputs or ECU I/O path.
+  const fullKeypad=document.getElementById('qhFullKeypad');
+  const inlineDock=document.getElementById('qhPcInlineKeypadDock');
+  const keypadHome=fullKeypad?.parentNode;
+  const keypadHomeNext=fullKeypad?.nextSibling;
+  let inlineDockFrame=0;
+  function syncInlineKeypad(){
+    if(!inlineDock||!fullKeypad||!wrap||!table)return;
+    const fuelPage=activeTab==='inj_ve'&&fuelDensity>=2&&!isSummaryRoot();
+    const normalPortrait=!screen.classList.contains('qhMapMagnified')&&
+      !screen.classList.contains('suspended');
+    // When the table already fills the viewport keep the original floating
+    // number pad, so this feature never hides any MAP row.
+    const rowsHeight=table.getBoundingClientRect().height;
+    const freeSpace=wrap.clientHeight-rowsHeight;
+    const inline=fuelPage&&normalPortrait&&freeSpace>=245;
+    screen.classList.toggle('qhInlineKeypad',inline);
+    if(inline){
+      if(fullKeypad.parentNode!==inlineDock){
+        inlineDock.appendChild(fullKeypad);
+        fullKeypad.classList.remove('show');
+      }
+      const selected=!!fullBounds();
+      if(!selected){
+        const label=document.getElementById('qhFkCell');
+        const value=document.getElementById('qhFkValue');
+        if(label)label.textContent='CHỌN Ô TRÊN MAP ĐỂ NHẬP SỐ';
+        if(value)value.textContent='--';
+        fkBuffer='';
+      }
+      fullKeypad.querySelectorAll('[data-fk]').forEach(btn=>{
+        btn.disabled=!selected&&btn.dataset.fk!=='close';
+      });
+    }else{
+      screen.classList.remove('qhInlineKeypadClosed');
+      if(fullKeypad.parentNode===inlineDock&&keypadHome){
+        fullKeypad.classList.remove('show');
+        keypadHome.insertBefore(fullKeypad,
+          keypadHomeNext?.parentNode===keypadHome?keypadHomeNext:null);
+      }
+      fullKeypad.querySelectorAll('[data-fk]').forEach(btn=>btn.disabled=false);
+    }
+  }
+  function scheduleInlineKeypad(){
+    if(inlineDockFrame)return;
+    inlineDockFrame=requestAnimationFrame(()=>{
+      inlineDockFrame=0;
+      syncInlineKeypad();
+    });
+  }
+  if(typeof ResizeObserver!=='undefined'){
+    const keypadLayoutObserver=new ResizeObserver(scheduleInlineKeypad);
+    if(wrap)keypadLayoutObserver.observe(wrap);
+    if(table)keypadLayoutObserver.observe(table);
+  }
+  window.addEventListener('resize',scheduleInlineKeypad,{passive:true});
+  window.visualViewport?.addEventListener('resize',scheduleInlineKeypad,{passive:true});
+
 
   const tabMeta={
     inj_ve:{title:'BẢN ĐỒ PHUN XĂNG',unit:'ms'},
@@ -12009,13 +12161,17 @@ else setTimeout(boot,0);
     window.QHMapUx.clearSelection(fullSelection);
     fkCell=null;
     document.getElementById('qhFullKeypad')?.classList.remove('show');
-    updateFullSelectionVisual();
+    updateFullSelectionVisual();scheduleInlineKeypad();
   }
   function selectFullCell(r,c){
     fullManualUntil=Date.now()+3500;
     window.QHMapUx.restorePad('qhFullSelectionPad');
     window.QHMapUx.selectTap(fullSelection,r,c);
     fkCell={r,c};updateFullSelectionVisual();
+    if(screen.classList.contains('qhInlineKeypad')){
+      screen.classList.remove('qhInlineKeypadClosed');
+      openKey();scheduleInlineKeypad();
+    }
   }
   function updateFullSelectionVisual(){
     const ux=window.QHMapUx,b=fullBounds();
@@ -12349,6 +12505,7 @@ else setTimeout(boot,0);
     screen.classList.toggle('qhOneHandFuel',oneHand);
     screen.classList.toggle('qhOptionsTab',activeTab==='options'&&!summary);
     screen.classList.toggle('qhSummaryMode',summary);
+    if(!fuel)scheduleInlineKeypad();
     const sparseFeature=!fuel&&!summary?profileFeature(backendTab()):null;
     const fewRow=!!sparseFeature&&sparseFeature.rows>=1&&sparseFeature.rows<=3;
     screen.classList.toggle('qhFewRowMap',fewRow);
@@ -12374,7 +12531,7 @@ else setTimeout(boot,0);
       wrap.style.display='none';optionsPanel.style.display='block';renderOptionsInline();return;
     }
     wrap.style.display='block';optionsPanel.style.display='none';
-    if(fuel){renderFuel();scheduleFuelDensityLayout();}
+    if(fuel){renderFuel();scheduleFuelDensityLayout();scheduleInlineKeypad();}
     else renderFeatureInline(backendTab());
   }
   function syncConn(){
@@ -12511,10 +12668,16 @@ else setTimeout(boot,0);
   function redrawKey(){document.getElementById('qhFkValue').textContent=(fkBuffer||'0')+(currentUnit()?' '+currentUnit():'')}
   document.querySelectorAll('#qhFullKeypad [data-fk]').forEach(b=>b.addEventListener('click',()=>{
     const k=b.dataset.fk;
-    if(k==='close'){document.getElementById('qhFullKeypad').classList.remove('show');return}
+    if(k==='close'){
+      document.getElementById('qhFullKeypad').classList.remove('show');
+      if(screen.classList.contains('qhInlineKeypad'))screen.classList.add('qhInlineKeypadClosed');
+      return;
+    }
     if(k==='apply'){
       if(fkCell)applyFullSelection(Number(fkBuffer||0));
-      document.getElementById('qhFullKeypad').classList.remove('show');return;
+      document.getElementById('qhFullKeypad').classList.remove('show');
+      if(screen.classList.contains('qhInlineKeypad')&&fkCell)openKey();
+      return;
     }
     if(k==='clear')fkBuffer='';
     else if(k==='back')fkBuffer=fkBuffer.slice(0,-1);
@@ -12631,7 +12794,12 @@ else setTimeout(boot,0);
     wrap.scrollLeft=0;wrap.scrollTop=0;
     render();window.QHMapRowFit?.refresh?.();
   }));
-  document.getElementById('qhPcKeyboard')?.addEventListener('click',openKey);
+  document.getElementById('qhPcKeyboard')?.addEventListener('click',()=>{
+    if(screen.classList.contains('qhInlineKeypad'))
+      screen.classList.remove('qhInlineKeypadClosed');
+    if(fullBounds())openKey();
+    else window.setEcuTaskStatus?.('offline','Chọn một ô trên MAP rồi nhập số.',2500);
+  });
   document.getElementById('qhPcClearSelection')?.addEventListener('click',clearFullSelection);
   document.getElementById('qhPcPlus')?.addEventListener('click',()=>bumpFullSelection(1));
   document.getElementById('qhPcMinus')?.addEventListener('click',()=>bumpFullSelection(-1));
