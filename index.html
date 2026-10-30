@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.17';
+  window.BLINK_PB_VERSION = 'QH-1.2.18';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -6296,7 +6296,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.17</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.18</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU qua Bluetooth" aria-label="Kết nối hoặc ngắt ECU qua Bluetooth"><svg class="qhBluetoothIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg></button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6471,6 +6471,11 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
         <b id="qhBfRpmLabel">RPM MAX 6.000</b>
       </div>
       <div id="qhBfStatus" role="status" aria-live="polite">Chưa kiểm tra dữ liệu từ ECU.</div>
+      <details id="qhBfPage6Details" hidden style="margin:7px 0;padding:6px 8px;background:#0a2614;border:1px solid #248047;border-radius:4px">
+        <summary style="color:#bdf6cb;font-weight:800;cursor:pointer">PAGE6 GỐC · RAW HEX (CHỈ ĐỌC)</summary>
+        <pre id="qhBfPage6Hex" style="margin:6px 0;color:#e4ffed;font:11px/1.6 monospace;overflow-x:auto;white-space:pre"></pre>
+        <small style="color:#91cda1">Các byte do ECU thực trả về. Chưa xác minh vị trí RPM LIMIT; không có lệnh ghi.</small>
+      </details>
       <p id="qhBfDwellSpec" style="font-size:12px;margin:8px 0;color:#b3e1c2">
         Yêu cầu mở rộng: IGN TIME 5500/6000 RPM = 1 ms. Chưa cho phép ghi tự động hai ô này.
       </p>
@@ -13242,6 +13247,18 @@ const BACKUP_PREFIX='qhBackfireSnapshotV1:';
 let busy=false,tone='unknown',lastAutoKey='',lastSeenConnection=false,autoFailCount=0;
 function api(){return window.BlinkRealProtocol}
 function bridge(){return window.QHFullFeatureBridge}
+function paintPage6Raw(d){
+ const details=el('qhBfPage6Details'),target=el('qhBfPage6Hex');
+ if(!details||!target)return;
+ const a=Array.isArray(d?.page6Raw)?d.page6Raw:null;
+ if(!a||!a.length){details.hidden=true;details.open=false;target.textContent='';return;}
+ const hex=n=>Number(n).toString(16).padStart(2,'0').toUpperCase();
+ target.textContent=Array.from({length:Math.ceil(a.length/12)},(_,i)=>{
+  const begin=i*12;
+  return hex(begin)+': '+a.slice(begin,begin+12).map(hex).join(' ');
+ }).join('\n');
+ details.hidden=false;
+}
 function fmtStatus(kind,msg){
  tone=kind;
  const stateText=kind==='active'?'ON':kind==='restored'?'MAP GỐC':
@@ -13516,7 +13533,10 @@ function refreshButtons(){
 }
 async function check({auto=false}={}){
  if(busy)return;
- if(!auto)fmtStatus('busy','Đang kiểm tra ECU. Chỉ đọc, không gửi lệnh ghi...');
+ if(!auto){
+   paintPage6Raw(null);
+   fmtStatus('busy','Đang kiểm tra ECU. Chỉ đọc, không gửi lệnh ghi...');
+ }
  let readOnlyDiagnostic=false;
  try{
    return await transaction(async()=>{
@@ -13532,6 +13552,7 @@ async function check({auto=false}={}){
          fmtStatus(st.tone,st.msg);return st;
        }
        const d=await a.backfireInspectReadOnly(Number(state.activeMap));
+       paintPage6Raw(d);
        const hint=d.possibleUltraPro1Page6
          ?'PAGE6 trả 42B (gợi ý cần kiểm tra nhầm Ultra Pro1/V11, CHƯA đủ để đổi profile).'
          :'PAGE6 '+d.page6Bytes+'B (chưa chứng minh loại Ultra từ độ dài trang).';
@@ -13752,6 +13773,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.hidden&&!bus
 setInterval(()=>{
  const connected=!!state.ecuConnected&&state.ecuPhase==='live';
  if(!connected){
+   paintPage6Raw(null);
    if(lastSeenConnection)fmtStatus('unknown','Đã ngắt ECU. Trạng thái cũ không được coi là còn hiệu lực.');
    lastSeenConnection=false;lastAutoKey='';autoFailCount=0;refreshButtons();return;
  }
