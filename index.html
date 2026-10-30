@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.10';
+  window.BLINK_PB_VERSION = 'QH-1.2.11';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -19,7 +19,7 @@
       document.documentElement.classList.add('qhAndroidWebView');
     }
   } catch (_e) {}
-  document.title = 'QH ECU · v1.2.10';
+  document.title = 'QH ECU · v1.2.11';
 </script>
 <meta name="theme-color" content="#07111d" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -6234,6 +6234,38 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
  #qhFullPcScreen #qhPcConnect .qhBluetoothIcon{width:20px;height:20px}
 }
 </style>
+<style id="qhTpsStudyNextToManual1211">
+/* QH 1.2.11: place the ORIGINAL ECU TPS Study action beside manual TPS.
+   Scope to SET & INFO TPS card; keep profile disabled state from real protocol. */
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual .qhFtpsButtons{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;align-items:stretch!important;
+}
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual .qhFtpsButtons > button{
+  width:100%!important;min-width:0!important;min-height:38px!important;
+  height:auto!important;padding:6px 8px!important;white-space:normal!important;
+  line-height:1.2!important;overflow-wrap:break-word!important;
+}
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual #studyTpsBtn{
+  border-color:#58c0ff!important;background:#073552!important;
+  color:#e7f7ff!important;font-weight:900!important;
+}
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual #studyTpsBtn:disabled{
+  opacity:.47!important;cursor:not-allowed!important;
+}
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual .qhFtpsAutoNote{
+  color:#aedcef;font-size:10px;line-height:1.4;margin:7px 0 0;
+}
+#qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual #studyTpsInfo{
+  color:#bdebd4;font-size:10px;line-height:1.35;
+  padding:6px 7px;margin:6px 0 0;background:#071b13;border-left:2px solid #58c0ff;
+}
+@media(min-width:760px){
+ #qhFullPcScreen #qhPcLegacyTps #qhFullTpsManual .qhFtpsButtons{
+   grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ }
+}
+</style>
 <link rel="preload" href="./qh_splash_poster.webp?v=122" as="image">
 </head>
 <body data-ui-mode="full">
@@ -6271,7 +6303,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.10</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.11</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU qua Bluetooth" aria-label="Kết nối hoặc ngắt ECU qua Bluetooth"><svg class="qhBluetoothIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg></button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6385,7 +6417,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
       <div class="qhRedleoSectionTitle">CẤU HÌNH AFR / CẢM BIẾN O2</div><div id="qhPcLegacyAfr"></div>
       <div class="qhRedleoSectionTitle">ECU SETTINGS / SOFTWARE SETTINGS</div><div id="qhPcLegacySwitches"></div>
       <div class="qhRedleoSectionTitle">THÔNG TIN ECU / FIRMWARE</div><div id="qhPcLegacyInfo"></div>
-      <div class="qhRedleoSectionTitle">HỌC TPS THỦ CÔNG</div><div id="qhPcLegacyTps"></div>
+      <div class="qhRedleoSectionTitle">HỌC TPS THỦ CÔNG / TỰ HỌC ECU</div><div id="qhPcLegacyTps"></div>
       <div class="qhRedleoSectionTitle">LY HỢP TỰ ĐỘNG / AUTO CLUTCH (NẾU HỖ TRỢ)</div><div class="qhRedleoPreview" data-qh-feature-preview="auto_clutch"></div>
       <div class="qhRedleoSectionTitle">SANG SỐ / AUTO SHIFT (NẾU HỖ TRỢ)</div><div class="qhRedleoPreview" data-qh-feature-preview="auto_shift"></div>
       <div class="qhRedleoSectionTitle">THÔNG SỐ BỘ SẠC / CHARGING PARAMETERS</div><div class="qhRedleoPreview" data-qh-feature-preview="chg_params"></div>
@@ -6410,8 +6442,8 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
   </div>
 
 
-  <section id="qhFullTpsManual" aria-label="Học TPS thủ công từ cảm biến LIVE" hidden>
-    <div class="qhFtpsHeading"><strong>HỌC TPS THỦ CÔNG</strong><span>Như Blink Redleo · chỉ chỉnh TPS trên ứng dụng, không ghi ECU</span></div>
+  <section id="qhFullTpsManual" aria-label="Học TPS thủ công và tự học TPS ECU bằng cách vặn ga" hidden>
+    <div class="qhFtpsHeading"><strong>HỌC TPS</strong><span>MIN / MAX: chỉnh trên app · TỰ HỌC ECU: học trực tiếp bằng cách vặn ga</span></div>
     <div class="qhFtpsFields">
       <div class="qhFtpsStat"><small>ĐIỆN ÁP TPS LIVE</small><strong id="qhFtpsLive">-- V</strong></div>
       <div class="qhFtpsStat"><small>TPS MIN (V)</small><strong id="qhFtpsMin">-- V</strong></div>
@@ -6422,7 +6454,8 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
       <button id="qhFtpsLearnMax" type="button" title="Mở hết ga rồi học điện áp TPS MAX từ LIVE">HỌC TPS MAX</button>
       <button id="qhFtpsSync" type="button" title="Đọc Options A2 để trở về chuẩn TPS ECU, không ghi ECU">ĐỌC &amp; ĐỒNG BỘ TPS ECU</button>
     </div>
-    <p id="qhFtpsStatus" role="status" aria-live="polite">Kết nối ECU, đóng hết ga để học MIN rồi mở hết ga học MAX. Chỉ áp dụng khi đủ hai giá trị, cách nhau hơn 0,10 V.</p>
+    <p id="qhFtpsStatus" role="status" aria-live="polite">Học thủ công: đóng hết ga lấy MIN, mở hết ga lấy MAX; không ghi ECU.</p>
+    <p class="qhFtpsAutoNote">Tự học ECU: <b>tắt máy, bật khóa điện</b> → nhấn HỌC TPS ECU → xác nhận → xoay ga MIN → MAX → MIN ít nhất 3 lần. App sẽ đọc lại Options A2 để xác minh.</p>
   </section>
   <div id="qhFullOptionsPanel" style="display:none;flex:1;min-height:0;overflow:auto;padding:12px 14px;background:#010503">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px" id="qhFullOptionsGrid"></div>
@@ -6471,7 +6504,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
     <div class="qhDashHeader">
       <div class="qhBrandBlock">
         <div class="qhBrandPlate" aria-hidden="true"></div>
-        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.10</em></div>
+        <div class="qhBrandMain"><span class="qhGold">QH</span> <span class="qhSilver">ECU</span> <em id="qhPbLabel" class="qhPbLabel">P.b 1.2.11</em></div>
         <div class="qhBrandSub"><span>RACING</span></div>
       </div>
       <div class="qhDashHeaderRight" style="display:none" aria-hidden="true">
@@ -13166,7 +13199,22 @@ for(const key of ['READ_ALL','SEND_ALL','RESTORE','TEST_INJ','LOGIN','LOGOUT','C
 for(const id of ['exportBackupBtn','importBackupBtn','backupFile']){
  const node=byId(id);if(node)tools?.appendChild(node);
 }
-const tps=byId('qhFullTpsManual');if(tps)byId('qhPcLegacyTps')?.appendChild(tps);
+const tps=byId('qhFullTpsManual');
+if(tps){
+  byId('qhPcLegacyTps')?.appendChild(tps);
+  // Move ORIGINAL TPS Study control beside manual MIN/MAX. Do not clone:
+  // the real-protocol profile gate, safe-confirm dialog and click handlers stay attached.
+  const actions=tps.querySelector('.qhFtpsButtons');
+  const study=byId('studyTpsBtn');
+  if(actions&&study){
+    study.type='button';
+    study.title='Học TPS ECU: tắt máy, bật khóa điện, xác nhận, vặn ga MIN → MAX → MIN ít nhất 3 lần.';
+    actions.insertBefore(study,byId('qhFtpsSync'));
+  }
+  // Reuse original progress text so its ECU status is visible beside the new button.
+  const studyInfo=byId('studyTpsInfo');
+  if(studyInfo)tps.appendChild(studyInfo);
+}
 window.QHSingleLayout={rehomeComplete:true};
 })();
 </script>
