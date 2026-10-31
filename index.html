@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
 <script>
   // BLINK PB VERSION — edit only this value for the next release.
-  window.BLINK_PB_VERSION = 'QH-1.2.22';
+  window.BLINK_PB_VERSION = 'QH-1.2.23';
   // Android QH APK embeds the public runtime in Chromium WebView (?android=1).
   // Enable a table border paint workaround only there; iOS Bluefy remains unchanged.
   try {
@@ -6296,7 +6296,7 @@ html.qhAndroidWebView #qhSimpleFuelTable thead th:first-child{
 
 <section id="qhFullPcScreen" aria-label="QH ECU Full Mode">
   <div class="qhPcHeader">
-    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.22</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
+    <div class="qhPcBrand"><div class="qhPcBrandMain"><span class="q">QH</span> <span class="e">ECU</span><span class="qhPcBrandJoin">&amp;</span><span class="qhPcSponsor">TC95</span> <small id="qhFullVersion" aria-label="Phiên bản ứng dụng">1.2.23</small></div><div class="qhPcBrandSub">ĐIỀU CHỈNH ECU</div></div>
     <div id="qhPcConn" class="qhPcConn"><span class="qhPcDot"></span><div><b id="qhPcConnText">CHƯA KẾT NỐI ECU</b><small id="qhPcConnSub">QH ECU</small></div></div>
     <div class="qhPcHeaderBtns"><button id="qhPcConnect" type="button" title="Kết nối hoặc ngắt ECU qua Bluetooth" aria-label="Kết nối hoặc ngắt ECU qua Bluetooth"><svg class="qhBluetoothIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M17.71 7.71 12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71L13.41 12l4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/></svg></button><button id="qhPcSettings" type="button" title="Tùy chọn">⚙</button></div>
   </div>
@@ -6973,9 +6973,9 @@ function selectMapBank(n,autoRead=true){
     const api=window.BlinkRealProtocol;
     if(api&&typeof api.normalizeBank==='function')n=api.normalizeBank(n);
   }catch(_e){}
-  if(state.threeRun.active && n!==state.threeRun.mapNo){alert('MODE CHẠY 3 LƯỢT đang khóa MAP No.'+state.threeRun.mapNo+'. Hãy kết thúc hoặc hủy phiên trước.');$('mapSelect').value=String(state.activeMap);return;}
+  if(state.threeRun.active && n!==state.threeRun.mapNo){window.qhAppAlert('MODE CHẠY 3 LƯỢT đang khóa MAP No.'+state.threeRun.mapNo+'. Hãy kết thúc hoặc hủy phiên trước.');$('mapSelect').value=String(state.activeMap);return;}
   if(state.ecuPhase==='write1'||state.ecuPhase==='write2'){
-    alert('Đang ghi ECU, chưa thể chuyển MAP.');
+    window.qhAppAlert('Đang ghi ECU, chưa thể chuyển MAP.');
     $('mapSelect').value=String(state.activeMap);
     return;
   }
@@ -7866,10 +7866,10 @@ function parseReadCurrentFuelMap(f,mapNo=state.ecuReadCurrentMapNo){
 }
 
 async function queueReadCurrentMap(mapNo=state.activeMap){
-  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước.');
+  if(!state.ecuConnected)return window.qhAppAlert('Hãy kết nối ECU trước.');
   mapNo=clamp(Math.round(mapNo),1,4);
   if(state.ecuPhase!=='live'){
-    return alert('ECU đang bận. Hãy chờ Live ổn định rồi thử lại.');
+    return window.qhAppAlert('ECU đang bận. Hãy chờ Live ổn định rồi thử lại.');
   }
   if(!await ensureActiveEcuAxes(true))return;
   state.ecuReadCurrentQueued=true;
@@ -7957,42 +7957,123 @@ function cloneMatrix(m){return m.map(row=>row.map(v=>v==null?null:Number(v)));}
 // In-app confirmation dialog used for safety-critical ECU writes.
 // Do not depend on window.confirm(): Android WebView launchers may suppress
 // JavaScript dialogs when their WebChromeClient does not implement them.
-function blinkConfirm(title,message,okText='XÁC NHẬN',cancelText='HỦY'){
-  return new Promise(resolve=>{
-    try{document.getElementById('blinkConfirmOverlay')?.remove()}catch(_e){}
+/* QH 1.2.23: All app-authored confirmation, information and numeric
+   entry sheets are DOM overlays, NEVER browser alert/confirm/prompt.
+   Queue them to ensure no unresolved confirmation is accidentally removed. */
+let qhDialogTail=Promise.resolve();
+function qhShowDialog(request){
+  const task=qhDialogTail.then(()=>new Promise(resolve=>{
+    const typ=request.kind||'confirm';
     const ov=document.createElement('div');
-    ov.id='blinkConfirmOverlay';
+    ov.id='qhAppDialogOverlay';
     ov.setAttribute('role','dialog');
     ov.setAttribute('aria-modal','true');
-    ov.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 18px max(18px,env(safe-area-inset-bottom));box-sizing:border-box;';
+    ov.setAttribute('aria-label',String(request.title||'QH ECU'));
+    ov.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom));box-sizing:border-box;';
     const box=document.createElement('div');
-    box.style.cssText='width:min(520px,100%);background:#11151d;border:2px solid #ff4059;border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.65);padding:18px;box-sizing:border-box;color:#fff;font-family:inherit;';
+    box.style.cssText='width:min(510px,100%);max-height:min(88vh,690px);overflow:auto;background:#10191a;border:2px solid #2fa568;border-radius:16px;box-shadow:0 22px 72px rgba(0,0,0,.7);padding:16px;box-sizing:border-box;color:#fff;font:inherit;';
     const h=document.createElement('div');
-    h.textContent=String(title||'XÁC NHẬN');
-    h.style.cssText='font-size:18px;font-weight:900;letter-spacing:.2px;margin:0 0 12px;';
+    h.textContent=String(request.title||'QH ECU');
+    h.style.cssText='font-size:18px;font-weight:900;margin:0 0 10px;color:#bbffd5;';
     const p=document.createElement('div');
-    p.textContent=String(message||'');
-    p.style.cssText='font-size:14px;line-height:1.5;white-space:pre-line;color:#e7e9ee;margin-bottom:18px;';
+    p.textContent=String(request.message??'');
+    p.style.cssText='font-size:14px;line-height:1.45;white-space:pre-wrap;color:#e5f4e8;margin-bottom:14px;overflow-wrap:anywhere;';
+    box.append(h,p);
+    let value=String(request.initial??'');
+    let display=null,tip=null;
+    function updateValue(){
+      if(display)display.value=value;
+      if(tip)tip.textContent='';
+    }
+    if(typ==='prompt'){
+      display=document.createElement('input');
+      display.type='text';display.readOnly=true;display.value=value;
+      display.setAttribute('aria-label','Giá trị nhập');
+      display.style.cssText='width:100%;height:43px;box-sizing:border-box;border:1px solid #76b394;border-radius:9px;background:#07130d;color:#f6fffa;font-size:20px;font-weight:800;text-align:center;margin-bottom:9px;';
+      tip=document.createElement('div');
+      tip.style.cssText='min-height:15px;font-size:12px;color:#ffb4a9;margin-bottom:4px;';
+      const grid=document.createElement('div');
+      grid.style.cssText='display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0 0 12px;';
+      function key(k){
+        if(k==='C')value='';
+        else if(k==='⌫')value=value.slice(0,-1);
+        else if(k==='±')value=value.startsWith('-')?value.slice(1):'-'+value;
+        else if(k==='.'){if(!value.includes('.'))value=value?value+'.':'0.';}
+        else if((/^\d$/.test(k)||(request.allowHex&&/^[A-F]$/.test(k)))&&value.length<14)value+=k;
+        updateValue();
+      }
+      for(const k of [...['1','2','3','⌫','4','5','6','C','7','8','9','±','.','0'],...(request.allowHex?['A','B','C','D','E','F']:[])]){
+        const b=document.createElement('button');b.type='button';b.textContent=k;
+        b.style.cssText='min-height:39px;border:1px solid #356f4d;border-radius:7px;background:#183b28;color:#f2fff6;font-size:18px;font-weight:800;';
+        b.addEventListener('click',()=>key(k));
+        grid.appendChild(b);
+      }
+      box.append(display,tip,grid);
+      request.onKey=key;
+    }
     const row=document.createElement('div');
-    row.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px;';
-    const cancel=document.createElement('button');
-    cancel.type='button';
-    cancel.textContent=cancelText;
-    cancel.style.cssText='min-height:48px;border-radius:12px;border:1px solid #555;background:#20242d;color:#fff;font-weight:800;font-size:14px;';
-    const ok=document.createElement('button');
-    ok.type='button';
-    ok.textContent=okText;
-    ok.style.cssText='min-height:48px;border-radius:12px;border:1px solid #ff5168;background:#b71931;color:#fff;font-weight:900;font-size:14px;';
+    row.style.cssText='display:grid;grid-template-columns:'+ (typ==='alert'?'1fr':'1fr 1fr')+';gap:10px;';
     let done=false;
-    const finish=v=>{if(done)return;done=true;try{ov.remove()}catch(_e){}resolve(!!v)};
-    cancel.addEventListener('click',()=>finish(false),{once:true});
-    ok.addEventListener('click',()=>finish(true),{once:true});
-    ov.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();finish(false)}});
-    row.append(cancel,ok);box.append(h,p,row);ov.append(box);document.body.append(ov);
+    const finish=out=>{
+      if(done)return;
+      done=true;document.removeEventListener('keydown',onKey,true);
+      ov.remove();resolve(out);
+    };
+    const cancel=document.createElement('button');
+    cancel.type='button';cancel.textContent=String(request.cancelText||'HỦY');
+    cancel.style.cssText='min-height:47px;border-radius:9px;border:1px solid #53675c;background:#26342d;color:#fff;font-weight:800;';
+    cancel.addEventListener('click',()=>finish(typ==='prompt'?null:false));
+    const ok=document.createElement('button');
+    ok.type='button';ok.textContent=String(request.okText||'XÁC NHẬN');
+    ok.style.cssText='min-height:47px;border-radius:9px;border:1px solid #59d28b;background:#177b45;color:#fff;font-weight:900;';
+    function accept(){
+      if(typ==='prompt'){
+        const valid=request.allowHex?/^[0-9A-Fa-f]{1,4}$/.test(value):
+          /^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value);
+        if(!valid){
+          tip.textContent=request.allowHex?'Nhập tối đa 4 ký tự HEX (0-9/A-F).':'Vui lòng nhập một giá trị số hợp lệ.';return;
+        }
+        finish(value);return;
+      }
+      finish(true);
+    }
+    ok.addEventListener('click',accept);
+    if(typ!=='alert')row.appendChild(cancel);
+    row.appendChild(ok);box.appendChild(row);ov.appendChild(box);
+    ov.addEventListener('click',e=>{if(e.target===ov)finish(typ==='prompt'?null:false)});
+    function onKey(e){
+      if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();finish(typ==='prompt'?null:false);return;}
+      if(e.key==='Enter'){e.preventDefault();e.stopImmediatePropagation();accept();return;}
+      if(typ==='prompt'){
+        const k=e.key;
+        if(/^\d$/.test(k)||(request.allowHex&&/^[a-fA-F]$/.test(k))){e.preventDefault();e.stopImmediatePropagation();request.onKey(k.toUpperCase());}
+        else if(k==='.'||k==='Backspace'||k==='-'){
+          e.preventDefault();e.stopImmediatePropagation();
+          request.onKey(k==='Backspace'?'⌫':k==='-'?'±':k);
+        }
+      }
+    }
+    document.addEventListener('keydown',onKey,true);
+    document.body.appendChild(ov);
     setTimeout(()=>{try{ok.focus()}catch(_e){}},0);
-  });
+  }));
+  qhDialogTail=task.then(()=>{},()=>{});
+  return task;
+}
+function blinkConfirm(title,message,okText='XÁC NHẬN',cancelText='HỦY'){
+  return qhShowDialog({kind:'confirm',title,message,okText,cancelText});
+}
+function qhAppAlert(message){
+  return qhShowDialog({kind:'alert',title:'THÔNG BÁO QH ECU',message,okText:'ĐÓNG'});
+}
+function qhAppPrompt(message,initial='',title='NHẬP GIÁ TRỊ QH ECU'){
+  const allowHex=/HEX|0-9\s*\/\s*A-F|mật khẩu/i.test(String(message));
+  return qhShowDialog({kind:'prompt',title,message,initial,allowHex,okText:'LƯU',cancelText:'HỦY'});
 }
 window.blinkConfirm=blinkConfirm;
+window.blinkPrompt=qhAppPrompt;
+window.qhAppAlert=qhAppAlert;
+window.qhAppPrompt=qhAppPrompt;
 
 async function startFuelWrite(opts={}){
   const skipConfirm=!!opts.skipConfirm;
@@ -8249,16 +8330,16 @@ function compareFuelMaps(a,b,tol=null){
 }
 
 async function writeCurrentFuelMap(){
-  if(state.threeRun.active)return alert('MODE CHẠY 3 LƯỢT đang hoạt động. Hãy dùng nút KẾT THÚC LƯỢT.');
+  if(state.threeRun.active)return window.qhAppAlert('MODE CHẠY 3 LƯỢT đang hoạt động. Hãy dùng nút KẾT THÚC LƯỢT.');
   await startFuelWrite();
 }
 
 async function applyCorrectedAndWrite(){
   if(state.threeRun.active){
     if(state.threeRun.phase==='recording')return finishThreeRunPass();
-    return alert('MODE CHẠY 3 LƯỢT đang '+state.threeRun.phase+'. Hãy chờ thao tác hiện tại hoàn tất.');
+    return window.qhAppAlert('MODE CHẠY 3 LƯỢT đang '+state.threeRun.phase+'. Hãy chờ thao tác hiện tại hoàn tất.');
   }
-  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước.');
+  if(!state.ecuConnected)return window.qhAppAlert('Hãy kết nối ECU trước.');
   if(fuelMapSyncUnknown(state.activeMap))return showEcuNotice('error','MAP ECU CHƯA XÁC ĐỊNH','Hãy ĐỌC HIỆN TẠI thành công trước khi tính hoặc ghi MAP đã bù.',0);
   const baseCheck=inspectFuelMap(state.inject);
   if(!baseCheck.ok)return showEcuNotice('error','MAP GỐC CHƯA AN TOÀN',baseCheck.reason,0);
@@ -8273,7 +8354,7 @@ async function applyCorrectedAndWrite(){
   for(let r=0;r<R;r++)for(let c=0;c<C;c++){
     if(Math.abs(num(next[r][c],0)-num(state.inject[r][c],0))>.0001)changed.push([r,c]);
   }
-  if(!changed.length)return alert('Chưa có ô AFR đo nào làm thay đổi map.');
+  if(!changed.length)return window.qhAppAlert('Chưa có ô AFR đo nào làm thay đổi map.');
 
   const ok=await blinkConfirm(
     'ĐƯA MAP ĐÃ BÙ → ECU · MAP NO.'+state.activeMap,
@@ -8379,7 +8460,7 @@ function completeThreeRunSession(){
   tr.active=false;tr.phase='complete';tr.runPw=null;tr.pendingNextPass=0;tr.cancelRequested=false;
   $('mapSelect').disabled=false;renderThreeRunUi();renderThreeRunHistory();save();
   showEcuNotice('success','HOÀN TẤT 3 LƯỢT · MAP No.'+session.mapNo,'Đã chỉnh MAP đủ 3 lần. FINAL MAP đã ghi và ECU ACK và lưu PW + AFR + số mẫu của cả 3 lượt.',6500);
-  alert('HOÀN TẤT 3 LƯỢT · MAP No.'+session.mapNo+'\n\nĐã chỉnh MAP đủ 3 lần.\nLần cuối sau LƯỢT 3 đã được ghi và ECU ACK.\nĐã lưu PW + AFR + số mẫu của cả 3 lượt vào lịch sử.');
+  window.qhAppAlert('HOÀN TẤT 3 LƯỢT · MAP No.'+session.mapNo+'\n\nĐã chỉnh MAP đủ 3 lần.\nLần cuối sau LƯỢT 3 đã được ghi và ECU ACK.\nĐã lưu PW + AFR + số mẫu của cả 3 lượt vào lịch sử.');
 }
 function threeRunStatusText(){
   const tr=state.threeRun;
@@ -8410,7 +8491,7 @@ function renderThreeRunUi(){
 }
 function setTuneMode(mode){
   if(mode!=='normal'&&mode!=='three')mode='normal';
-  if(state.threeRun.active&&mode!=='three'){alert('Phiên 3 lượt đang chạy. Hãy kết thúc hoặc hủy phiên trước.');$('tuneMode').value='three';return;}
+  if(state.threeRun.active&&mode!=='three'){window.qhAppAlert('Phiên 3 lượt đang chạy. Hãy kết thúc hoặc hủy phiên trước.');$('tuneMode').value='three';return;}
   if(state.recording)setRecording(false);state.mode=mode;$('tuneMode').value=mode;renderThreeRunUi();saveSoon();
 }
 function beginThreeRunPass(pass,keepMeasured=false){
@@ -8423,11 +8504,11 @@ function afrStreamReady(maxAgeMs=2200){
 }
 async function startThreeRunSession(){
   if(state.mode!=='three')setTuneMode('three');if(state.threeRun.active)return;
-  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước khi bắt đầu 3 lượt.');if(!afrStreamReady())return alert('Chưa nhận được AFR BLE gần đây. Hãy kiểm tra AFR QH ECU trước khi bắt đầu 3 lượt.');if(state.ecuPhase!=='live')return alert('ECU đang bận. Hãy chờ Live ổn định.');
-  if(fuelMapSyncUnknown(state.activeMap))return alert('MAP ECU chưa xác định sau một lần ghi lỗi. Hãy ĐỌC HIỆN TẠI thành công trước khi bắt đầu 3 lượt.');
+  if(!state.ecuConnected)return window.qhAppAlert('Hãy kết nối ECU trước khi bắt đầu 3 lượt.');if(!afrStreamReady())return window.qhAppAlert('Chưa nhận được AFR BLE gần đây. Hãy kiểm tra AFR QH ECU trước khi bắt đầu 3 lượt.');if(state.ecuPhase!=='live')return window.qhAppAlert('ECU đang bận. Hãy chờ Live ổn định.');
+  if(fuelMapSyncUnknown(state.activeMap))return window.qhAppAlert('MAP ECU chưa xác định sau một lần ghi lỗi. Hãy ĐỌC HIỆN TẠI thành công trước khi bắt đầu 3 lượt.');
   if(!await ensureActiveEcuAxes(true))return;
-  if(!tpsTelemetryFresh())return alert('Chưa có dữ liệu TPS/RPM live mới từ ECU. Hãy chờ Live hoạt động rồi bắt đầu 3 lượt.');
-  const baseCheck=inspectFuelMap(state.inject);if(!baseCheck.ok)return alert(baseCheck.reason);
+  if(!tpsTelemetryFresh())return window.qhAppAlert('Chưa có dữ liệu TPS/RPM live mới từ ECU. Hãy chờ Live hoạt động rồi bắt đầu 3 lượt.');
+  const baseCheck=inspectFuelMap(state.inject);if(!baseCheck.ok)return window.qhAppAlert(baseCheck.reason);
   const ok=await blinkConfirm(
     'BẮT ĐẦU MODE CHẠY 3 LƯỢT · MAP No.'+state.activeMap,
     'Lượt 1: đo AFR → tính + ghi MAP cho lượt 2.\nLượt 2: đo phản ứng → tính + ghi MAP cho lượt 3.\nLượt 3: đo phản ứng cuối → tính FINAL → ghi ECU lần 3.\n\nSau mỗi lượt, MAP phun chính trong Blink được cập nhật trước rồi mới gửi ECU. Chỉ sau khi ECU ACK thành công mới chuyển sang lượt tiếp theo.',
@@ -8442,13 +8523,13 @@ function captureThreeRun(pass){
 async function finishThreeRunPass(){
   const tr=state.threeRun;if(!tr.active)return;
   if(tr.phase==='paused'){
-    if(!state.ecuConnected||!afrStreamReady())return alert('Kết nối lại ECU và chờ AFR BLE hoạt động trước khi tiếp tục.');
-    if(!tpsTelemetryFresh())return alert('Chưa có TPS/RPM live mới từ ECU. Hãy chờ Live ổn định trước khi tiếp tục.');
-    if(fuelMapSyncUnknown(tr.mapNo)||!inspectFuelMap(state.inject).ok)return alert('Không thể tiếp tục phiên 3 lượt vì MAP ECU chưa được xác nhận sau gián đoạn/lỗi ghi. Hãy HỦY PHIÊN, ĐỌC HIỆN TẠI rồi bắt đầu lại.');
+    if(!state.ecuConnected||!afrStreamReady())return window.qhAppAlert('Kết nối lại ECU và chờ AFR BLE hoạt động trước khi tiếp tục.');
+    if(!tpsTelemetryFresh())return window.qhAppAlert('Chưa có TPS/RPM live mới từ ECU. Hãy chờ Live ổn định trước khi tiếp tục.');
+    if(fuelMapSyncUnknown(tr.mapNo)||!inspectFuelMap(state.inject).ok)return window.qhAppAlert('Không thể tiếp tục phiên 3 lượt vì MAP ECU chưa được xác nhận sau gián đoạn/lỗi ghi. Hãy HỦY PHIÊN, ĐỌC HIỆN TẠI rồi bắt đầu lại.');
     tr.phase='recording';setRecording(true);renderThreeRunUi();saveSoon();return;
   }
   if(tr.phase!=='recording')return;setRecording(false);const pass=tr.pass,run=captureThreeRun(pass);
-  if(run.summary.cells<1){setRecording(true);tr.phase='recording';return alert('Lượt '+pass+' chưa có ô AFR hợp lệ nào. Hãy chạy xe và ghi dữ liệu trước.');}
+  if(run.summary.cells<1){setRecording(true);tr.phase='recording';return window.qhAppAlert('Lượt '+pass+' chưa có ô AFR hợp lệ nào. Hãy chạy xe và ghi dữ liệu trước.');}
   if(pass===3){
     const finalAdaptive=adaptiveFinalMap(tr.runs[1],run,tr.target);
     const finalMap=finalAdaptive.map;
@@ -8514,7 +8595,7 @@ function onFuelWriteVerifyFailed(mapNo,cmp){
   if(tr.cancelRequested){resetThreeRunCancelled('GHI ECU LỖI · PHIÊN 3 LƯỢT ĐÃ HỦY');return;}
   tr.phase='error';tr.pendingNextPass=0;setRecording(false);renderThreeRunUi();saveSoon();
 }
-function cancelThreeRun(){
+async function cancelThreeRun(){
   const tr=state.threeRun;if(!tr.active)return;
 
   // Chỉ không được cắt ngang khi một trong hai frame CD đang thực sự truyền.
@@ -8523,11 +8604,13 @@ function cancelThreeRun(){
 
   if(writeInProgress){
     if(tr.cancelRequested)return;
-    if(!confirm('ECU đang GHI MAP. Hủy phiên ngay sau khi ghi hiện tại hoàn tất?\n\nApp sẽ không cắt ngang frame đang ghi để tránh MAP bị ghi dở. Sau đó sẽ dừng, KHÔNG chạy lượt tiếp theo.'))return;
+    if(!await blinkConfirm('HỦY PHIÊN 3 LƯỢT','ECU đang GHI MAP. Hủy phiên ngay sau khi ghi hiện tại hoàn tất?\n\nApp sẽ không cắt ngang frame đang ghi để tránh MAP bị ghi dở. Sau đó sẽ dừng, KHÔNG chạy lượt tiếp theo.'))return;
+    if(!tr.active)return;
     setRecording(false);tr.cancelRequested=true;renderThreeRunUi();saveSoon();flashSave('ĐÃ YÊU CẦU HỦY · chờ ghi ECU xong...');return;
   }
 
-  if(!confirm('Hủy phiên MODE CHẠY 3 LƯỢT hiện tại? Dữ liệu phiên chưa hoàn tất sẽ không đưa vào lịch sử.'))return;
+  if(!await blinkConfirm('HỦY PHIÊN 3 LƯỢT','Hủy phiên MODE CHẠY 3 LƯỢT hiện tại? Dữ liệu phiên chưa hoàn tất sẽ không đưa vào lịch sử.'))return;
+  if(!tr.active)return;
   setRecording(false);
 
   // Nếu mới xếp hàng ghi mà chưa truyền frame CD nào: hủy luôn lệnh ghi.
@@ -8546,7 +8629,7 @@ function renderThreeRunHistory(){
   box.innerHTML=state.threeRunHistory.map((x,i)=>{const rs=(x.runs||[]).map(r=>afrRunStats(r)),fs=z=>z&&z.cells?`${z.cells} ô · AFR TB ${fmt(z.avg,2)} · ${z.samples} mẫu`:'không dữ liệu',a=x.lastAdaptiveStats||{},f=x.finalAdaptiveStats||{};return `<div class="historyRow"><b>#${i+1} · MAP No.${x.mapNo}</b> · ${new Date(x.completedAt).toLocaleString()}<br>L1: ${fs(rs[0])}<br>L2: ${fs(rs[1])}<br>L3: ${fs(rs[2])}<br><span class="muted">L2→L3: 2 điểm ${a.response2Point||0} ô · fallback L2 ${a.fallbackRun2||0}<br>FINAL sau L3: 2 điểm ${f.response2Point||0} ô · fallback L3 ${f.fallbackRun3||0} · giới hạn bước ${f.limited||0}</span></div>`;}).join('');
 }
 function openThreeRunHistory(){renderThreeRunHistory();$('threeHistoryDialog').showModal();}
-function downloadLatestThreeRun(){const x=state.threeRunHistory[0];if(!x)return alert('Chưa có phiên 3 lượt hoàn tất.');const blob=new Blob([JSON.stringify(x,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AFR_3RUN_MAP'+x.mapNo+'_'+String(x.completedAt).replace(/[:.]/g,'-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function downloadLatestThreeRun(){const x=state.threeRunHistory[0];if(!x)return window.qhAppAlert('Chưa có phiên 3 lượt hoàn tất.');const blob=new Blob([JSON.stringify(x,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='AFR_3RUN_MAP'+x.mapNo+'_'+String(x.completedAt).replace(/[:.]/g,'-')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 
 
 const REQ_TPS_STUDY=req5(0x77,0x77); // 77 77 11 EE 05
@@ -8640,10 +8723,10 @@ function parseTpsStudyFrame(f){
 }
 
 async function queueTpsStudy(){
-  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước.');
-  if(state.ecuPhase!=='live')return alert('ECU đang bận. Hãy chờ Live ổn định rồi thử lại.');
+  if(!state.ecuConnected)return window.qhAppAlert('Hãy kết nối ECU trước.');
+  if(state.ecuPhase!=='live')return window.qhAppAlert('ECU đang bận. Hãy chờ Live ổn định rồi thử lại.');
 
-  const ok=confirm(
+  const ok=await blinkConfirm('TPS STUDY',
     'CHẠY TPS STUDY GIỐNG REDLEO?\\n\\n'+
     'Tool sẽ gửi lệnh 0x77 và đọc calibration TPS Min/Max từ ECU.\\n'+
     'Sau khi hoàn tất sẽ tự quay lại Live.'
@@ -8994,7 +9077,7 @@ async function connectEcu(){
   try{
     if(!$('ecuNativePort').value)await refreshNativePorts();
     const selected=$('ecuNativePort').value;
-    if(!selected)return alert('Chọn COM của cáp ECU trước.');
+    if(!selected)return window.qhAppAlert('Chọn COM của cáp ECU trước.');
 
     await bridgeJson('/open',{port:selected});
 
@@ -9017,7 +9100,7 @@ async function connectEcu(){
     $('connectEcuBtn').disabled=false;
     $('ecuNativePort').disabled=false;
     $('refreshNativePortsBtn').disabled=false;
-    alert(
+    window.qhAppAlert(
       'Không kết nối Native ECU: '+e.message+
       '\n\n1. Chạy START_BRIDGE.cmd trước.'+
       '\n2. Đóng REDLEO và tool DIAG.'+
@@ -9053,7 +9136,7 @@ async function beginRealEcuHandshake(){
       $('ecuBadge').textContent='ECU: KHÔNG TRẢ LỜI 5A';
       $('ecuBadge').className='badge bad';
       showEcuNotice('error','KẾT NỐI ECU THẤT BẠI','ECU không trả lời handshake 0x5A sau 5 lần.',0);
-      alert(
+      window.qhAppAlert(
         'ECU thật không trả lời handshake sau 5 lần.\n\n'+
         'Auto Tune đang dùng đúng 38400 8E2 và đã bật RTS như REDLEO.\n'+
         'Hãy kiểm tra:\n'+
@@ -9121,7 +9204,7 @@ async function disconnectEcu(){
   $('connectEcuBtn').disabled=false;
 }
 async function queueReadAll(){
-  if(!state.ecuConnected)return alert('Hãy kết nối ECU trước.');
+  if(!state.ecuConnected)return window.qhAppAlert('Hãy kết nối ECU trước.');
   if(state.ecuPhase==='live'){
     state.ecuReadAllQueued=true;
     $('ecuBadge').textContent='ECU: CHỜ ĐỌC MAP';
@@ -9247,7 +9330,7 @@ function updateLive(){
 }
 
 async function connectAfr(){
-  if(!('serial' in navigator)){alert('Web Serial không được hỗ trợ. Dùng Chrome hoặc Edge trên PC.');return;}
+  if(!('serial' in navigator)){window.qhAppAlert('Web Serial không được hỗ trợ. Dùng Chrome hoặc Edge trên PC.');return;}
   try{
     const port=await navigator.serial.requestPort();
     await port.open({baudRate:115200,dataBits:8,stopBits:1,parity:'none',flowControl:'none'});
@@ -9255,7 +9338,7 @@ async function connectAfr(){
     $('afrBadge').textContent='AFR: ON'; $('afrBadge').className='badge ok';
     $('connectAfrBtn').disabled=true;
     afrReadLoop();
-  }catch(e){if(e.name!=='NotFoundError')alert('Không mở được AFR COM: '+e.message)}
+  }catch(e){if(e.name!=='NotFoundError')window.qhAppAlert('Không mở được AFR COM: '+e.message)}
 }
 async function afrReadLoop(){
   const decoder=new TextDecoder();
@@ -9298,9 +9381,9 @@ function syncMeasuredClearButton(){
   const r=$('recordBtn');
   if(r)r.style.display=measured?'':'none';
 }
-function clearMeasuredMap(){
-  if(state.threeRun.active)return alert('Không thể xóa AFR khi MODE 3 LƯỢT đang chạy.');
-  if(!confirm('Xóa toàn bộ AFR đã đo của MAP No.'+state.activeMap+'?'))return;
+async function clearMeasuredMap(){
+  if(state.threeRun.active)return window.qhAppAlert('Không thể xóa AFR khi MODE 3 LƯỢT đang chạy.');
+  if(!await blinkConfirm('XÓA BẢNG AFR','Xóa toàn bộ AFR đã đo của MAP No.'+state.activeMap+'?'))return;
   state.measured=blankMatrix(null);
   state.counts=blankMatrix(0);
   if(state.tab==='measured')render();
@@ -10008,7 +10091,7 @@ window.addEventListener('beforeunload',save);
     try{
       if(!otaUpdateReady||!otaManifestCache)throw new Error('Chưa có firmware mới sẵn sàng.');
       if(!state.ecuConnected)throw new Error('BLE với ESP32 đã ngắt.');
-      if(!confirm('Cập nhật ESP32 lên FW '+otaManifestCache.version+' ngay? Không tắt nguồn cho tới khi hoàn tất.'))return;
+      if(!await blinkConfirm('CẬP NHẬT ESP32','Cập nhật ESP32 lên FW '+otaManifestCache.version+' ngay? Không tắt nguồn cho tới khi hoàn tất.'))return;
 
       otaUpdateReady=false;
       otaBleFatalError='';
@@ -10549,7 +10632,7 @@ function renderIdleEct(){
   s+='</tr></tbody>';t.innerHTML=s;
   t.querySelectorAll('[data-idlect]').forEach(td=>{
     td.onclick=()=>selectIdleEctCell(+td.dataset.idlect);
-    td.ondblclick=()=>{const i=+td.dataset.idlect;selectIdleEctCell(i);const val=prompt('Nhập giá trị STEPPER',d[0][i]);if(val!==null&&Number.isFinite(Number(val))){d[0][i]=Number(val);saveFeatureStore();renderIdleEct();syncIdleEctKeypad(true)}};
+    td.ondblclick=async()=>{const i=+td.dataset.idlect;selectIdleEctCell(i);const val=await window.qhAppPrompt('Nhập giá trị STEPPER',d[0][i]);if(val!==null&&Number.isFinite(Number(val))){d[0][i]=Number(val);saveFeatureStore();renderIdleEct();syncIdleEctKeypad(true)}};
   });
   requestAnimationFrame(updateIdleEctSelectionPad);
 }
@@ -11130,7 +11213,7 @@ function renderFeature(){
   const t=document.getElementById('redFeatureTable');t.innerHTML=s;t.classList.toggle('scanMode',redScanMode);
   t.querySelectorAll('.redCell').forEach(td=>{
     td.onclick=()=>{if(redScanMode)return;handleRedCornerTap(+td.dataset.rr,+td.dataset.rc)};
-    td.ondblclick=()=>{if(redScanMode)return;const r=+td.dataset.rr,c=+td.dataset.rc;redSel={r0:r,c0:c,r1:r,c1:c};redSelectionActive=true;redCornerPending=false;const val=prompt('Nhập giá trị ('+(currentFeature.unit||'unit')+')',d[r][c]);if(val!==null&&Number.isFinite(Number(val))){d[r][c]=Number(val);saveFeatureStore();renderFeature()}else updateRedSelectionVisual()};
+    td.ondblclick=async()=>{if(redScanMode)return;const r=+td.dataset.rr,c=+td.dataset.rc;redSel={r0:r,c0:c,r1:r,c1:c};redSelectionActive=true;redCornerPending=false;const val=await window.qhAppPrompt('Nhập giá trị ('+(currentFeature.unit||'unit')+')',d[r][c]);if(val!==null&&Number.isFinite(Number(val))){d[r][c]=Number(val);saveFeatureStore();renderFeature()}else updateRedSelectionVisual()};
   });
   updateRedSelectionVisual();
   highlightRedLiveCell();
@@ -13273,14 +13356,13 @@ else setTimeout(boot,0);
     openTab(id,rootTab);
   });
   function assertIdleWriteReady(){
+    // No 0-RPM/telemetry freshness requirement for user-requested saves.
+    // Keep LIVE authentication, task exclusivity, correct ECU/MAP and readback.
     if(!state.ecuConnected||state.ecuPhase!=='live')
       throw Error('Cần ECU kết nối LIVE trước khi ghi Idle.');
-    const rpm=Number(state.live?.rpm),age=performance.now()-Number(state.live?.auxAt);
-    if(!Number.isFinite(rpm)||!Number.isFinite(age)||age<0||age>4500)
-      throw Error('Không có RPM LIVE đủ mới để xác nhận động cơ đã dừng. Bật khóa điện và chờ số RPM = 0.');
-    if(rpm>100)throw Error('Động cơ đang chạy '+Math.round(rpm)+' RPM. Phải TẮT ĐỘNG CƠ trước khi ghi Idle.');
-    if(window.QHBackfire?.busy||state.recording||state.ecuWriteQueued)
-      throw Error('Đang có tác vụ ECU khác, không ghi chồng.');
+    if(window.QHBackfire?.busy||state.recording||state.ecuWriteQueued||
+       window.BlinkRealProtocol?.otaPaused||window.BlinkRealProtocol?.manualIoActive)
+      throw Error('Đang có tác vụ ECU/OTA khác, không ghi chồng.');
   }
   function idleChangeKeys(snap){
     const keys=[...idleSummaryKeys];
@@ -13376,7 +13458,7 @@ else setTimeout(boot,0);
       }
       qhIdleWriteFeedback('Đang mở hộp xác nhận ghi...');
       const agreed=await window.blinkConfirm('GHI IDLE/LIMIT · MAP No.'+savedBank,
-        detail+'\nĐỘNG CƠ PHẢI TẮT. QH sẽ so PAGE6 gốc, ghi và đọc lại xác nhận.',
+        detail+'\nKhuyến nghị tắt động cơ trước khi ghi. QH vẫn kiểm tra PAGE6, ECU/MAP và đọc lại xác nhận.',
         'GHI ECU','HỦY');
       if(!agreed){qhIdleWriteFeedback('Đã hủy ghi. ECU không bị thay đổi.');return;}
       qhIdleWriteFeedback('Đã xác nhận. Đang ghi và đọc lại ECU...');
@@ -13422,8 +13504,8 @@ else setTimeout(boot,0);
     if(writing&&fb()?.usesOptionsTable?.()){
       window.setEcuTaskStatus?.('error','V10/V11: cần mở BẢNG OPTIONS/IDLE ECU gốc để chỉnh và ghi theo cấu trúc thật.',6000);return;
     }
-    if(writing&&(typeof window.confirm!=='function'||
-       !window.confirm('Ghi các tùy chọn ECU hiện có xuống ECU? Chỉ tiếp tục khi đã đọc đúng cấu hình và tắt động cơ.')))return;
+    if(writing&&!await window.blinkConfirm('GHI TÙY CHỌN ECU',
+       'Ghi các tùy chọn ECU hiện có xuống ECU? Cần đọc đúng cấu hình và ECU/MAP trước khi ghi.'))return;
     const ok=await fullIoFeedback(writing?'write':'read','options',async()=>{
       if(writing)return fb()?.writeOptions();
       return fb()?.readOptions();
@@ -13622,12 +13704,9 @@ function saveBackup(ctx,b){
 }
 function same(a,b,tol=.21){return Number.isFinite(Number(a))&&Number.isFinite(Number(b))&&Math.abs(Number(a)-Number(b))<=tol}
 function readyToWrite(){
+ // No 0-RPM/telemetry freshness gate. Keep LIVE ECU/MAP identity,
+ // backup, no overlapping writes and independent readback verification.
  if(!state.ecuConnected||state.ecuPhase!=='live')throw Error('ECU phải đang kết nối LIVE.');
- const rpm=Number(state.live?.rpm);
- const t=performance.now()-Number(state.live?.auxAt);
- if(!Number.isFinite(rpm)||!Number.isFinite(t)||t<0||t>4500)
-   throw Error('Chưa có bản tin RPM LIVE đủ mới để xác nhận động cơ đã dừng.');
- if(rpm>100)throw Error('Động cơ đang quay '+Math.round(rpm)+' RPM. Hãy TẮT MÁY trước khi ghi/khôi phục.');
  if(state.recording||state.threeRun?.active||state.ecuWriteQueued||
     api()?.otaPaused||api()?.manualIoActive)
    throw Error('Đang ghi/chạy bản đồ hoặc OTA. Dừng tác vụ trước khi Backfire.');
@@ -13957,9 +14036,9 @@ async function start(){
      ': toàn bộ TPS 100%→IDLE, hai RPM 5500/6000, 28 ô = '+
      lvl.actual+'° (LV'+lvl.level+'); IGN TIME 5500/6000 → '+
      ctx.c.extraCellRequest.actualMs.toFixed(2)+' ms (mục tiêu 1 ms); RPM MAX 6000.\n'+
-     'CHỈ KHI ĐỘNG CƠ ĐÃ DỪNG. Góc lửa âm ở tải lớn có thể gây hỏng động cơ và bộ xả.\n'+
+     'Khuyến nghị tắt động cơ khi ghi. Góc lửa âm ở tải lớn có thể gây hỏng động cơ và bộ xả.\n'+
      'Bạn đã sao lưu MAP ECU ngoài thiết bị chưa?';
-   if(!window.confirm(msg))return;
+   if(!await window.blinkConfirm('GHI BACKFIRE',msg,'GHI ECU','HỦY'))return;
    await transaction(async()=>{
      readyToWrite();
      const base=await readSnapshot(ctx);
@@ -14009,9 +14088,9 @@ async function restore(){
  try{
    readyToWrite();const ctx=context(),b=readBackup(ctx);
    if(!b)throw Error('Thiếu backup gốc của đúng ECU / MAP. Hãy nhập backup JSON.');
-   if(!window.confirm('Khôi phục 28 ô lửa gốc'+
+   if(!await window.blinkConfirm('KHÔI PHỤC BACKFIRE','Khôi phục 28 ô lửa gốc'+
      (b.format==='QH-BACKFIRE-BACKUP-V2'?' + 2 ô IGN TIME gốc':' (backup V1 cũ: không chứa IGN TIME)')+
-     ' và RPM MAX '+b.originalLimit+' của MAP '+ctx.bank+'? Động cơ phải đang dừng.'))return;
+     ' và RPM MAX '+b.originalLimit+' của MAP '+ctx.bank+'? Khuyến nghị tắt động cơ khi thao tác.'))return;
    await transaction(async()=>{
      readyToWrite();
      await restoreCore(ctx,b);
@@ -14201,10 +14280,10 @@ async function v11MapStart(){
      '\n28 ô GÓC LỬA RPM 5500/6000 → −18° (raw 0).'+
      '\n2 ô IGN TIME RPM 5500/6000 → 1,00 ms (raw 20).'+
      '\nGIỚI HẠN RPM KHÔNG ĐƯỢC THAY ĐỔI; KHÔNG PHẢI BACKFIRE ĐẦY ĐỦ.'+
-     '\nCHỈ THỬ TRÊN BÀN THỬ VỚI ĐỘNG CƠ TẮT KHI GHI.'+
+     '\nChỉ thử trên bàn thử; khuyến nghị tắt động cơ khi ghi.'+
      '\nGóc đánh lửa âm có nguy cơ gây cháy/hỏng pô và động cơ.'+
      '\nPhải lưu backup gốc trước khi thử. Bạn muốn tiếp tục?';
-   if(typeof window.confirm!=='function'||!window.confirm(msg))return;
+   if(!await window.blinkConfirm('THỬ MAP V11 / ULTRA PRO2',msg,'TIẾP TỤC','HỦY'))return;
    await transaction(async()=>{
      readyToWrite();
      const base=await v11MapRead(ctx);
@@ -14248,7 +14327,7 @@ async function v11MapRestore(){
    readyToWrite();
    const ctx=v11MapContext(),b=v11MapReadBackup(ctx);
    if(!b)throw Error('Chưa có backup MAP-only V11 đúng ECU/MAP.');
-   if(!window.confirm('Khôi phục 420B MAP IGN và 30B IGN TIME theo bản lưu V11 MAP '+ctx.bank+'? Giới hạn tua không được chỉnh bởi chế độ này.'))return;
+   if(!await window.blinkConfirm('KHÔI PHỤC MAP V11','Khôi phục 420B MAP IGN và 30B IGN TIME theo bản lưu V11 MAP '+ctx.bank+'? Giới hạn tua không được chỉnh bởi chế độ này.'))return;
    await transaction(async()=>{
      readyToWrite();
      await v11MapRestoreCore(ctx,b);
