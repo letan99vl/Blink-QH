@@ -5942,6 +5942,50 @@ async function qhBackfireWriteLimiter(bank,targetRpm,expectedCurrentRpm){
   return {...after,before:before.rpm,after:after.rpm,unchanged:false};
 }
 
-window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireInspectReadOnly:qhBackfireInspectReadOnly,readMaxSpeedFromIdle:qhReadMaxSpeedFromIdle,writeIdleSummaryPatch:qhWriteIdleSummaryPatch,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,backfireWriteDwellPatch:qhBackfireWriteDwellPatch,backfireV11MapOnlyIgn:(bank,patches)=>qhBackfireWriteIgnPatch(bank,patches,{v11MapOnly:true}),backfireV11MapOnlyDwell:(bank,patches)=>qhBackfireWriteDwellPatch(bank,patches,{v11MapOnly:true}),ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
+
+/* QH V11/Ultra Pro2: an explicitly selected, externally validated PAGE6 group.
+ * QH's 4x3 idle matrix is encoded group-major: group g row 3 => index g*4+3.
+ * The caller MUST select G1/G2/G3 from a group proven on their real ECU.
+ * This method does not infer which group is the physical engine rev limiter.
+ * Preserve every other PAGE6 byte and any read-only response tail. */
+async function qhBackfireV11WriteSelectedLimiter(bank,group,expectedRaw,targetRaw){
+  if(!isV11Profile())throw Error('PAGE6 V11 writer only: ECU khong phai V11/Ultra Pro2.');
+  requireProfile('mainWrite','Ghi nhom RPM V11 da xac minh');
+  bank=normalizeBankForProfile(bank);
+  group=Number(group);expectedRaw=Number(expectedRaw);targetRaw=Number(targetRaw);
+  if(!Number.isInteger(group)||group<1||group>3)
+    throw Error('Chua chon dung nhom G1/G2/G3 da xac minh tren ECU.');
+  if(!Number.isInteger(expectedRaw)||expectedRaw<0||expectedRaw>255||
+     !Number.isInteger(targetRaw)||targetRaw<0||targetRaw>255)
+    throw Error('PAGE6 V11: raw ngoai 0..255.');
+  const session=handshakeInfo,epoch=transportEpoch,pg=page(6,bank),off=(group-1)*4+3;
+  const before=await readIdlePageReal(bank,false);
+  if(session!==handshakeInfo||epoch!==transportEpoch)
+    throw Error('ECU bi doi ket noi khi doc PAGE6.');
+  const original=before?.data;
+  if(!(original instanceof Uint8Array)||original.length<43)
+    throw Error('ECU V11 chua tra du PAGE6 43 byte.');
+  if(original[off]!==expectedRaw)
+    throw Error('G'+group+' V11 thay doi ngoai app: mong '+expectedRaw+' nhan '+original[off]+'.');
+  const payload=original.slice(0,43);
+  payload[off]=targetRaw;
+  if(payload[off]!==original[off]){
+    await writeWritablePrefixPage(pg,payload,original,
+      'QH V11 confirmed G'+group+' limiter raw byte','mainWrite',1);
+  }
+  const verified=await readIdlePageReal(bank,false);
+  if(session!==handshakeInfo||epoch!==transportEpoch)
+    throw Error('ECU bi doi ket noi khi xac minh PAGE6.');
+  if(!(verified.data instanceof Uint8Array)||verified.data.length!==original.length)
+    throw Error('PAGE6 V11 readback khac do dai goc.');
+  for(let i=0;i<verified.data.length;i++){
+    const want=i<43?payload[i]:original[i];
+    if(verified.data[i]!==want)
+      throw Error('PAGE6 V11 readback sai byte '+i+'; khong xac nhan ON/OFF.');
+  }
+  return {ack:true,bank,group,offset:off,before:expectedRaw,after:targetRaw};
+}
+
+window.BlinkRealProtocol={getLivePollStats,rawExchange,exchangePage9A,readAll,readCurrentFuelBank,readFeaturePageReal,readIdlePageReal,readA2SensorPageReal,backfireCapabilities:qhBackfireCapabilities,backfireInspectReadOnly:qhBackfireInspectReadOnly,readMaxSpeedFromIdle:qhReadMaxSpeedFromIdle,writeIdleSummaryPatch:qhWriteIdleSummaryPatch,backfireReadLimiter:qhBackfireReadLimiter,backfireWriteLimiter:qhBackfireWriteLimiter,backfireV11WriteSelectedLimiter:qhBackfireV11WriteSelectedLimiter,backfireWriteIgnPatch:qhBackfireWriteIgnPatch,backfireWriteDwellPatch:qhBackfireWriteDwellPatch,backfireV11MapOnlyIgn:(bank,patches)=>qhBackfireWriteIgnPatch(bank,patches,{v11MapOnly:true}),backfireV11MapOnlyDwell:(bank,patches)=>qhBackfireWriteDwellPatch(bank,patches,{v11MapOnly:true}),ensureAxes:ensureEcuAxesReal,writeCurrentFuelAndVerify,parseCurrentFuelFrame,parseReadAll,parseHandshake,parseLiveReal,handshakeReal,initializeRealSession,writeFeatureReal,writeOptionsReal,sendAllReal,copyBankReal,restoreReal,tpsStudyReal,testInjectorReal,abortRawTransport,pauseForOta,resumeAfterOta,beginManualMapIo,endManualMapIo,profileFromHandshake,normalizeBank:normalizeBankForProfile,refreshProfileUi:applyProfileUi,get axes(){return window.blinkEcuAxes||null},get cache(){return readCache},get sensorCache(){return sensorCalCache},get handshake(){return handshakeInfo},get profile(){return ecuProfile},get isBusy(){return busy},get manualIoActive(){return manualMapIoDepth>0},get otaPaused(){return otaPaused}};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();
