@@ -13426,7 +13426,6 @@ else setTimeout(boot,0);
       const read=await api.readMaxSpeedFromIdle(bank,true);
       idleLimitProof={...read,ecuSession:api.handshake,ecuProfile:state.ecuProfile,dirty:false};
       if(read.verified)idleLimitProof.originalValues=syncClassicIdleSummaryFromEcu();
-      if(state.ecuProfile==='MODERN_V11')window.QHV11Page6Diag?.recordRead?.(read,bank,api.handshake);
       return read;
     });
     if(ok)renderSummary();
@@ -13503,7 +13502,6 @@ else setTimeout(boot,0);
           result=await api.writeIdleSummaryPatch(bank,changes,snap.raw);
         }
         const after=await api.readMaxSpeedFromIdle(bank,false);
-        if(v11)window.QHV11Page6Diag?.recordWrite?.(snap.raw,after.raw,bank,api.handshake);
         idleLimitProof={...after,ecuSession:api.handshake,ecuProfile:state.ecuProfile,dirty:false};
         if(after.verified)idleLimitProof.originalValues=syncClassicIdleSummaryFromEcu();
         return result;
@@ -14447,7 +14445,16 @@ function qhP6RecordRead(snapshot,bank,session){
    const fresh=qhP6Bytes(snapshot?.raw);
    let rec=qhP6Load(ctx);
    if(!rec){rec=qhP6Blank(ctx,fresh);qhP6Save(ctx,rec);}
-   else qhP6Remember(ctx,rec,rec.baseline,fresh,'AUTO READ - SO MOC');
+   else{
+     // Preserve the transaction-specific diff when an immediate follow-up
+     // read confirms exactly the same full PAGE6 image.
+     const previousWrite=rec.lastComparison?.source==='AUTO WRITE - READBACK';
+     const identical=rec.lastSeen&&rec.lastSeen.length===fresh.length&&
+       rec.lastSeen.every((b,i)=>b===fresh[i]);
+     if(previousWrite&&identical){
+       rec.lastSeen=fresh;rec.lastCheckedAt=Date.now();qhP6Save(ctx,rec);
+     }else qhP6Remember(ctx,rec,rec.baseline,fresh,'AUTO READ - SO MOC');
+   }
    qhP6Error='';qhP6Render();
  }catch(e){qhP6Error='LƯU PAGE6: '+String(e?.message||e);qhP6Render();}
 }
