@@ -3189,6 +3189,9 @@ async function readIdlePageReal(bank=((typeof state!=='undefined'&&state.activeM
     const st=document.getElementById('redIoStatus');
     if(st)st.textContent='ATE V11 · PAGE 6x MAP '+bank+' · 43B · Idle 12B + AutoShift 9B + ECT Motor 22B decoded · '+C.motorMode.label;
     if(showUi)notice('success','ATE V11 · PAGE 6x READ OK','MAP No.'+bank+' · Idle 12B + AutoShift 9B + ECT Motor 22B đã giải mã · '+C.motorMode.label+'.');
+    // Read-only recorder: never change ECU transaction outcome if local storage fails.
+    try{window.QHV11Page6Diag?.recordRead?.({raw:Array.from(R.data)},bank,handshakeInfo);}
+    catch(e){log('V11 PAGE6 diagnostic read hook',String(e&&e.message||e));}
     return {...R,...C,readOnly:false};
   }
 
@@ -4194,6 +4197,10 @@ async function writeV11IdleLimit(bank){
   payload.set(idle,0);
   taskUi('loading','ATE V11 · GHI IDLE/LIMIT MAP NO.'+bank+' · GIỮ NGUYÊN AUTOSHIFT + ECT MOTOR');
   await writeWritablePrefixPage(pg,payload,baseline,'ATE V11 Idle/Limit MAP '+bank,'mainWrite',1);
+  // The readback has already been verified byte-for-byte by writeWritablePrefixPage.
+  // Record the before/after image for all V11 Idle editors, not only QH summary.
+  try{window.QHV11Page6Diag?.recordWrite?.(baseline,pageCache.get(pg),bank,handshakeInfo);}
+  catch(e){log('V11 PAGE6 diagnostic write hook',String(e&&e.message||e));}
   notice('success','GHI IDLE ATE V11 OK','MAP No.'+bank+' · ECU ACK · 12B Idle đã ghi · 31B AutoShift/ECT Motor giữ nguyên.');
   return {ack:true,page:pg,payload:new Uint8Array(payload)};
 }
